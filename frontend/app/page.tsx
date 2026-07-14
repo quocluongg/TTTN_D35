@@ -2,175 +2,129 @@
 
 import React from "react";
 import PublicLayout from "@/shared/layouts/PublicLayout";
-import { Heading } from "@/components/Heading";
-import { Text } from "@/components/Text";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useModal } from "@/modals/useModal";
-import { ConfirmModal } from "@/modals/ConfirmModals";
-import { notifySuccess, notifyInfo } from "@/components/Notify";
-import { useCurrentUser } from "@/hooks/useAuth";
-import { Terminal, Shield, Zap, Sparkles, Sliders, Layers } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
-  const { data: user } = useCurrentUser();
-
-  // Initialize custom confirm modal using our useModal bridge
-  const confirmModal = useModal(ConfirmModal);
-
-  const handleTestModal = () => {
-    confirmModal.show({
-      title: "Test Action Confirmation",
-      content: "Are you sure you want to test the boilerplate's modal bridge and promise integration?",
-      labels: { cancel: "Cancel", action: "Confirm" },
-      async: true,
-      onAction: async () => {
-        // Mock a backend response delay
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        notifySuccess("Action confirmed successfully! The modal bridge transitions smoothly.");
-      },
-    });
-  };
-
   return (
-    <PublicLayout>
-      <div className="relative isolate overflow-hidden min-h-[85vh] flex flex-col justify-center">
-        {/* Decorative Grid Pattern */}
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+    <PublicLayout fullWidth>
+      <div className="w-full bg-[#F2F2F2] dark:bg-zinc-900 transition-colors duration-300">
+        
+        {/* --- SECTION 1: TOP 4-COLUMN ARCHITECTURAL GRID --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 w-[1920px] max-w-full mx-auto bg-[#F2F2F2] dark:bg-zinc-900 text-black dark:text-white border-b border-black dark:border-zinc-800">
+          
+          {/* Column 1: Shop Categories */}
+          <div className="p-8 lg:p-12 border-b lg:border-b-0 lg:border-r border-black dark:border-zinc-800 flex flex-col justify-start space-y-4">
+            <Link href="/shop" className="block text-[24px] font-medium hover:underline tracking-tight">
+              Shop All
+            </Link>
+            <Link href="/shop/smartphones" className="block text-[24px] font-medium hover:underline tracking-tight">
+              Smartphones
+            </Link>
+            <Link href="/shop/laptops" className="block text-[24px] font-medium hover:underline tracking-tight">
+              Laptops
+            </Link>
+            <Link href="/shop/tablets" className="block text-[24px] font-medium hover:underline tracking-tight">
+              Tablets
+            </Link>
+            <Link href="/shop/accessories" className="block text-[24px] font-medium hover:underline tracking-tight">
+              Accessories
+            </Link>
+          </div>
 
-        {/* Hero Section */}
-        <div className="mx-auto max-w-5xl px-6 pt-10 pb-16 text-center lg:pt-20">
-          <div className="mx-auto max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-xs text-primary font-medium mb-6 animate-pulse">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Next.js 16 Canary &bull; Tailwind CSS v4</span>
+          {/* Column 2: Featured Collections */}
+          <div className="p-8 lg:p-12 border-b lg:border-b-0 lg:border-r border-black dark:border-zinc-800 flex flex-col justify-start space-y-4">
+            <Link href="/collections/new-arrivals" className="block text-[24px] font-medium hover:underline tracking-tight">
+              New Arrivals
+            </Link>
+            <Link href="/collections/best-sellers" className="block text-[24px] font-medium hover:underline tracking-tight">
+              Best Sellers
+            </Link>
+            <Link href="/collections/work-essentials" className="block text-[24px] font-medium hover:underline tracking-tight">
+              Work Essentials
+            </Link>
+            <Link href="/collections/deals" className="block text-[24px] font-medium hover:underline tracking-tight">
+              Deals of the Week
+            </Link>
+          </div>
+
+          {/* Column 3: Laptop Promo Card */}
+          <div className="border-b lg:border-b-0 lg:border-r border-black dark:border-zinc-800 flex flex-col justify-between group cursor-pointer">
+            <div className="p-8 flex items-center justify-center bg-[#F2F2F2] dark:bg-zinc-900 h-[280px]">
+              <img
+                src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=600&auto=format&fit=crop"
+                alt="Laptops Collection"
+                className="max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
+              />
             </div>
-
-            <Heading size="xl" className="tracking-tight text-foreground sm:text-6xl bg-gradient-to-b from-foreground via-foreground/90 to-foreground/75 bg-clip-text text-transparent">
-              High-Performance Boilerplate
-            </Heading>
-            
-            <Text className="mt-6 text-lg leading-8 text-muted-foreground max-w-2xl mx-auto">
-              A premium, production-ready frontend framework leveraging the latest React 19 capabilities, Tailwind v4 styling engine, and robust state/modal pipelines.
-            </Text>
-
-            {user ? (
-              <div className="mt-8 flex items-center justify-center gap-3">
-                <Text className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
-                  Welcome back, {user.fullName}! (Role: {user.role})
-                </Text>
-              </div>
-            ) : (
-              <div className="mt-10 flex items-center justify-center gap-x-4">
-                <Button onClick={handleTestModal} className="h-11 px-6 shadow-md transition-all duration-300 hover:scale-[1.02]">
-                  Test Interactive Modal
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => notifyInfo("To see toast notification styles, click around!")}
-                  className="h-11 px-6"
-                >
-                  Test Custom Toast
-                </Button>
-              </div>
-            )}
+            <div className="p-6 border-t border-black dark:border-zinc-800 flex justify-between items-start gap-4 bg-[#F2F2F2] dark:bg-zinc-900">
+              <span className="text-[20px] font-medium leading-snug tracking-tight">
+                Powerful performance. Sleek design. Built for work, gaming, and everyday life.
+              </span>
+              <ArrowUpRight className="w-6 h-6 shrink-0 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+            </div>
           </div>
+
+          {/* Column 4: Tablet / Lifestyle Promo Card */}
+          <div className="flex flex-col justify-between group cursor-pointer">
+            <div className="h-[280px] overflow-hidden">
+              <img
+                src="https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?q=80&w=600&auto=format&fit=crop"
+                alt="Tablets Lifestyle"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+            </div>
+            <div className="p-6 border-t border-black dark:border-zinc-800 flex justify-between items-start gap-4 bg-[#F2F2F2] dark:bg-zinc-900">
+              <span className="text-[20px] font-medium leading-snug tracking-tight">
+                Explore electronics for home offices and gaming setups.
+              </span>
+              <ArrowUpRight className="w-6 h-6 shrink-0 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+            </div>
+          </div>
+
         </div>
 
-        {/* Features Grid */}
-        <div className="mx-auto max-w-6xl px-6 pb-20">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Feature 1 */}
-            <Card className="border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/20 transition-all duration-300">
-              <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                  <Zap className="w-5 h-5" />
-                </div>
-                <CardTitle className="text-base font-semibold">Turbo Performance</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-sm text-muted-foreground">
-                  Powered by Next.js 16 Canary and React 19 Server Components, featuring instant load times and optimal builds.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            {/* Feature 2 */}
-            <Card className="border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/20 transition-all duration-300">
-              <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-                  <Sliders className="w-5 h-5" />
-                </div>
-                <CardTitle className="text-base font-semibold">Tailwind CSS v4</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-sm text-muted-foreground">
-                  Leverages the new high-performance CSS-first architecture with custom @theme custom variables for seamless theme syncing.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            {/* Feature 3 */}
-            <Card className="border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/20 transition-all duration-300">
-              <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                <div className="p-2 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400">
-                  <Shield className="w-5 h-5" />
-                </div>
-                <CardTitle className="text-base font-semibold">Authentication Ready</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-sm text-muted-foreground">
-                  Built-in JWT cookies authentication middleware, custom React Hook Form validations, and router-level guards.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            {/* Feature 4 */}
-            <Card className="border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/20 transition-all duration-300">
-              <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                <div className="p-2 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400">
-                  <Layers className="w-5 h-5" />
-                </div>
-                <CardTitle className="text-base font-semibold">NiceModal & Dialogs</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-sm text-muted-foreground">
-                  A custom bridge hook (`useModal`) unifying ebay-nice-modal-react and Radix UI dialog animations smoothly.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            {/* Feature 5 */}
-            <Card className="border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/20 transition-all duration-300">
-              <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                  <Terminal className="w-5 h-5" />
-                </div>
-                <CardTitle className="text-base font-semibold">TanStack Query v5</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-sm text-muted-foreground">
-                  Advanced data-fetching pipeline configured with cache management, automatic token appending, and mock APIs.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            {/* Feature 6 */}
-            <Card className="border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/20 transition-all duration-300">
-              <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                  <Sparkles className="w-5 h-5" />
-                </div>
-                <CardTitle className="text-base font-semibold">Clean UI / Forms</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-sm text-muted-foreground">
-                  Reusable, strongly typed Shadcn UI inputs (`InputField`, `PasswordField`, `TextareaField`) working with Zod.
-                </CardDescription>
-              </CardContent>
-            </Card>
+        {/* --- SECTION 2: MIDDLE SPLIT HERO SECTION --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 w-[1920px] max-w-full mx-auto bg-[#F2F2F2] dark:bg-zinc-900 border-b border-black dark:border-zinc-800">
+          
+          {/* Left Split: Silver Block with "Read More" button */}
+          <div className="bg-[#C5C5C5] dark:bg-zinc-800 p-12 lg:p-24 flex flex-col justify-start items-start min-h-[400px] lg:min-h-[600px] transition-colors duration-300">
+            <Link
+              href="/journal"
+              className="bg-black text-white hover:bg-neutral-900 dark:bg-white dark:text-black dark:hover:bg-neutral-100 text-[20px] font-medium px-8 py-5 h-auto rounded-none border-none inline-flex items-center gap-2 group tracking-tight transition-colors"
+            >
+              Read More 
+              <ArrowUpRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </Link>
           </div>
+
+          {/* Right Split: Large Tech/Activewear Image */}
+          <div className="relative h-[400px] lg:h-[600px] w-full lg:border-l border-black dark:border-zinc-800 overflow-hidden">
+            <img
+              src="https://images.unsplash.com/photo-1539185441755-769473a23570?q=80&w=1200&auto=format&fit=crop"
+              alt="Lifestyle Showcase"
+              className="w-full h-full object-cover"
+            />
+          </div>
+
         </div>
+
+        {/* --- SECTION 3: FOOTER BAR / BOTTOM MENU --- */}
+        <div className="w-[1920px] max-w-full mx-auto py-8 bg-[#C5C5C5] dark:bg-zinc-800 text-black dark:text-white border-b border-black dark:border-zinc-800 flex flex-wrap justify-center items-center gap-8 lg:gap-16 font-medium text-[20px] tracking-tight transition-colors duration-300">
+          <Link href="/journal/articles" className="hover:underline">
+            All Articles
+          </Link>
+          <Link href="/journal/press" className="hover:underline">
+            Press Releases
+          </Link>
+          <Link href="/collections" className="hover:underline">
+            Collections
+          </Link>
+          <Link href="/lifestyle" className="hover:underline">
+            Lifestyle
+          </Link>
+        </div>
+
       </div>
     </PublicLayout>
   );
