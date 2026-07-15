@@ -9,10 +9,10 @@ export default function Home() {
   return (
     <PublicLayout fullWidth>
       <div className="w-full bg-[#F2F2F2] dark:bg-zinc-900 transition-colors duration-300">
-        
+
         {/* --- SECTION 1: TOP 4-COLUMN ARCHITECTURAL GRID --- */}
         <div className="grid grid-cols-1 lg:grid-cols-4 w-[1920px] max-w-full mx-auto bg-[#F2F2F2] dark:bg-zinc-900 text-black dark:text-white border-b border-black dark:border-zinc-800">
-          
+
           {/* Column 1: Shop Categories */}
           <div className="p-8 lg:p-12 border-b lg:border-b-0 lg:border-r border-black dark:border-zinc-800 flex flex-col justify-start space-y-4">
             <Link href="/shop" className="block text-[24px] font-medium hover:underline tracking-tight">
@@ -50,16 +50,16 @@ export default function Home() {
 
           {/* Column 3: Laptop Promo Card */}
           <div className="border-b lg:border-b-0 lg:border-r border-black dark:border-zinc-800 flex flex-col justify-between group cursor-pointer">
-            <div className="p-8 flex items-center justify-center bg-[#F2F2F2] dark:bg-zinc-900 h-[280px]">
+            <div className="flex items-center justify-center bg-[#F2F2F2] dark:bg-zinc-900 h-[280px] px-6 py-4 overflow-hidden">
               <img
-                src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=600&auto=format&fit=crop"
+                src="https://www.pngall.com/wp-content/uploads/12/Macbook-PNG-Pic.png"
                 alt="Laptops Collection"
-                className="max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
               />
             </div>
             <div className="p-6 border-t border-black dark:border-zinc-800 flex justify-between items-start gap-4 bg-[#F2F2F2] dark:bg-zinc-900">
               <span className="text-[20px] font-medium leading-snug tracking-tight">
-                Powerful performance. Sleek design. Built for work, gaming, and everyday life.
+                Powerful performance. Sleek design. Built for work, gaming.
               </span>
               <ArrowUpRight className="w-6 h-6 shrink-0 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
             </div>
@@ -86,14 +86,14 @@ export default function Home() {
 
         {/* --- SECTION 2: MIDDLE SPLIT HERO SECTION --- */}
         <div className="grid grid-cols-1 lg:grid-cols-2 w-[1920px] max-w-full mx-auto bg-[#F2F2F2] dark:bg-zinc-900 border-b border-black dark:border-zinc-800">
-          
+
           {/* Left Split: Silver Block with "Read More" button */}
           <div className="bg-[#C5C5C5] dark:bg-zinc-800 p-12 lg:p-24 flex flex-col justify-start items-start min-h-[400px] lg:min-h-[600px] transition-colors duration-300">
             <Link
               href="/journal"
               className="bg-black text-white hover:bg-neutral-900 dark:bg-white dark:text-black dark:hover:bg-neutral-100 text-[20px] font-medium px-8 py-5 h-auto rounded-none border-none inline-flex items-center gap-2 group tracking-tight transition-colors"
             >
-              Read More 
+              Read More
               <ArrowUpRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </Link>
           </div>

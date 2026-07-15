@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import {
@@ -39,8 +39,46 @@ export function Navbar() {
   // Get logout function
   const logout = useLogout();
 
+  // --- Scroll-hide animation logic ---
+  const [isVisible, setIsVisible] = useState(true);
+  const lastScrollY = useRef(0);
+  const ticking = useRef(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!ticking.current) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          // Always show navbar when near the top of the page
+          if (currentScrollY < 10) {
+            setIsVisible(true);
+          } else if (currentScrollY > lastScrollY.current + 4) {
+            // Scrolling DOWN — hide
+            setIsVisible(false);
+          } else if (currentScrollY < lastScrollY.current - 4) {
+            // Scrolling UP — show
+            setIsVisible(true);
+          }
+          lastScrollY.current = currentScrollY;
+          ticking.current = false;
+        });
+        ticking.current = true;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <nav className="w-full border-b border-border bg-[#F2F2F2] dark:bg-zinc-900 fixed top-0 left-0 z-50 transition-colors duration-300">
+    <nav
+      className={[
+        "w-full border-b border-black/50 bg-[#F2F2F2] dark:bg-zinc-900",
+        "fixed top-0 left-0 z-50",
+        "transition-transform duration-300 ease-in-out",
+        isVisible ? "translate-y-0" : "-translate-y-full",
+      ].join(" ")}
+    >
       {/* --- DESKTOP: FLEX ROW LAYOUT (1920px) --- */}
       <div className="hidden lg:flex w-[1920px] max-w-full mx-auto h-[60px] px-6 py-4 justify-between items-center text-[24px] font-medium tracking-wide">
         {/* Item 1: Logo */}
@@ -254,20 +292,6 @@ export function Navbar() {
                     </>
                   )}
                 </nav>
-              </div>
-
-              <div className="border-t border-border pt-4 flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Theme</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                  className="rounded-full w-9 h-9 text-muted-foreground hover:text-foreground"
-                >
-                  <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                  <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                  <span className="sr-only">Toggle theme</span>
-                </Button>
               </div>
             </SheetContent>
           </Sheet>
