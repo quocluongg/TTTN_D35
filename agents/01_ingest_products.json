@@ -1,0 +1,250 @@
+{
+    "name": "RAG — Ingest Products to Supabase",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        60
+                    ]
+                }
+            },
+            "id": "trigger-cron",
+            "name": "Cron (hourly)",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1.1,
+            "position": [
+                240,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://YOUR-PROJECT.supabase.co/rest/v1/rpc/get_products_needing_embedding",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "apikey",
+                            "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+                        },
+                        {
+                            "name": "Authorization",
+                            "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+                        },
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={}"
+            },
+            "id": "fetch-pending",
+            "name": "Fetch Products (RPC)",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                480,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "fieldToSplitOut": "response",
+                "options": {}
+            },
+            "id": "split-out",
+            "name": "Split Out Products",
+            "type": "n8n-nodes-base.splitOut",
+            "typeVersion": 1,
+            "position": [
+                720,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// Build the chunk text from a product row.\n// Strategy: name + description + tags + structured fields.\n// Adjust to your data shape.\nconst p = $input.first().json;\n\nconst text = [\n  `Name: ${p.name}`,\n  `Brand: ${p.brand || 'n/a'}`,\n  `Category: ${p.category || 'n/a'}`,\n  `Tags: ${(p.tags || []).join(', ') || 'n/a'}`,\n  p.price ? `Price: ${p.currency || 'USD'} ${p.price}` : null,\n  p.in_stock === false ? 'Status: out of stock' : null,\n  '',\n  p.description || ''\n].filter(Boolean).join('\\n');\n\nreturn [{ json: { product_id: p.id, sku: p.sku, chunk_text: text } }];"
+            },
+            "id": "build-chunks",
+            "name": "Build Chunk Text",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                960,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.openai.com/v1/embeddings",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Authorization",
+                            "value": "Bearer {{ $env.OPENAI_API_KEY }}"
+                        },
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={\n  \"input\": {{ JSON.stringify($json.chunk_text) }},\n  \"model\": \"text-embedding-3-small\",\n  \"encoding_format\": \"float\"\n}",
+                "options": {
+                    "timeout": 30000
+                }
+            },
+            "id": "embed-openai",
+            "name": "OpenAI Embeddings",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                1200,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// Pull the embedding vector out of the OpenAI response\n// and reshape into the payload our Supabase upsert expects.\nconst r = $input.first().json;\nconst original = $('Build Chunk Text').first().json;\n\nreturn [{\n  json: {\n    product_id:   original.product_id,\n    chunk_index:  0,\n    chunk_text:   original.chunk_text,\n    embedding:    r.data[0].embedding\n  }\n}];"
+            },
+            "id": "reshape",
+            "name": "Reshape for Supabase",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1440,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://YOUR-PROJECT.supabase.co/rest/v1/product_embeddings?on_conflict=product_id,chunk_index",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "apikey",
+                            "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+                        },
+                        {
+                            "name": "Authorization",
+                            "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+                        },
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        },
+                        {
+                            "name": "Prefer",
+                            "value": "resolution=ignore-duplicates,return=minimal"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={{ JSON.stringify([$json]) }}"
+            },
+            "id": "upsert-embeddings",
+            "name": "Upsert to Supabase",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                1680,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Cron (hourly)": {
+            "main": [
+                [
+                    {
+                        "node": "Fetch Products (RPC)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Fetch Products (RPC)": {
+            "main": [
+                [
+                    {
+                        "node": "Split Out Products",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Split Out Products": {
+            "main": [
+                [
+                    {
+                        "node": "Build Chunk Text",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Build Chunk Text": {
+            "main": [
+                [
+                    {
+                        "node": "OpenAI Embeddings",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "OpenAI Embeddings": {
+            "main": [
+                [
+                    {
+                        "node": "Reshape for Supabase",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Reshape for Supabase": {
+            "main": [
+                [
+                    {
+                        "node": "Upsert to Supabase",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1",
+        "saveExecutionProgress": true,
+        "timezone": "UTC"
+    },
+    "staticData": null,
+    "tags": [
+        {
+            "name": "rag"
+        },
+        {
+            "name": "ingestion"
+        }
+    ],
+    "active": false
+}

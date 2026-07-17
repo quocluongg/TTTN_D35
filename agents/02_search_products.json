@@ -1,0 +1,279 @@
+{
+    "name": "RAG — Search Products (RAG Query)",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "product-search",
+                "responseMode": "responseNode",
+                "options": {}
+            },
+            "id": "webhook",
+            "name": "Webhook (POST /product-search)",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2,
+            "position": [
+                240,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// Extract and validate the user query from the webhook body.\n// Expected body: { \"query\": \"...\", \"category\": \"...\", \"top_k\": 5, \"min_similarity\": 0.7 }\nconst body = $input.first().json.body || $input.first().json;\n\nconst query = (body.query || '').trim();\nif (!query) {\n  throw new Error('Missing required field: query');\n}\n\nreturn [{\n  json: {\n    query:          query,\n    category:       body.category || null,\n    brand:          body.brand    || null,\n    top_k:          Math.min(Math.max(parseInt(body.top_k, 10) || 5, 1), 20),\n    min_similarity: typeof body.min_similarity === 'number' ? body.min_similarity : 0.7\n  }\n}];"
+            },
+            "id": "parse-input",
+            "name": "Parse Input",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                480,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.openai.com/v1/embeddings",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Authorization",
+                            "value": "Bearer {{ $env.OPENAI_API_KEY }}"
+                        },
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={\n  \"input\": {{ JSON.stringify($json.query) }},\n  \"model\": \"text-embedding-3-small\",\n  \"encoding_format\": \"float\"\n}",
+                "options": {
+                    "timeout": 30000
+                }
+            },
+            "id": "embed-query",
+            "name": "Embed Query",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                720,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "return [{ json: { query_embedding: $json.data[0].embedding } }];"
+            },
+            "id": "extract-vec",
+            "name": "Extract Vector",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                960,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://YOUR-PROJECT.supabase.co/rest/v1/rpc/match_products",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "apikey",
+                            "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+                        },
+                        {
+                            "name": "Authorization",
+                            "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+                        },
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={\n  \"query_embedding\": {{ JSON.stringify($json.query_embedding) }},\n  \"match_count\":     {{ $('Parse Input').item.json.top_k }},\n  \"filter_category\": {{ $('Parse Input').item.json.category ? JSON.stringify($('Parse Input').item.json.category) : 'null' }},\n  \"filter_brand\":    {{ $('Parse Input').item.json.brand    ? JSON.stringify($('Parse Input').item.json.brand)    : 'null' }},\n  \"min_similarity\":  {{ $('Parse Input').item.json.min_similarity }}\n}"
+            },
+            "id": "vector-search",
+            "name": "Vector Search (Supabase RPC)",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                1200,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.openai.com/v1/chat/completions",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Authorization",
+                            "value": "Bearer {{ $env.OPENAI_API_KEY }}"
+                        },
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"temperature\": 0.2,\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a product search assistant. Answer the user's question using ONLY the product context provided below. If the context doesn't contain a relevant product, say so honestly. Always include the product name, brand, and price in your answer. Format as a short, helpful paragraph.\\n\\nPRODUCT CONTEXT:\\n{{ JSON.stringify($('Vector Search (Supabase RPC)').first().json, null, 2) }}\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($('Parse Input').item.json.query) }}\n    }\n  ]\n}",
+                "options": {
+                    "timeout": 30000
+                }
+            },
+            "id": "llm-answer",
+            "name": "LLM Answer (GPT-4o-mini)",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                1440,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// Shape the final response. Return both the LLM answer\n// and the raw retrieved products (useful for the UI to show \"see also\").\nconst llm = $('LLM Answer (GPT-4o-mini)').first().json;\nconst products = $('Vector Search (Supabase RPC)').first().json;\nconst input = $('Parse Input').item.json;\n\nreturn [{\n  json: {\n    query:   input.query,\n    answer:  llm.choices[0].message.content.trim(),\n    sources: products.map(p => ({\n      product_id:  p.product_id,\n      sku:         p.sku,\n      name:        p.name,\n      brand:       p.brand,\n      category:    p.category,\n      price:       p.price,\n      similarity:  Number(p.similarity.toFixed(3))\n    })),\n    usage: llm.usage\n  }\n}];"
+            },
+            "id": "format-response",
+            "name": "Format Response",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1680,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={{ JSON.stringify($json) }}",
+                "options": {
+                    "responseCode": 200,
+                    "responseHeaders": {
+                        "entries": [
+                            {
+                                "name": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ]
+                    }
+                }
+            },
+            "id": "respond",
+            "name": "Respond to Webhook",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1.1,
+            "position": [
+                1920,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook (POST /product-search)": {
+            "main": [
+                [
+                    {
+                        "node": "Parse Input",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Parse Input": {
+            "main": [
+                [
+                    {
+                        "node": "Embed Query",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Embed Query": {
+            "main": [
+                [
+                    {
+                        "node": "Extract Vector",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Extract Vector": {
+            "main": [
+                [
+                    {
+                        "node": "Vector Search (Supabase RPC)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Vector Search (Supabase RPC)": {
+            "main": [
+                [
+                    {
+                        "node": "LLM Answer (GPT-4o-mini)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "LLM Answer (GPT-4o-mini)": {
+            "main": [
+                [
+                    {
+                        "node": "Format Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Format Response": {
+            "main": [
+                [
+                    {
+                        "node": "Respond to Webhook",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1",
+        "saveExecutionProgress": true,
+        "timezone": "UTC"
+    },
+    "staticData": null,
+    "tags": [
+        {
+            "name": "rag"
+        },
+        {
+            "name": "query"
+        }
+    ],
+    "active": false
+}
