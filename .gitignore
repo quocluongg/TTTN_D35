@@ -1,0 +1,14 @@
+# Python & Temporary Files
+__pycache__/
+*.pyc
+.venv/
+env/
+
+# SQL Batch & Migration Files
+scripts/batches/
+scripts/*.sql
+*.sql
+
+# Environment & Secrets
+.env
+.env.local
