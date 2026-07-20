@@ -8,21 +8,18 @@ interface PublicLayoutProps {
   fullWidth?: boolean;
 }
 
-const PublicLayout: React.FC<PublicLayoutProps> = ({ children, fullWidth = false }) => {
+const PublicLayout: React.FC<PublicLayoutProps> = ({ children, fullWidth = true }) => {
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* navbar */}
+    <div className="min-h-screen flex flex-col bg-[#F2F2F2] dark:bg-zinc-950">
+      {/* Navbar */}
       <Navbar />
 
-      {/* content */}
-      <main className={cn(
-        "flex-1 pt-[60px]",
-        fullWidth ? "w-full" : "container mx-auto px-4 md:px-6 mt-6"
-      )}>
+      {/* Main Content */}
+      <main className={cn("flex-1 pt-[60px]", fullWidth ? "w-full" : "container mx-auto px-4 md:px-6")}>
         {children}
       </main>
 
-      {/* footer */}
+      {/* Footer */}
       <Footer />
     </div>
   );
