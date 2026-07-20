@@ -70,6 +70,9 @@ export const useRegister = () => {
   });
 };
 
+export const useSignup = useRegister;
+
+
 // get current user hook
 export const useCurrentUser = () => {
   return useQuery({
