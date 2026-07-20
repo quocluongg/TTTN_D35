@@ -1,0 +1,14 @@
+{
+  "processed_at": "2026-07-14T09:51:44.297181",
+  "total_products": 100,
+  "total_documents": 100,
+  "total_chunks": 855,
+  "chunk_size": 512,
+  "overlap": 50,
+  "stats": {
+    "total": 100,
+    "with_specs": 100,
+    "with_price": 52,
+    "with_desc": 89
+  }
+}

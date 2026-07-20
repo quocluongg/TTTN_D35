@@ -1,5 +1,5 @@
 {
-    "name": "RAG — Ingest Products to Supabase",
+    "name": "RAG — Ingest Products to Supabase (optimized, batched)",
     "nodes": [
         {
             "parameters": {
@@ -15,6 +15,64 @@
             "typeVersion": 1.1,
             "position": [
                 240,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://YOUR-PROJECT.supabase.co/rest/v1/rpc/count_products_needing_embedding",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "apikey",
+                            "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+                        },
+                        {
+                            "name": "Authorization",
+                            "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+                        },
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={}"
+            },
+            "retryOnFail": true,
+            "maxTries": 3,
+            "waitBetweenTries": 2000,
+            "id": "check-count",
+            "name": "Check Pending Count",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                480,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "number": [
+                        {
+                            "value1": "={{ $json[0].total }}",
+                            "operation": "largerEqual",
+                            "value2": 1
+                        }
+                    ]
+                }
+            },
+            "id": "if-has-pending",
+            "name": "Has Pending?",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
+            "position": [
+                720,
                 300
             ]
         },
@@ -41,14 +99,17 @@
                 },
                 "sendBody": true,
                 "specifyBody": "json",
-                "jsonBody": "={}"
+                "jsonBody": "={\"batch_size\": 50}"
             },
+            "retryOnFail": true,
+            "maxTries": 3,
+            "waitBetweenTries": 2000,
             "id": "fetch-pending",
-            "name": "Fetch Products (RPC)",
+            "name": "Fetch Products (RPC, up to 50)",
             "type": "n8n-nodes-base.httpRequest",
             "typeVersion": 4.2,
             "position": [
-                480,
+                960,
                 300
             ]
         },
@@ -62,20 +123,34 @@
             "type": "n8n-nodes-base.splitOut",
             "typeVersion": 1,
             "position": [
-                720,
+                1200,
                 300
             ]
         },
         {
             "parameters": {
-                "jsCode": "// Build the chunk text from a product row.\n// Strategy: name + description + tags + structured fields.\n// Adjust to your data shape.\nconst p = $input.first().json;\n\nconst text = [\n  `Name: ${p.name}`,\n  `Brand: ${p.brand || 'n/a'}`,\n  `Category: ${p.category || 'n/a'}`,\n  `Tags: ${(p.tags || []).join(', ') || 'n/a'}`,\n  p.price ? `Price: ${p.currency || 'USD'} ${p.price}` : null,\n  p.in_stock === false ? 'Status: out of stock' : null,\n  '',\n  p.description || ''\n].filter(Boolean).join('\\n');\n\nreturn [{ json: { product_id: p.id, sku: p.sku, chunk_text: text } }];"
+                "batchSize": 50,
+                "options": {}
+            },
+            "id": "batch-50",
+            "name": "Batch by 50",
+            "type": "n8n-nodes-base.splitInBatches",
+            "typeVersion": 3,
+            "position": [
+                1440,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// Receives a batch of products, builds an array of chunk texts,\n// then issues ONE OpenAI call with all of them as input.\n// OpenAI's embedding endpoint accepts up to 2048 inputs per call.\nconst batch = $input.all();\n\nconst inputs = batch.map(item => {\n  const p = item.json;\n  return [\n    `Name: ${p.name}`,\n    `Brand: ${p.brand || 'n/a'}`,\n    `Category: ${p.category || 'n/a'}`,\n    `Tags: ${(p.tags || []).join(', ') || 'n/a'}`,\n    p.price ? `Price: ${p.currency || 'USD'} ${p.price}` : null,\n    p.in_stock === false ? 'Status: out of stock' : null,\n    '',\n    p.description || ''\n  ].filter(Boolean).join('\\n');\n});\n\nreturn [{\n  json: {\n    inputs,\n    meta: batch.map((item, i) => ({\n      product_id: item.json.id,\n      sku:        item.json.sku,\n      chunk_text: inputs[i]\n    }))\n  }\n}];"
             },
             "id": "build-chunks",
-            "name": "Build Chunk Text",
+            "name": "Build Chunk Texts (batched)",
             "type": "n8n-nodes-base.code",
             "typeVersion": 2,
             "position": [
-                960,
+                1680,
                 300
             ]
         },
@@ -98,30 +173,33 @@
                 },
                 "sendBody": true,
                 "specifyBody": "json",
-                "jsonBody": "={\n  \"input\": {{ JSON.stringify($json.chunk_text) }},\n  \"model\": \"text-embedding-3-small\",\n  \"encoding_format\": \"float\"\n}",
+                "jsonBody": "={\n  \"input\": {{ JSON.stringify($json.inputs) }},\n  \"model\": \"text-embedding-3-small\",\n  \"encoding_format\": \"float\"\n}",
                 "options": {
-                    "timeout": 30000
+                    "timeout": 60000
                 }
             },
+            "retryOnFail": true,
+            "maxTries": 4,
+            "waitBetweenTries": 3000,
             "id": "embed-openai",
-            "name": "OpenAI Embeddings",
+            "name": "OpenAI Embeddings (batch)",
             "type": "n8n-nodes-base.httpRequest",
             "typeVersion": 4.2,
             "position": [
-                1200,
+                1920,
                 300
             ]
         },
         {
             "parameters": {
-                "jsCode": "// Pull the embedding vector out of the OpenAI response\n// and reshape into the payload our Supabase upsert expects.\nconst r = $input.first().json;\nconst original = $('Build Chunk Text').first().json;\n\nreturn [{\n  json: {\n    product_id:   original.product_id,\n    chunk_index:  0,\n    chunk_text:   original.chunk_text,\n    embedding:    r.data[0].embedding\n  }\n}];"
+                "jsCode": "// Map each returned embedding back to its product_id.\n// Output is a single JSON with a 'rows' array ready for one bulk upsert.\nconst r  = $input.first().json;\nconst meta = $('Build Chunk Texts (batched)').first().json.meta;\n\nconst rows = r.data.map((d, i) => ({\n  product_id:  meta[i].product_id,\n  chunk_index: 0,\n  chunk_text:  meta[i].chunk_text,\n  embedding:   d.embedding\n}));\n\nreturn [{ json: { rows } }];"
             },
             "id": "reshape",
-            "name": "Reshape for Supabase",
+            "name": "Reshape for Bulk Upsert",
             "type": "n8n-nodes-base.code",
             "typeVersion": 2,
             "position": [
-                1440,
+                2160,
                 300
             ]
         },
@@ -146,20 +224,34 @@
                         },
                         {
                             "name": "Prefer",
-                            "value": "resolution=ignore-duplicates,return=minimal"
+                            "value": "resolution=merge-duplicates,return=minimal"
                         }
                     ]
                 },
                 "sendBody": true,
                 "specifyBody": "json",
-                "jsonBody": "={{ JSON.stringify([$json]) }}"
+                "jsonBody": "={{ JSON.stringify($json.rows) }}"
             },
+            "retryOnFail": true,
+            "maxTries": 3,
+            "waitBetweenTries": 2000,
             "id": "upsert-embeddings",
-            "name": "Upsert to Supabase",
+            "name": "Bulk Upsert to Supabase",
             "type": "n8n-nodes-base.httpRequest",
             "typeVersion": 4.2,
             "position": [
-                1680,
+                2400,
+                300
+            ]
+        },
+        {
+            "parameters": {},
+            "id": "loop-back",
+            "name": "Loop to next batch",
+            "type": "n8n-nodes-base.splitInBatches",
+            "typeVersion": 3,
+            "position": [
+                2640,
                 300
             ]
         }
@@ -169,14 +261,36 @@
             "main": [
                 [
                     {
-                        "node": "Fetch Products (RPC)",
+                        "node": "Check Pending Count",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "Fetch Products (RPC)": {
+        "Check Pending Count": {
+            "main": [
+                [
+                    {
+                        "node": "Has Pending?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Has Pending?": {
+            "main": [
+                [
+                    {
+                        "node": "Fetch Products (RPC, up to 50)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Fetch Products (RPC, up to 50)": {
             "main": [
                 [
                     {
@@ -191,40 +305,73 @@
             "main": [
                 [
                     {
-                        "node": "Build Chunk Text",
+                        "node": "Batch by 50",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "Build Chunk Text": {
+        "Batch by 50": {
             "main": [
                 [
                     {
-                        "node": "OpenAI Embeddings",
+                        "node": "Build Chunk Texts (batched)",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "OpenAI Embeddings": {
+        "Build Chunk Texts (batched)": {
             "main": [
                 [
                     {
-                        "node": "Reshape for Supabase",
+                        "node": "OpenAI Embeddings (batch)",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "Reshape for Supabase": {
+        "OpenAI Embeddings (batch)": {
             "main": [
                 [
                     {
-                        "node": "Upsert to Supabase",
+                        "node": "Reshape for Bulk Upsert",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Reshape for Bulk Upsert": {
+            "main": [
+                [
+                    {
+                        "node": "Bulk Upsert to Supabase",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Bulk Upsert to Supabase": {
+            "main": [
+                [
+                    {
+                        "node": "Loop to next batch",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Loop to next batch": {
+            "main": [
+                [
+                    {
+                        "node": "Batch by 50",
                         "type": "main",
                         "index": 0
                     }
@@ -235,7 +382,8 @@
     "settings": {
         "executionOrder": "v1",
         "saveExecutionProgress": true,
-        "timezone": "UTC"
+        "timezone": "UTC",
+        "errorWorkflow": "RAG_ERROR_HANDLER"
     },
     "staticData": null,
     "tags": [
@@ -244,6 +392,9 @@
         },
         {
             "name": "ingestion"
+        },
+        {
+            "name": "optimized"
         }
     ],
     "active": false
