@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import PublicLayout from "@/shared/layouts/PublicLayout";
@@ -96,8 +96,21 @@ const ARTICLES = [
   },
 ];
 
+import { getStrapiArticles, FALLBACK_ARTICLES, Article } from "@/services/strapiNewsService";
+
 export default function HomePage() {
   const [sliderIndex, setSliderIndex] = useState(0);
+  const [articles, setArticles] = useState<Article[]>(FALLBACK_ARTICLES);
+  const [isStrapiLoaded, setIsStrapiLoaded] = useState(false);
+
+  useEffect(() => {
+    getStrapiArticles().then((fetchedArticles) => {
+      if (fetchedArticles && fetchedArticles.length > 0) {
+        setArticles(fetchedArticles);
+        setIsStrapiLoaded(true);
+      }
+    });
+  }, []);
 
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat("vi-VN").format(val) + "đ";
@@ -450,20 +463,40 @@ export default function HomePage() {
         </section>
 
         {/* =========================================================================
-            SECTION 6: ARTICLES / STORIES THAT MOVE
+            SECTION 6: ARTICLES / STORIES THAT MOVE (POWERED BY STRAPI CMS)
            ========================================================================= */}
         <section className="w-full">
           <div className="w-[1920px] max-w-full mx-auto">
             {/* Header Title */}
-            <div className="p-8 lg:p-12 border-b border-black dark:border-zinc-800">
-              <h2 className="text-[36px] sm:text-[60px] lg:text-[96px] font-bold tracking-tight text-balance leading-none">
-                Stories that Move
-              </h2>
+            <div className="p-8 lg:p-12 border-b border-black dark:border-zinc-800 flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <span className="px-3 py-1 bg-[#623CEA] text-white text-xs font-bold uppercase tracking-wider">
+                    Strapi CMS API
+                  </span>
+                  {isStrapiLoaded && (
+                    <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs font-bold rounded">
+                      Live Sync
+                    </span>
+                  )}
+                </div>
+                <h2 className="text-[36px] sm:text-[60px] lg:text-[96px] font-bold tracking-tight text-balance leading-none">
+                  Stories that Move
+                </h2>
+              </div>
+
+              <Link
+                href="/news"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-black text-white dark:bg-white dark:text-black font-bold text-[18px] hover:bg-[#C5FA1F] hover:text-black transition-colors self-start md:self-auto"
+              >
+                Tất cả tin tức
+                <ArrowUpRight className="w-5 h-5" />
+              </Link>
             </div>
 
             {/* 3 Articles Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-black dark:divide-zinc-800">
-              {ARTICLES.map((article) => (
+            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-black dark:border-zinc-800">
+              {articles.slice(0, 3).map((article) => (
                 <div
                   key={article.id}
                   className="group bg-white dark:bg-zinc-900 flex flex-col justify-between p-8 lg:p-10 hover:bg-[#F9F9F9] dark:hover:bg-zinc-800/80 transition-colors"
@@ -479,9 +512,16 @@ export default function HomePage() {
                       />
                     </div>
 
-                    <span className="text-xs font-semibold text-zinc-400 uppercase tracking-widest block">
-                      {article.date}
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-zinc-400 uppercase tracking-widest block">
+                        {article.date}
+                      </span>
+                      {article.category && (
+                        <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 text-xs font-bold">
+                          {article.category}
+                        </span>
+                      )}
+                    </div>
 
                     <h3 className="text-[22px] lg:text-[26px] font-bold leading-tight group-hover:text-primary transition-colors">
                       {article.title}
