@@ -4,9 +4,10 @@ __pycache__/
 .venv/
 env/
 
-# SQL Batch & Migration Files
-scripts/batches/
-scripts/*.sql
+# Ignore scripts directory completely
+scripts/
+
+# Data migration & SQL files
 *.sql
 
 # Environment & Secrets
