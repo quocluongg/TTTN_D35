@@ -9,6 +9,7 @@ scripts/
 
 # Data migration & SQL files
 *.sql
+!backend/src/main/resources/db/migration/*.sql
 
 # Environment & Secrets
 .env
