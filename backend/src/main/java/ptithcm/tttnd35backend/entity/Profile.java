@@ -56,4 +56,10 @@ public class Profile extends BaseEntity {
     @Builder.Default
     @Column(name = "is_active")
     private boolean isActive = true;
+
+    // Đã xác thực email qua OTP hay chưa.
+    // Với Google/Facebook login: set true ngay lúc tạo, vì provider đã tự verify email rồi.
+    @Builder.Default
+    @Column(name = "email_verified")
+    private boolean emailVerified = false;
 }
