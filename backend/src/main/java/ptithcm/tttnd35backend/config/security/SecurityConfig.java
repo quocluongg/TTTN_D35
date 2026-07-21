@@ -29,8 +29,9 @@ import java.util.List;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
     @Value("${service.domain.frontend}")
-    private String FRONTEND_DOMAINS;
+    private String frontendDomains;
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
@@ -53,8 +54,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // TODO: thay "*" bằng domain thật của frontend ở .env(vd: https://electroshop.vercel.app)
-        config.setAllowedOriginPatterns(List.of(Arrays.asList(FRONTEND_DOMAINS.split(",")).toString()));
+
+        // Hỗ trợ nhiều domain trong .env, ví dụ:
+        // FRONTEND_DOMAIN=http://localhost:3000,https://electroshop.vercel.app
+        List<String> origins = StringUtils.hasText(frontendDomains)
+                ? Arrays.asList(frontendDomains.split(","))
+                : List.of("*");
+
+        config.setAllowedOriginPatterns(origins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true); // true vì refresh token nằm ở HttpOnly cookie
