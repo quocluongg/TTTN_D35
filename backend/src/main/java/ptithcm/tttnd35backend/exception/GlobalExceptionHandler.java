@@ -90,6 +90,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
+    @ExceptionHandler(OtpCooldownException.class)
+    public ResponseEntity<ApiResponse<?>> handleOtpCooldown(OtpCooldownException ex) {
+        return build(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());
+    }
+
     // ===== Auth: JWT / refresh token =====
     // Lỗi liên quan tới token -> luôn trả 401
 
