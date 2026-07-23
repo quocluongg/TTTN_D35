@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -36,20 +37,16 @@ public class JwtProvider {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
+        // jti (JWT ID) cho mỗi access token -> làm key cho Redis blacklist,
+        // vì access token là stateless, server không có cách "thu hồi" ngoài việc nhớ jti nào đã bị logout.
+        String jti = UUID.randomUUID().toString();
+
         return Jwts.builder()
+                .id(jti)
                 .subject(userDetails.getUsername())
                 .claim("roles", roles)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                .signWith(getKey())
-                .compact();
-    }
-
-    public String generateRefreshToken(UserDetails userDetails) {
-        return Jwts.builder()
-                .subject(userDetails.getUsername())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + refreshExpiration))
                 .signWith(getKey())
                 .compact();
     }
@@ -62,6 +59,10 @@ public class JwtProvider {
     // Nếu token hết hạn, hàm này ném ExpiredJwtException -> JwtAuthenticationFilter bắt
     public String extractUserName(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public String extractJti(String token) {
+        return extractClaim(token, Claims::getId);
     }
 
     public Date extractExpiration(String token) {
