@@ -4,23 +4,32 @@ import React, { useState } from "react";
 import Link from "next/link";
 import PublicLayout from "@/shared/layouts/PublicLayout";
 import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
+import { useForgotPassword } from "@/hooks/useAuth";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
-  const [isPending, setIsPending] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const { mutate: forgotPassword, isPending } = useForgotPassword();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
+    setErrorMsg("");
 
-    setIsPending(true);
-
-    // Simulate sending reset link
-    setTimeout(() => {
-      setIsPending(false);
-      setIsSubmitted(true);
-    }, 1000);
+    forgotPassword(email, {
+      onSuccess: () => {
+        setIsSubmitted(true);
+      },
+      onError: (err: any) => {
+        const msg =
+          err?.message ||
+          err?.response?.data?.message ||
+          "Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại.";
+        setErrorMsg(msg);
+      },
+    });
   };
 
   return (
@@ -43,7 +52,9 @@ export default function ForgotPasswordPage() {
               <CheckCircle2 className="w-12 h-12 text-[#1CCA00] mx-auto" />
               <h3 className="text-xl font-bold">Email Reset Đã Được Gửi</h3>
               <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                Chúng tôi đã gửi hướng dẫn khôi phục mật khẩu tới <span className="font-semibold text-black dark:text-white">{email}</span>. Vui lòng kiểm tra hộp thư đến của bạn.
+                Chúng tôi đã gửi hướng dẫn khôi phục mật khẩu tới{" "}
+                <span className="font-semibold text-black dark:text-white">{email}</span>.
+                Vui lòng kiểm tra hộp thư đến của bạn.
               </p>
               <Link
                 href="/login"
@@ -54,6 +65,12 @@ export default function ForgotPasswordPage() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
+              {errorMsg && (
+                <div className="p-4 bg-red-50 dark:bg-red-950/50 border border-[#E01715] text-[#E01715] dark:text-red-400 text-sm font-medium">
+                  {errorMsg}
+                </div>
+              )}
+
               {/* Email Input */}
               <div className="space-y-2">
                 <label className="block text-[18px] sm:text-[20px] font-medium">

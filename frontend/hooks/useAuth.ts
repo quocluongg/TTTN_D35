@@ -3,44 +3,45 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
-import { authService } from "@/services/authServices";
+import { authService, ApiResponse, TokenResponse, User } from "@/services/authServices";
 import { notifyError, notifySuccess } from "@/components/Notify";
 
-const CURRENT_USER_KEY = ["currentUser"];
+export const CURRENT_USER_KEY = ["currentUser"];
 
-// login hook
+// ─── Đăng nhập ────────────────────────────────────────────────────────────────
 export const useLogin = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: authService.login,
-    onSuccess: (data: any) => {
-      if (data?.token) {
-        // save token
-        Cookies.set("token", data.token, {
-          expires: 7,
-        });
+    onSuccess: (response: ApiResponse<TokenResponse>) => {
+      // http interceptor đã unwrap axios.response.data
+      // nên `response` ở đây là ApiResponse<TokenResponse>
+      const tokenData = response?.data;
 
-        // save basic info
+      if (tokenData?.accessToken) {
+        Cookies.set("token", tokenData.accessToken, { expires: 7 });
+      }
+
+      if (tokenData?.user) {
         Cookies.set(
           "user",
           JSON.stringify({
-            name: data.fullName || data.user?.fullName,
-            role: data.role || data.user?.role,
-            avatar: data.avatar || data.user?.avatar,
+            name: tokenData.user.fullName,
+            email: tokenData.user.email,
+            role: tokenData.user.role,
+            avatar: tokenData.user.avatarUrl,
           }),
           { expires: 7 }
         );
       }
 
-      // refresh cache
       queryClient.invalidateQueries({ queryKey: CURRENT_USER_KEY });
+      notifySuccess("Đăng nhập thành công!");
 
-      notifySuccess("Login successful.");
-
-      // redirect by role
-      if (data?.role === "admin" || data?.user?.role === "admin") {
+      const role = tokenData?.user?.role;
+      if (role === "ADMIN" || role === "admin") {
         router.push("/admin");
       } else {
         router.push("/");
@@ -48,23 +49,29 @@ export const useLogin = () => {
     },
     onError: (error: any) => {
       const message =
-        error?.response?.data?.message || "Invalid email or password.";
+        error?.message ||
+        error?.response?.data?.message ||
+        "Email hoặc mật khẩu không đúng. Vui lòng thử lại!";
       notifyError(message);
     },
   });
 };
 
-// register hook
+// ─── Đăng ký ──────────────────────────────────────────────────────────────────
 export const useRegister = () => {
   const router = useRouter();
+
   return useMutation({
     mutationFn: authService.register,
     onSuccess: () => {
-      notifySuccess("Registration successful! Please login.");
+      notifySuccess("Đăng ký thành công! Vui lòng đăng nhập.");
       router.push("/login");
     },
     onError: (error: any) => {
-      const message = error?.response?.data?.message || "Registration failed.";
+      const message =
+        error?.message ||
+        error?.response?.data?.message ||
+        "Đăng ký thất bại. Vui lòng thử lại!";
       notifyError(message);
     },
   });
@@ -72,34 +79,68 @@ export const useRegister = () => {
 
 export const useSignup = useRegister;
 
-
-// get current user hook
+// ─── Lấy thông tin user hiện tại ──────────────────────────────────────────────
 export const useCurrentUser = () => {
-  return useQuery({
+  return useQuery<User>({
     queryKey: CURRENT_USER_KEY,
     queryFn: authService.getMe,
-    // fetch only if token exists
     enabled: !!Cookies.get("token"),
     retry: false,
     staleTime: 5 * 60 * 1000,
   });
 };
 
-// logout hook
+// ─── Đăng xuất ────────────────────────────────────────────────────────────────
 export const useLogout = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
 
   return () => {
-    // remove cookies
+    // Gọi backend logout (fire-and-forget)
+    authService.logout().catch(() => {});
+
     Cookies.remove("token");
     Cookies.remove("user");
 
-    // clear cache
     queryClient.setQueryData(CURRENT_USER_KEY, null);
     queryClient.invalidateQueries({ queryKey: CURRENT_USER_KEY });
 
-    notifySuccess("Logged out successfully.");
+    notifySuccess("Đã đăng xuất thành công.");
     router.push("/login");
   };
+};
+
+// ─── Quên mật khẩu ────────────────────────────────────────────────────────────
+export const useForgotPassword = () => {
+  return useMutation({
+    mutationFn: (email: string) => authService.forgotPassword(email),
+    onError: (error: any) => {
+      const message =
+        error?.message ||
+        error?.response?.data?.message ||
+        "Không thể gửi email. Vui lòng kiểm tra lại địa chỉ email.";
+      notifyError(message);
+    },
+  });
+};
+
+// ─── Đặt lại mật khẩu ─────────────────────────────────────────────────────────
+export const useResetPassword = () => {
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: ({ token, newPassword }: { token: string; newPassword: string }) =>
+      authService.resetPassword(token, newPassword),
+    onSuccess: () => {
+      notifySuccess("Đặt lại mật khẩu thành công! Vui lòng đăng nhập.");
+      router.push("/login");
+    },
+    onError: (error: any) => {
+      const message =
+        error?.message ||
+        error?.response?.data?.message ||
+        "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.";
+      notifyError(message);
+    },
+  });
 };
