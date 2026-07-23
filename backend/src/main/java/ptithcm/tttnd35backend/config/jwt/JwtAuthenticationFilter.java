@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import ptithcm.tttnd35backend.config.security.UserDetailsServiceCustom;
+import ptithcm.tttnd35backend.service.ITokenBlacklistService;
 
 import java.io.IOException;
 
@@ -27,6 +28,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final UserDetailsServiceCustom userDetailServiceCustom;
     private final JwtProvider jwtProvider;
+    private final ITokenBlacklistService tokenBlacklistService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -35,6 +37,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (token != null) {
             try {
+                String jti = jwtProvider.extractJti(token);
+
+                if (jti != null && tokenBlacklistService.isBlacklisted(jti)) {
+                    // Access token nằm trong blacklist Redis -> coi như không hợp lệ,
+                    log.warn("Token bị từ chối vì đã nằm trong blacklist (jti={})", jti);
+                    request.setAttribute("exception", "TOKEN_REVOKED");
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
                 String username = jwtProvider.extractUserName(token);
 
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
