@@ -131,22 +131,23 @@ export default function HomePage() {
         {/* =========================================================================
             SECTION 1: HERO BANNER SECTION
            ========================================================================= */}
-        <section className="relative w-full border-b border-black dark:border-zinc-800 overflow-hidden cursor-pointer">
-          <Link href="/shop" className="block w-full h-full">
-            <div className="w-[1920px] max-w-full mx-auto min-h-[600px] md:min-h-[750px] lg:min-h-[850px] relative flex flex-col justify-end p-6 md:p-12 lg:p-16">
-              {/* Background Image */}
-              <div className="absolute inset-0 z-0">
-                <Image
-                  src="/figma/hero_bg.png"
-                  alt="ShopWise Hero Background"
-                  fill
-                  priority
-                  className="object-cover object-center"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
-              </div>
+        <section className="relative w-full border-b border-black dark:border-zinc-800 overflow-hidden">
+          <div className="w-[1920px] max-w-full mx-auto min-h-[600px] md:min-h-[750px] lg:min-h-[850px] relative flex flex-col justify-end p-6 md:p-12 lg:p-16">
+            {/* Background Image */}
+            <div className="absolute inset-0 z-0">
+              <Image
+                src="/figma/hero_bg.png"
+                alt="ShopWise Hero Background"
+                fill
+                priority
+                className="object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
             </div>
-          </Link>
+
+            {/* Clickable overlay link */}
+            <Link href="/shop" className="absolute inset-0 z-10 cursor-pointer" aria-label="Mua sắm ngay" />
+          </div>
         </section>
 
         {/* =========================================================================
