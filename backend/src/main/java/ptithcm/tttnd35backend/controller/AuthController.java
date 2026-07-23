@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ptithcm.tttnd35backend.dto.request.ForgotPasswordRequest;
 import ptithcm.tttnd35backend.dto.request.LoginRequest;
 import ptithcm.tttnd35backend.dto.request.RegisterRequest;
 import ptithcm.tttnd35backend.dto.request.ResendOtpRequest;
+import ptithcm.tttnd35backend.dto.request.ResetPasswordRequest;
 import ptithcm.tttnd35backend.dto.request.VerifyOtpRequest;
 import ptithcm.tttnd35backend.dto.response.ApiResponse;
 import ptithcm.tttnd35backend.dto.response.AuthResult;
@@ -110,6 +112,26 @@ public class AuthController {
             return forwardedFor.split(",")[0].trim();
         }
         return request.getRemoteAddr();
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<?>> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {
+        authService.forgotPassword(request.getEmail());
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Nếu email tồn tại trong hệ thống, mã xác thực đã được gửi tới hộp thư")
+                .timestamp(LocalDateTime.now())
+                .build());
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<?>> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Đặt lại mật khẩu thành công, vui lòng đăng nhập lại")
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @PostMapping("/token/refresh")
