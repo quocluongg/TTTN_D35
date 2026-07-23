@@ -25,6 +25,7 @@ import {
   Search as SearchIcon,
   ShoppingBag,
   X,
+  Sparkles,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -93,6 +94,12 @@ export function Navbar() {
         {/* Item 2: Cửa hàng */}
         <Link href="/shop" className="text-black dark:text-white hover:opacity-75 transition-opacity">
           Cửa hàng
+        </Link>
+
+        {/* Item 2.5: Trợ lý AI */}
+        <Link href="/ai" className="text-black dark:text-white hover:opacity-75 transition-opacity flex items-center gap-1.5">
+          <Sparkles className="w-4 h-4 text-lime-500 fill-lime-500/10" />
+          <span>Trợ lý AI</span>
         </Link>
 
         {/* Item 3: Tin tức */}
@@ -266,6 +273,10 @@ export function Navbar() {
               <div className="flex flex-col space-y-6 mt-8">
                 <nav className="flex flex-col space-y-4 text-xl font-medium">
                   <Link href="/shop" className="hover:opacity-70 py-1">Cửa hàng</Link>
+                  <Link href="/ai" className="hover:opacity-70 py-1 flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-lime-500 fill-lime-500/10" />
+                    <span>Trợ lý AI</span>
+                  </Link>
                   <Link href="/news" className="hover:opacity-70 py-1">Tin tức</Link>
                   <Link href="/about" className="hover:opacity-70 py-1">Về chúng tôi</Link>
                   <Link href="/search" className="hover:opacity-70 py-1">Tìm kiếm</Link>
