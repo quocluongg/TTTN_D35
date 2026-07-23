@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -27,8 +28,23 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity // bật @PreAuthorize/@PostAuthorize trên method
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+    // Endpoint không yêu cầu đăng nhập (Không cần Access Token).
+    private static final String[] PUBLIC_ENDPOINTS = {
+            "/auth/register",
+            "/auth/verify-otp",
+            "/auth/resend-otp",
+            "/auth/login",
+            "/auth/token/refresh",
+            "/auth/forgot-password",
+            "/auth/reset-password",
+            "/auth/google-login",
+            "/swagger-ui/**",
+            "/v3/api-docs/**"
+    };
 
     @Value("${service.domain.frontend}")
     private String frontendDomains;
@@ -81,9 +97,8 @@ public class SecurityConfig {
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
-                        // TODO: giai đoạn sau sẽ đổi permitAll() thành danh sách endpoint public
-                        // cụ thể (/auth/**, /swagger-ui/**, /v3/api-docs/**...), còn lại requireAuth
-                        .anyRequest().permitAll()
+                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
