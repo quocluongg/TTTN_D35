@@ -90,6 +90,22 @@ export function Navbar() {
           </svg>
         </Link>
 
+        {/* Item 2: Cửa hàng */}
+        <Link href="/shop" className="text-black dark:text-white hover:opacity-75 transition-opacity">
+          Cửa hàng
+        </Link>
+
+        {/* Item 3: Tin tức */}
+        <Link href="/news" className="text-black dark:text-white hover:opacity-75 transition-opacity">
+          Tin tức
+        </Link>
+
+        {/* Item 4: Về chúng tôi */}
+        <Link href="/about" className="text-black dark:text-white hover:opacity-75 transition-opacity">
+          Về chúng tôi
+        </Link>
+
+        {/* Item 5: Tìm kiếm */}
         {isSearchOpen ? (
           <div className="relative flex items-center bg-white dark:bg-zinc-800 border border-black dark:border-zinc-700 px-4 py-1.5 w-[320px] rounded-full transition-all duration-300 animate-in fade-in zoom-in-95 duration-200">
             <SearchIcon className="w-4 h-4 text-zinc-500 mr-2 shrink-0" />
@@ -112,31 +128,13 @@ export function Navbar() {
             </button>
           </div>
         ) : (
-          <>
-            {/* Item 2: Cửa hàng */}
-            <Link href="/shop" className="text-black dark:text-white hover:opacity-75 transition-opacity">
-              Cửa hàng
-            </Link>
-
-            {/* Item 3: Tin tức */}
-            <Link href="/news" className="text-black dark:text-white hover:opacity-75 transition-opacity">
-              Tin tức
-            </Link>
-
-            {/* Item 4: Về chúng tôi */}
-            <Link href="/about" className="text-black dark:text-white hover:opacity-75 transition-opacity">
-              Về chúng tôi
-            </Link>
-
-            {/* Item 5: Tìm kiếm */}
-            <button
-              onClick={() => setIsSearchOpen(true)}
-              className="text-black dark:text-white hover:opacity-75 transition-opacity cursor-pointer focus:outline-none flex items-center gap-2"
-            >
-              <SearchIcon className="w-5 h-5 shrink-0" />
-              <span>Tìm kiếm</span>
-            </button>
-          </>
+          <button
+            onClick={() => setIsSearchOpen(true)}
+            className="text-black dark:text-white hover:opacity-75 transition-opacity cursor-pointer focus:outline-none flex items-center gap-2"
+          >
+            <SearchIcon className="w-5 h-5 shrink-0" />
+            <span>Tìm kiếm</span>
+          </button>
         )}
 
         {/* Item 6: Đăng nhập / User Dropdown */}
