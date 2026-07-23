@@ -5,8 +5,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ptithcm.tttnd35backend.dto.request.RegisterRequest;
+import ptithcm.tttnd35backend.dto.request.VerifyOtpRequest;
 import ptithcm.tttnd35backend.entity.Profile;
 import ptithcm.tttnd35backend.entity.Role;
+import ptithcm.tttnd35backend.exception.BadRequestException;
 import ptithcm.tttnd35backend.exception.DuplicateResourceException;
 import ptithcm.tttnd35backend.exception.ResourceNotFoundException;
 import ptithcm.tttnd35backend.repository.IProfileRepository;
@@ -48,6 +50,35 @@ public class AuthServiceImpl implements IAuthService {
                 .build();
 
         profile = profileRepository.save(profile);
+
+        otpService.generateAndSend(profile, OtpPurpose.REGISTER);
+    }
+
+    @Override
+    @Transactional
+    public void verifyOtp(VerifyOtpRequest request) {
+        Profile profile = profileRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản với email này"));
+
+        if (profile.isEmailVerified()) {
+            throw new BadRequestException("Email này đã được xác thực trước đó");
+        }
+
+        otpService.verify(profile, request.getOtp(), OtpPurpose.REGISTER);
+
+        profile.setEmailVerified(true);
+        profileRepository.save(profile);
+    }
+
+    @Override
+    @Transactional
+    public void resendRegisterOtp(String email) {
+        Profile profile = profileRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản với email này"));
+
+        if (profile.isEmailVerified()) {
+            throw new BadRequestException("Email này đã được xác thực trước đó");
+        }
 
         otpService.generateAndSend(profile, OtpPurpose.REGISTER);
     }
