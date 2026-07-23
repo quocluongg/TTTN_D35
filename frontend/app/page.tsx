@@ -131,37 +131,22 @@ export default function HomePage() {
         {/* =========================================================================
             SECTION 1: HERO BANNER SECTION
            ========================================================================= */}
-        <section className="relative w-full border-b border-black dark:border-zinc-800 overflow-hidden">
-          <div className="w-[1920px] max-w-full mx-auto min-h-[600px] md:min-h-[750px] lg:min-h-[850px] relative flex flex-col justify-end p-6 md:p-12 lg:p-16">
-            {/* Background Image */}
-            <div className="absolute inset-0 z-0">
-              <Image
-                src="/figma/hero_bg.png"
-                alt="ShopWise Hero Background"
-                fill
-                priority
-                className="object-cover object-center"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-            </div>
-
-            {/* Content Container */}
-            <div className="relative z-10 max-w-5xl space-y-6 text-white pb-6">
-              <h1 className="text-[36px] sm:text-[60px] md:text-[80px] lg:text-[110px] xl:text-[128px] font-bold leading-[0.95] tracking-tight text-balance">
-                Tìm kiếm công nghệ tuyệt vời, có sự hỗ trợ của AI!
-              </h1>
-
-              <div>
-                <Link
-                  href="/shop"
-                  className="inline-flex items-center gap-3 px-8 py-4 bg-[#F2F2F2] text-black border border-black text-[20px] md:text-[24px] font-semibold hover:bg-black hover:text-white hover:border-white transition-all cursor-pointer shadow-lg"
-                >
-                  Mua thôi
-                  <ArrowUpRight className="w-6 h-6" />
-                </Link>
+        <section className="relative w-full border-b border-black dark:border-zinc-800 overflow-hidden cursor-pointer">
+          <Link href="/shop" className="block w-full h-full">
+            <div className="w-[1920px] max-w-full mx-auto min-h-[600px] md:min-h-[750px] lg:min-h-[850px] relative flex flex-col justify-end p-6 md:p-12 lg:p-16">
+              {/* Background Image */}
+              <div className="absolute inset-0 z-0">
+                <Image
+                  src="/figma/hero_bg.png"
+                  alt="ShopWise Hero Background"
+                  fill
+                  priority
+                  className="object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
               </div>
             </div>
-          </div>
+          </Link>
         </section>
 
         {/* =========================================================================
@@ -308,44 +293,32 @@ export default function HomePage() {
             {/* Row 1: 2 Cards (Làm việc & Gaming) */}
             <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-black dark:divide-zinc-800 border-b border-black dark:border-zinc-800">
               {/* Card 1: Làm việc */}
-              <div className="relative group aspect-[16/10] overflow-hidden bg-white dark:bg-zinc-900 p-8 flex flex-col justify-end">
+              <Link 
+                href="/shop?use_case=L%C3%A0m%20vi%E1%BB%87c" 
+                className="relative group aspect-[16/10] overflow-hidden bg-white dark:bg-zinc-900 p-8 flex flex-col justify-end cursor-pointer"
+              >
                 <Image
                   src="/figma/work_sec4.png"
                   alt="Làm việc"
                   fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  className="object-cover group-hover:scale-102 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                <div className="relative z-10">
-                  <Link
-                    href="/shop?use_case=work"
-                    className="inline-flex items-center gap-3 px-8 py-4 bg-[#F2F2F2] text-black border border-black text-[20px] lg:text-[24px] font-semibold hover:bg-black hover:text-white transition-colors shadow-md"
-                  >
-                    Làm việc
-                    <ArrowUpRight className="w-6 h-6" />
-                  </Link>
-                </div>
-              </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+              </Link>
 
               {/* Card 2: Gaming */}
-              <div className="relative group aspect-[16/10] overflow-hidden bg-white dark:bg-zinc-900 p-8 flex flex-col justify-end">
+              <Link 
+                href="/shop?use_case=Gaming" 
+                className="relative group aspect-[16/10] overflow-hidden bg-white dark:bg-zinc-900 p-8 flex flex-col justify-end cursor-pointer"
+              >
                 <Image
                   src="/figma/gaming_sec4.png"
                   alt="Gaming"
                   fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  className="object-cover group-hover:scale-102 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                <div className="relative z-10">
-                  <Link
-                    href="/shop?use_case=gaming"
-                    className="inline-flex items-center gap-3 px-8 py-4 bg-[#F2F2F2] text-black border border-black text-[20px] lg:text-[24px] font-semibold hover:bg-black hover:text-white transition-colors shadow-md"
-                  >
-                    Gaming
-                    <ArrowUpRight className="w-6 h-6" />
-                  </Link>
-                </div>
-              </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+              </Link>
             </div>
 
             {/* Row 2: Image Card + High Impact Copywriting Card */}
