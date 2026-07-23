@@ -19,17 +19,20 @@ import ptithcm.tttnd35backend.entity.Role;
 import ptithcm.tttnd35backend.exception.AccountNotVerifiedException;
 import ptithcm.tttnd35backend.exception.BadRequestException;
 import ptithcm.tttnd35backend.exception.DuplicateResourceException;
+import ptithcm.tttnd35backend.exception.InvalidRefreshTokenException;
 import ptithcm.tttnd35backend.exception.ResourceNotFoundException;
 import ptithcm.tttnd35backend.repository.IProfileRepository;
 import ptithcm.tttnd35backend.repository.IRefreshTokenRepository;
 import ptithcm.tttnd35backend.repository.IRoleRepository;
 import ptithcm.tttnd35backend.service.IAuthService;
+import ptithcm.tttnd35backend.service.ITokenBlacklistService;
 import ptithcm.tttnd35backend.util.enums.AuthProvider;
 import ptithcm.tttnd35backend.util.enums.OtpPurpose;
 import ptithcm.tttnd35backend.util.helper.TokenHasher;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +46,7 @@ public class AuthServiceImpl implements IAuthService {
     private final PasswordEncoder passwordEncoder;
     private final OtpServiceImpl otpService;
     private final JwtProvider jwtProvider;
+    private final ITokenBlacklistService tokenBlacklistService;
 
     @Value("${service.jwt.refresh-expiration}")
     private long refreshExpirationMs;
@@ -145,5 +149,80 @@ public class AuthServiceImpl implements IAuthService {
                 .rawRefreshToken(rawRefreshToken)
                 .refreshExpirationMs(refreshExpirationMs)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public AuthResult refreshToken(String rawRefreshToken, String deviceInfo, String ipAddress) {
+        String tokenHash = TokenHasher.sha256(rawRefreshToken);
+
+        RefreshToken oldToken = refreshTokenRepository.findByTokenHash(tokenHash)
+                .orElseThrow(() -> new InvalidRefreshTokenException("Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại"));
+
+        Profile profile = oldToken.getProfile();
+
+        if (oldToken.isRevoked()) {
+            // Token đã bị revoke  mà vẫn dùng lại -> dấu hiệu bị đánh cắp -> revoke luôn TOÀN BỘ phiên đăng nhập khác của user này
+            refreshTokenRepository.revokeAllActiveByProfileId(profile.getId());
+            throw new InvalidRefreshTokenException("Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại");
+        }
+
+        if (oldToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new InvalidRefreshTokenException("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại");
+        }
+
+        // Rotation: revoke token cũ, cấp token mới hoàn toàn
+        oldToken.setRevoked(true);
+        refreshTokenRepository.save(oldToken);
+
+        UserPrincipal principal = new UserPrincipal(profile);
+        String newAccessToken = jwtProvider.generateToken(principal);
+
+        String newRawRefreshToken = TokenHasher.generateRawToken();
+        RefreshToken newToken = RefreshToken.builder()
+                .profile(profile)
+                .tokenHash(TokenHasher.sha256(newRawRefreshToken))
+                .deviceInfo(deviceInfo)
+                .ipAddress(ipAddress)
+                .expiresAt(LocalDateTime.now().plus(refreshExpirationMs, ChronoUnit.MILLIS))
+                .revoked(false)
+                .build();
+        refreshTokenRepository.save(newToken);
+
+        TokenResponse tokenResponse = TokenResponse.builder()
+                .accessToken(newAccessToken)
+                .tokenType("Bearer")
+                .expiresIn(jwtProvider.getJwtExpiration() / 1000)
+                .build();
+
+        return AuthResult.builder()
+                .tokenResponse(tokenResponse)
+                .rawRefreshToken(newRawRefreshToken)
+                .refreshExpirationMs(refreshExpirationMs)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public void logout(String rawRefreshToken, String accessToken) {
+        if (rawRefreshToken != null) {
+            refreshTokenRepository.findByTokenHash(TokenHasher.sha256(rawRefreshToken))
+                    .ifPresent(token -> {
+                        token.setRevoked(true);
+                        refreshTokenRepository.save(token);
+                    });
+        }
+
+        if (accessToken != null) {
+            try {
+                String jti = jwtProvider.extractJti(accessToken);
+                Date expiration = jwtProvider.extractExpiration(accessToken);
+                long remainingSeconds = (expiration.getTime() - System.currentTimeMillis()) / 1000;
+                tokenBlacklistService.blacklist(jti, remainingSeconds);
+            } catch (Exception ex) {
+                // Access token không hợp lệ/đã hết hạn sẵn -> không cần blacklist, bỏ qua êm
+                // (logout không nên fail chỉ vì access token có vấn đề, refresh token mới là cái quan trọng)
+            }
+        }
     }
 }

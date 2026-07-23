@@ -29,8 +29,22 @@ public interface IAuthService {
 
     /**
      * Đăng nhập bằng email/password. Kiểm tra is_active, email_verified, mật khẩu đúng,
-     * sinh access token (JWT) + refresh token (random string, hash lưu DB)
-     * lưu phiên đăng nhập (device_info/ip_address) để phục vụ thu hồi từng thiết bị sau này.
+     * sinh access token (JWT) + refresh token (random string, hash lưu DB), lưu phiên đăng nhập
+     * (device_info/ip_address) để phục vụ thu hồi từng thiết bị sau này.
      */
     AuthResult login(LoginRequest request, String deviceInfo, String ipAddress);
+
+    /**
+     * Cấp access token + refresh token mới từ 1 refresh token còn hiệu lực (rotation:
+     * token cũ bị revoke ngay). Nếu raw token đưa vào trỏ tới 1 bản ghi ĐÃ revoked từ trước
+     * (nghĩa là có người dùng lại token cũ đã bị thay thế) -> coi là dấu hiệu bị đánh cắp,
+     * revoke luôn toàn bộ phiên đăng nhập khác của user, ném lỗi bắt đăng nhập lại.
+     */
+    AuthResult refreshToken(String rawRefreshToken, String deviceInfo, String ipAddress);
+
+    /**
+     * Đăng xuất: revoke refresh token hiện tại + đưa access token hiện tại vào blacklist Redis
+     * (vì access token là JWT stateless, không "xóa" được, chỉ có thể đánh dấu không hợp lệ trước hạn).
+     */
+    void logout(String rawRefreshToken, String accessToken);
 }
