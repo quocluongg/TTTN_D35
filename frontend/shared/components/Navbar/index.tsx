@@ -91,12 +91,12 @@ export function Navbar() {
         </Link>
 
         {isSearchOpen ? (
-          <div className="flex items-center gap-2 border-b border-black dark:border-white py-1 w-[400px] transition-all duration-300">
-            <SearchIcon className="w-5 h-5 text-zinc-500" />
+          <div className="relative flex items-center bg-white dark:bg-zinc-800 border border-black dark:border-zinc-700 px-4 py-1.5 w-[320px] rounded-full transition-all duration-300 animate-in fade-in zoom-in-95 duration-200">
+            <SearchIcon className="w-4 h-4 text-zinc-500 mr-2 shrink-0" />
             <input
               type="text"
               placeholder="Tìm kiếm sản phẩm..."
-              className="bg-transparent border-none outline-hidden text-[18px] w-full text-black dark:text-white"
+              className="bg-transparent border-none outline-none text-[15px] font-normal w-full text-black dark:text-white placeholder-zinc-400"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -106,9 +106,9 @@ export function Navbar() {
             />
             <button
               onClick={() => setIsSearchOpen(false)}
-              className="cursor-pointer text-zinc-500 hover:text-black dark:hover:text-white"
+              className="cursor-pointer text-zinc-400 hover:text-black dark:hover:text-white transition-colors ml-1 shrink-0"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         ) : (
@@ -133,7 +133,8 @@ export function Navbar() {
               onClick={() => setIsSearchOpen(true)}
               className="text-black dark:text-white hover:opacity-75 transition-opacity cursor-pointer focus:outline-none flex items-center gap-2"
             >
-              Tìm kiếm
+              <SearchIcon className="w-5 h-5 shrink-0" />
+              <span>Tìm kiếm</span>
             </button>
           </>
         )}
