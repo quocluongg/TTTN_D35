@@ -24,6 +24,7 @@ import {
   Menu,
   Search as SearchIcon,
   ShoppingBag,
+  X,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -37,6 +38,7 @@ export function Navbar() {
 
   // Scroll-hide animation logic
   const [isVisible, setIsVisible] = useState(true);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
 
@@ -88,25 +90,53 @@ export function Navbar() {
           </svg>
         </Link>
 
-        {/* Item 2: Cửa hàng */}
-        <Link href="/shop" className="text-black dark:text-white hover:opacity-75 transition-opacity">
-          Cửa hàng
-        </Link>
+        {isSearchOpen ? (
+          <div className="flex items-center gap-2 border-b border-black dark:border-white py-1 w-[400px] transition-all duration-300">
+            <SearchIcon className="w-5 h-5 text-zinc-500" />
+            <input
+              type="text"
+              placeholder="Tìm kiếm sản phẩm..."
+              className="bg-transparent border-none outline-hidden text-[18px] w-full text-black dark:text-white"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  window.location.href = `/shop?search=${encodeURIComponent(e.currentTarget.value)}`;
+                }
+              }}
+            />
+            <button
+              onClick={() => setIsSearchOpen(false)}
+              className="cursor-pointer text-zinc-500 hover:text-black dark:hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Item 2: Cửa hàng */}
+            <Link href="/shop" className="text-black dark:text-white hover:opacity-75 transition-opacity">
+              Cửa hàng
+            </Link>
 
-        {/* Item 3: Tin tức */}
-        <Link href="/news" className="text-black dark:text-white hover:opacity-75 transition-opacity">
-          Tin tức
-        </Link>
+            {/* Item 3: Tin tức */}
+            <Link href="/news" className="text-black dark:text-white hover:opacity-75 transition-opacity">
+              Tin tức
+            </Link>
 
-        {/* Item 4: Về chúng tôi */}
-        <Link href="/about" className="text-black dark:text-white hover:opacity-75 transition-opacity">
-          Về chúng tôi
-        </Link>
+            {/* Item 4: Về chúng tôi */}
+            <Link href="/about" className="text-black dark:text-white hover:opacity-75 transition-opacity">
+              Về chúng tôi
+            </Link>
 
-        {/* Item 5: Tìm kiếm */}
-        <button className="text-black dark:text-white hover:opacity-75 transition-opacity cursor-pointer focus:outline-none flex items-center gap-2">
-          Tìm kiếm
-        </button>
+            {/* Item 5: Tìm kiếm */}
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="text-black dark:text-white hover:opacity-75 transition-opacity cursor-pointer focus:outline-none flex items-center gap-2"
+            >
+              Tìm kiếm
+            </button>
+          </>
+        )}
 
         {/* Item 6: Đăng nhập / User Dropdown */}
         <div className="flex items-center">

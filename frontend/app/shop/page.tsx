@@ -13,16 +13,23 @@ function ShopContent() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get("category") || "Tất cả";
   const initialUseCase = searchParams.get("use_case") || "";
+  const initialSearch = searchParams.get("search") || "";
 
   // State Management
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [sortBy, setSortBy] = useState<string>("featured");
   const [selectedUseCases, setSelectedUseCases] = useState<string[]>(initialUseCase ? [initialUseCase] : []);
   const [maxPrice, setMaxPrice] = useState<number>(200000000);
+  const [searchQuery, setSearchQuery] = useState<string>(initialSearch);
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>(["Tất cả", "Điện thoại", "Máy tính", "Phụ kiện"]);
   const [loading, setLoading] = useState<boolean>(true);
+
+  // Sync search query from URL changes
+  useEffect(() => {
+    setSearchQuery(searchParams.get("search") || "");
+  }, [searchParams]);
 
   // Fetch categories on mount
   useEffect(() => {
@@ -47,7 +54,8 @@ function ShopContent() {
         category: selectedCategory,
         use_case: selectedUseCases,
         max_price: maxPrice,
-        sort_by: sortBy
+        sort_by: sortBy,
+        search: searchQuery
       })
       .then((res) => {
         if (isMounted && res.success && res.data) {
@@ -64,7 +72,7 @@ function ShopContent() {
       isMounted = false;
       clearTimeout(delayDebounce);
     };
-  }, [selectedCategory, selectedUseCases, maxPrice, sortBy]);
+  }, [selectedCategory, selectedUseCases, maxPrice, sortBy, searchQuery]);
 
   // Handle Checkbox for Use Cases
   const toggleUseCase = (useCase: string) => {

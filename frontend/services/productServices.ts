@@ -22,6 +22,7 @@ export interface GetProductsParams {
   use_case?: string[];
   max_price?: number;
   sort_by?: string;
+  search?: string;
 }
 
 export const productService = {
@@ -39,6 +40,9 @@ export const productService = {
       }
       if (params.sort_by) {
         queryParams.sort_by = params.sort_by;
+      }
+      if (params.search) {
+        queryParams.search = params.search;
       }
     }
     return http.get("/products", { params: queryParams });

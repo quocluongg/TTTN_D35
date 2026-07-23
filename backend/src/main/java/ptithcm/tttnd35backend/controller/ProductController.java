@@ -23,9 +23,10 @@ public class ProductController {
             @RequestParam(value = "category", required = false) String category,
             @RequestParam(value = "use_case", required = false) List<String> useCases,
             @RequestParam(value = "max_price", required = false) Long maxPrice,
-            @RequestParam(value = "sort_by", required = false) String sortBy
+            @RequestParam(value = "sort_by", required = false) String sortBy,
+            @RequestParam(value = "search", required = false) String search
     ) {
-        List<ProductResponse> products = productService.getProducts(category, useCases, maxPrice, sortBy);
+        List<ProductResponse> products = productService.getProducts(category, useCases, maxPrice, sortBy, search);
         return ResponseEntity.ok(ApiResponse.<List<ProductResponse>>builder()
                 .success(true)
                 .message("Lấy danh sách sản phẩm thành công")

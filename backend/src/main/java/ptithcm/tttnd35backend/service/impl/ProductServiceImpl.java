@@ -29,7 +29,7 @@ public class ProductServiceImpl implements IProductService {
     private final ICategoryRepository categoryRepository;
 
     @Override
-    public List<ProductResponse> getProducts(String category, List<String> useCases, Long maxPrice, String sortBy) {
+    public List<ProductResponse> getProducts(String category, List<String> useCases, Long maxPrice, String sortBy, String search) {
         Specification<Product> spec = (root, query, criteriaBuilder) -> {
             // Prevent duplicate products from joins
             query.distinct(true);
@@ -85,6 +85,11 @@ public class ProductServiceImpl implements IProductService {
                     }
                 }
                 predicates.add(criteriaBuilder.or(useCasePredicates.toArray(new Predicate[0])));
+            }
+
+            // 4. Filter by search keyword
+            if (search != null && !search.trim().isEmpty()) {
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + search.trim().toLowerCase() + "%"));
             }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));

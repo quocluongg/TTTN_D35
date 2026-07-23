@@ -9,7 +9,8 @@ public interface IProductService {
             String category,
             List<String> useCases,
             Long maxPrice,
-            String sortBy
+            String sortBy,
+            String search
     );
 
     List<String> getAllCategoryNames();
