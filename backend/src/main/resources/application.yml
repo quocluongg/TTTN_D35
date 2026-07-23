@@ -50,6 +50,8 @@ service:
     refresh-expiration: ${JWT_REFRESH_EXPIRATION}
   domain:
     frontend: ${FRONTEND_DOMAIN}
+  cookie:
+    secure: ${COOKIE_SECURE:false}
   mail:
     from: ${MAIL_FROM}
   otp:
