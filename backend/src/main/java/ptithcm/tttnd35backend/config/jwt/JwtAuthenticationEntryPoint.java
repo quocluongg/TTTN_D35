@@ -33,6 +33,8 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         String message;
         if ("EXPIRED_TOKEN".equals(exceptionDetail)) {
             message = "Token đã hết hạn, vui lòng đăng nhập lại";
+        } else if ("TOKEN_REVOKED".equals(exceptionDetail)) {
+            message = "Token đã bị thu hồi (đã đăng xuất), vui lòng đăng nhập lại";
         } else if ("MALFORMED_TOKEN".equals(exceptionDetail) || "UNSUPPORTED_TOKEN".equals(exceptionDetail)) {
             message = "Token không đúng định dạng hoặc chữ ký sai";
         } else if ("ILLEGAL_ARGUMENT_TOKEN".equals(exceptionDetail)) {
