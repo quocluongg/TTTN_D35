@@ -2,6 +2,7 @@ package ptithcm.tttnd35backend.service;
 
 import ptithcm.tttnd35backend.dto.request.LoginRequest;
 import ptithcm.tttnd35backend.dto.request.RegisterRequest;
+import ptithcm.tttnd35backend.dto.request.ResetPasswordRequest;
 import ptithcm.tttnd35backend.dto.request.VerifyOtpRequest;
 import ptithcm.tttnd35backend.dto.response.AuthResult;
 
@@ -47,4 +48,16 @@ public interface IAuthService {
      * (vì access token là JWT stateless, không "xóa" được, chỉ có thể đánh dấu không hợp lệ trước hạn).
      */
     void logout(String rawRefreshToken, String accessToken);
+
+    /**
+     * Gửi OTP đặt lại mật khẩu. KHÔNG báo lỗi nếu email không tồn tại
+     * hoặc là tài khoản Google/Facebook (không có password_hash để reset)
+     */
+    void forgotPassword(String email);
+
+    /**
+     * Xác thực OTP (purpose RESET_PASSWORD) rồi đổi mật khẩu mới.
+     * Revoke toàn bộ refresh token cũ sau khi đổi mật khẩu (ép đăng nhập lại mọi thiết bị),
+     */
+    void resetPassword(ResetPasswordRequest request);
 }

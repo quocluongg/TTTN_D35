@@ -10,6 +10,7 @@ import ptithcm.tttnd35backend.config.jwt.JwtProvider;
 import ptithcm.tttnd35backend.config.security.UserPrincipal;
 import ptithcm.tttnd35backend.dto.request.LoginRequest;
 import ptithcm.tttnd35backend.dto.request.RegisterRequest;
+import ptithcm.tttnd35backend.dto.request.ResetPasswordRequest;
 import ptithcm.tttnd35backend.dto.request.VerifyOtpRequest;
 import ptithcm.tttnd35backend.dto.response.AuthResult;
 import ptithcm.tttnd35backend.dto.response.TokenResponse;
@@ -224,5 +225,30 @@ public class AuthServiceImpl implements IAuthService {
                 // (logout không nên fail chỉ vì access token có vấn đề, refresh token mới là cái quan trọng)
             }
         }
+    }
+
+    @Override
+    @Transactional
+    public void forgotPassword(String email) {
+        profileRepository.findByEmail(email)
+                .filter(profile -> profile.getAuthProvider() == AuthProvider.LOCAL)
+                .ifPresent(profile -> otpService.generateAndSend(profile, OtpPurpose.RESET_PASSWORD));
+        // Không throw gì nếu không tìm thấy / không phải tài khoản LOCAL
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        Profile profile = profileRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản với email này"));
+
+        otpService.verify(profile, request.getOtp(), OtpPurpose.RESET_PASSWORD);
+
+        profile.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        profileRepository.save(profile);
+
+        // Mật khẩu cũ có thể đã bị lộ (lý do user request đổi mật khẩu)
+        // -> revoke toàn bộ phiên đăng nhập hiện có, ép đăng nhập lại trên mọi thiết bị.
+        refreshTokenRepository.revokeAllActiveByProfileId(profile.getId());
     }
 }
