@@ -65,21 +65,6 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Listen for Escape key and Cmd+K / Ctrl+K shortcut
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setIsSearchOpen(false);
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        setIsSearchOpen(true);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
   return (
     <nav
       className={[
@@ -298,75 +283,6 @@ export function Navbar() {
           </Sheet>
         </div>
       </div>
-
-      {/* SEARCH MODAL (CMD+K STYLE) */}
-      {isSearchOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[100] flex items-start justify-center pt-[15vh] p-4 cursor-default animate-in fade-in duration-200"
-          onClick={() => setIsSearchOpen(false)}
-        >
-          <div
-            className="bg-[#F2F2F2] dark:bg-zinc-950 border border-black dark:border-zinc-800 w-[600px] max-w-full shadow-2xl rounded-none animate-in fade-in zoom-in-95 duration-200 overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex items-center gap-3 px-6 py-5 border-b border-black dark:border-zinc-800">
-              <SearchIcon className="w-5 h-5 text-zinc-500 shrink-0" />
-              <input
-                type="text"
-                placeholder="Nhập tên sản phẩm để tìm kiếm..."
-                className="bg-transparent border-none outline-none text-[18px] w-full text-black dark:text-white placeholder-zinc-400 font-normal"
-                autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    window.location.href = `/shop?search=${encodeURIComponent(e.currentTarget.value)}`;
-                  }
-                }}
-              />
-              <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded-none border border-black/25 dark:border-white/25 px-1.5 font-mono text-[10px] font-medium text-zinc-400 opacity-100 shrink-0">
-                ESC
-              </kbd>
-            </div>
-
-            {/* Quick Suggestions */}
-            <div className="p-6 space-y-4 text-sm text-zinc-500">
-              <div className="font-bold text-zinc-400 uppercase tracking-wider text-xs">
-                Tìm kiếm nhanh
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-black dark:text-white">
-                <Link
-                  href="/shop?search=iPhone"
-                  onClick={() => setIsSearchOpen(false)}
-                  className="p-3 bg-white dark:bg-zinc-900 border border-black dark:border-zinc-800 hover:bg-[#C5FA1F] hover:text-black dark:hover:bg-[#C5FA1F] dark:hover:text-black transition-colors font-semibold"
-                >
-                  iPhone
-                </Link>
-                <Link
-                  href="/shop?search=Laptop"
-                  onClick={() => setIsSearchOpen(false)}
-                  className="p-3 bg-white dark:bg-zinc-900 border border-black dark:border-zinc-800 hover:bg-[#C5FA1F] hover:text-black dark:hover:bg-[#C5FA1F] dark:hover:text-black transition-colors font-semibold"
-                >
-                  Laptop
-                </Link>
-                <Link
-                  href="/shop?search=Tai%20nghe"
-                  onClick={() => setIsSearchOpen(false)}
-                  className="p-3 bg-white dark:bg-zinc-900 border border-black dark:border-zinc-800 hover:bg-[#C5FA1F] hover:text-black dark:hover:bg-[#C5FA1F] dark:hover:text-black transition-colors font-semibold"
-                >
-                  Tai nghe
-                </Link>
-                <Link
-                  href="/shop?search=Ốp%20lưng"
-                  onClick={() => setIsSearchOpen(false)}
-                  className="p-3 bg-white dark:bg-zinc-900 border border-black dark:border-zinc-800 hover:bg-[#C5FA1F] hover:text-black dark:hover:bg-[#C5FA1F] dark:hover:text-black transition-colors font-semibold"
-                >
-                  Ốp lưng
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </nav>
   );
 }
