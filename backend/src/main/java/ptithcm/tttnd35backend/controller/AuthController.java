@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import ptithcm.tttnd35backend.config.security.UserPrincipal;
+import ptithcm.tttnd35backend.dto.response.ProfileResponse;
 import ptithcm.tttnd35backend.dto.request.ForgotPasswordRequest;
 import ptithcm.tttnd35backend.dto.request.LoginRequest;
 import ptithcm.tttnd35backend.dto.request.RegisterRequest;
@@ -39,6 +42,19 @@ public class AuthController {
     private static final String REFRESH_TOKEN_COOKIE_PATH = "/auth/token";
 
     private final IAuthService authService;
+
+    @org.springframework.web.bind.annotation.GetMapping("/me")
+    public ResponseEntity<ApiResponse<ProfileResponse>> me(@AuthenticationPrincipal UserPrincipal principal) {
+        if (principal == null || principal.getProfile() == null) {
+            return ResponseEntity.status(401).body(ApiResponse.<ProfileResponse>builder()
+                    .success(false).message("Chưa đăng nhập").timestamp(LocalDateTime.now()).build());
+        }
+        ProfileResponse profile = ProfileResponse.builder().id(principal.getProfile().getId())
+                .email(principal.getProfile().getEmail()).fullName(principal.getProfile().getFullName())
+                .role(principal.getProfile().getRole() != null ? principal.getProfile().getRole().getName() : "CUSTOMER").build();
+        return ResponseEntity.ok(ApiResponse.<ProfileResponse>builder().success(true).message("Lấy thông tin tài khoản thành công")
+                .data(profile).timestamp(LocalDateTime.now()).build());
+    }
 
     @Value("${service.cookie.secure}")
     private boolean cookieSecure;
