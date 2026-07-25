@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: tttn-d35-backend-test
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  sql:
+    init:
+      mode: never
+  flyway:
+    enabled: false
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  mail:
+    host: localhost
+    port: 25
+    username: test
+    password: test
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api/v1
+
+service:
+  jwt:
+    secret-key: 9a4f2c8d7e1b5a3f9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a6f
+    access-expiration: 900000
+    refresh-expiration: 604800000
+  domain:
+    frontend: "*"
+  cookie:
+    secure: false
+  mail:
+    from: test@shopwise.vn
+  otp:
+    expiration-minutes: 5
+    resend-cooldown-seconds: 60
+    max-attempts: 5
+
+rag:
+  provider: mock

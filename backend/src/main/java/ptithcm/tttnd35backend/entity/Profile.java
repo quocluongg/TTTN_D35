@@ -41,6 +41,12 @@ public class Profile extends BaseEntity {
     @Column(name = "full_name", length = 150)
     private String fullName;
 
+    @Column(length = 30)
+    private String phone;
+
+    @Column(name = "locked_reason", length = 500)
+    private String lockedReason;
+
     @Builder.Default
     @Column(name = "email_notif")
     private boolean emailNotif = true;
