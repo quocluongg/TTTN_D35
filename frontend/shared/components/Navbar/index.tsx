@@ -96,6 +96,16 @@ export function Navbar() {
           Cửa hàng
         </Link>
 
+        {/* Item 2.2: Thương hiệu */}
+        <Link href="/brands" className="text-black dark:text-white hover:opacity-75 transition-opacity">
+          Thương hiệu
+        </Link>
+
+        {/* Item 2.4: Tra cứu bảo hành */}
+        <Link href="/warranty-check" className="text-black dark:text-white hover:opacity-75 transition-opacity">
+          Bảo hành
+        </Link>
+
         {/* Item 2.5: Trợ lý AI */}
         <Link href="/ai" className="text-black dark:text-white hover:opacity-75 transition-opacity flex items-center gap-1.5">
           <Sparkles className="w-4 h-4 text-lime-500 fill-lime-500/10" />
@@ -107,9 +117,9 @@ export function Navbar() {
           Tin tức
         </Link>
 
-        {/* Item 4: Về chúng tôi */}
-        <Link href="/about" className="text-black dark:text-white hover:opacity-75 transition-opacity">
-          Về chúng tôi
+        {/* Item 4: Liên hệ */}
+        <Link href="/contact" className="text-black dark:text-white hover:opacity-75 transition-opacity">
+          Liên hệ
         </Link>
 
         {/* Item 5: Tìm kiếm */}

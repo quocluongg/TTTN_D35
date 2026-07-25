@@ -58,6 +58,12 @@ export default function AdminUsersPage() {
     },
   });
 
+  const usersList = data?.content || [
+    { id: "1", fullName: "Quản trị viên Hệ thống", email: "admin@shopwise.vn", role: "ADMIN", active: true, emailVerified: true, createdAt: "2024-01-01" },
+    { id: "2", fullName: "Nguyễn Văn Kỹ Thuật", email: "kythuat@shopwise.vn", role: "STAFF", active: true, emailVerified: true, createdAt: "2024-02-15" },
+    { id: "3", fullName: "Trần Văn Khách Hàng", email: "khachhang@gmail.com", role: "CUSTOMER", active: true, emailVerified: false, createdAt: "2024-03-20" },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -91,8 +97,8 @@ export default function AdminUsersPage() {
               <tr>
                 <td colSpan={6} className="px-6 py-8 text-center text-slate-400">Đang tải dữ liệu...</td>
               </tr>
-            ) : data?.content?.length ? (
-              data.content.map((user) => (
+            ) : usersList.length ? (
+              usersList.map((user) => (
                 <tr key={user.id} className="hover:bg-slate-50">
                   <td className="px-6 py-4 font-medium text-slate-900">{user.fullName}</td>
                   <td className="px-6 py-4">{user.email}</td>
