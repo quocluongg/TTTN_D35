@@ -63,7 +63,6 @@ export default function AdminUsersPage() {
     { id: "2", fullName: "Nguyễn Văn Kỹ Thuật", email: "kythuat@shopwise.vn", role: "STAFF", active: true, emailVerified: true, createdAt: "2024-02-15" },
     { id: "3", fullName: "Trần Văn Khách Hàng", email: "khachhang@gmail.com", role: "CUSTOMER", active: true, emailVerified: false, createdAt: "2024-03-20" },
   ];
-
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
