@@ -57,7 +57,7 @@ http.interceptors.response.use(
       } catch {
         Cookies.remove("token");
         Cookies.remove("user");
-        if (typeof window !== "undefined") {
+        if (typeof window !== "undefined" && !window.location.pathname.startsWith("/admin")) {
           window.location.href = "/login";
         }
       }
