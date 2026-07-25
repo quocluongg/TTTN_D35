@@ -42,8 +42,6 @@ public class SecurityConfig {
             "/auth/forgot-password",
             "/auth/reset-password",
             "/auth/google-login",
-            "/products/**",
-            "/categories/**",
             "/swagger-ui/**",
             "/v3/api-docs/**"
     };

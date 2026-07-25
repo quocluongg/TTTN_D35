@@ -1,13 +1,13 @@
 package ptithcm.tttnd35backend;
 
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.springframework.boot.test.context.SpringBootTest;
 
+@SpringBootTest
 class TttnD35BackendApplicationTests {
 
     @Test
-    void testApplicationStarts() {
-        assertTrue(true);
+    void contextLoads() {
     }
 
 }

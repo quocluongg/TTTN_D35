@@ -8,9 +8,9 @@ import ptithcm.tttnd35backend.service.ITokenBlacklistService;
 
 import java.time.Duration;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TokenBlacklistServiceImpl implements ITokenBlacklistService {
 
     private static final String KEY_PREFIX = "auth:blacklist:jti:";
@@ -20,7 +20,7 @@ public class TokenBlacklistServiceImpl implements ITokenBlacklistService {
     @Override
     public void blacklist(String jti, long remainingTtlSeconds) {
         if (remainingTtlSeconds <= 0) {
-            return;
+            return; // token đã hết hạn hoặc sắp hết ngay -> không cần lưu, tự nó đã vô giá trị
         }
         try {
             redisTemplate.opsForValue().set(KEY_PREFIX + jti, "1", Duration.ofSeconds(remainingTtlSeconds));

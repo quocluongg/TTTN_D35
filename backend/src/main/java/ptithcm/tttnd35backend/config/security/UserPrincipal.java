@@ -3,13 +3,10 @@ package ptithcm.tttnd35backend.config.security;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import ptithcm.tttnd35backend.entity.Permission;
 import ptithcm.tttnd35backend.entity.Profile;
 import ptithcm.tttnd35backend.entity.RolePermission;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -31,18 +28,11 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (profile == null || profile.getRole() == null) {
-            return List.of();
-        }
-
         Stream<String> roleAuthority = Stream.of("ROLE_" + profile.getRole().getName());
 
-        Collection<RolePermission> rps = profile.getRole().getRolePermissions();
-        Stream<String> permissionAuthorities = (rps != null ? rps.stream() : Stream.<RolePermission>empty())
+        Stream<String> permissionAuthorities = profile.getRole().getRolePermissions().stream()
                 .map(RolePermission::getPermission)
-                .filter(Objects::nonNull)
-                .map(Permission::getCode)
-                .filter(Objects::nonNull);
+                .map(permission -> permission.getCode());
 
         return Stream.concat(roleAuthority, permissionAuthorities)
                 .map(SimpleGrantedAuthority::new)
@@ -51,12 +41,12 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public String getPassword() {
-        return profile != null ? profile.getPasswordHash() : null;
+        return profile.getPasswordHash();
     }
 
     @Override
     public String getUsername() {
-        return profile != null ? profile.getEmail() : null;
+        return profile.getEmail();
     }
 
     @Override
@@ -66,7 +56,7 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return profile == null || profile.isActive();
+        return true;
     }
 
     @Override
@@ -76,6 +66,6 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return profile == null || profile.isActive();
+        return profile.isActive();
     }
 }
