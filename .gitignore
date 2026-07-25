@@ -14,3 +14,6 @@ scripts/
 # Environment & Secrets
 .env
 .env.local
+
+# Cloned reference repo
+telectric-web/

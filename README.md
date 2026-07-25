@@ -1,58 +1,35 @@
 # 🛒 ShopWise — AI-Powered E-Commerce & RAG Chatbot Platform
 
 > **Đồ án Thực tập Tốt nghiệp (TTTN_D35)** — Học viện Công nghệ Bưu chính Viễn thông (PTIT)  
-> 💡 *Trải nghiệm mua sắm thiết bị công nghệ hiện đại với sự hỗ trợ của Trí tuệ nhân tạo (AI & RAG System) cùng Hệ thống Quản trị Vận hành Chuyên nghiệp.*
+> 💡 *Trải nghiệm mua sắm thiết bị công nghệ hiện đại với sự hỗ trợ của Trí tuệ nhân tạo (AI & RAG System).*
 
 ---
 
 ## 📌 Tổng quan Hệ thống (System Overview)
 
-**ShopWise** là nền tảng thương mại điện tử chuyên cung cấp thiết bị công nghệ (Điện thoại, Máy tính xách tay, Phụ kiện) tích hợp:
-1. **Hệ thống AI Assistant (RAG Chatbot)**: Tư vấn, tìm kiếm sản phẩm thông minh dựa trên kiến thức được vector hóa.
-2. **Cơ chế Phân quyền chi tiết (RBAC Matrix)**: Phân quyền theo mã Permission thay vì hardcode Role, hỗ trợ gán quyền động cho `ADMIN`, `MANAGER`, `STAFF`, `CUSTOMER`.
-3. **Cổng Quản trị & Vận hành (Admin & Staff Portal - `/admin`)**: Quản lý Người dùng, Vai trò, Sản phẩm, Tồn kho, Đơn hàng, Khuyến mãi, Bảo hành, Bài viết, Trợ lý AI, Cấu hình hệ thống và Nhật ký thao tác (Audit Log).
+**ShopWise** là nền tảng thương mại điện tử chuyên cung cấp thiết bị công nghệ (Điện thoại, Máy tính xách tay, Phụ kiện) tích hợp **Hệ thống AI Assistant (RAG Chatbot)** giúp tư vấn, tìm kiếm sản phẩm thông minh dựa trên nhu cầu của người dùng.
 
-Dự án được xây dựng với kiến trúc hiện đại, tuân thủ nguyên tắc thiết kế tối giản (Minimalist Architectural Grid Design System) bám sát bản vẽ Figma, cùng hệ thống backend Spring Boot 3 và cơ sở dữ liệu PostgreSQL / Supabase.
+Dự án được xây dựng với định hướng kiến trúc hiện đại, thiết kế giao diện tối giản (Minimalist Architectural Grid Design System) bám sát bản vẽ Figma độ nét cao, cùng hệ thống backend chuẩn Spring Boot và cơ sở dữ liệu PostgreSQL / Supabase.
 
 ---
 
-## 🎨 Điểm nổi bật về Giao diện & Vận hành
+## 🎨 Điểm nổi bật về Giao diện (Frontend Highlights)
 
-### 🛍️ Client Portal (Khách hàng)
+Bản thiết kế được đồng bộ 100% từ Figma (**Node 46-3066** & **Node 9-119**):
+
 - **7-Column Architectural Grid Navigation**: Fixed Header `60px`, hiển thị danh mục linh hoạt, tìm kiếm, giỏ hàng, Dark/Light mode toggle, và Mobile Menu Sheet.
 - **Hero Banner 128px**: Thiết kế chữ tiêu đề cỡ lớn *"Tìm kiếm công nghệ tuyệt vời, có sự hỗ trợ của AI!"* cùng nút CTA *"Mua thôi"*.
 - **Marquee Ticker Banner (`#C5FA1F`)**: Dải băng chạy thông báo liên tục *"Miễn phí vận chuyển cho đơn hàng trên 1 triệu"*.
-- **Best Sellers & Categories Grid**: Hiển thị sản phẩm bán chạy kèm huy hiệu chiết khấu, đánh giá và bộ lọc nhu cầu (*Làm việc, Gaming, Đồ họa*).
-- **RAG Chatbot Widget**: Giao diện chat AI trực tiếp trên trang chủ với phản hồi trích dẫn nguồn (Sources) và đánh giá phản hồi (Thumbs Up / Thumbs Down).
-- **Complete Authentication Suite**: Sign In, Sign Up với Password Strength Checklist, Forgot Password, Reset Password.
-
-### 🛡️ Admin & Staff Portal (`/admin/*`)
-- **Tổng quan Vận hành (`/admin`)**: Dashboard theo dõi doanh thu, đơn hàng, khách hàng mới, sản phẩm bán chạy và cảnh báo tồn kho thấp.
-- **Quản lý Người dùng (`/admin/users`)**: Tìm kiếm, xem danh sách, xác thực email và thực hiện khóa/mở khóa tài khoản kèm lý do.
-- **Vai trò & Phân quyền (`/admin/roles`)**: Ma trận phân quyền động, quản lý System Roles (`ADMIN`, `MANAGER`, `STAFF`, `CUSTOMER`).
-- **Tồn kho & Kiểm kê (`/admin/inventory`)**: Điều chỉnh tăng/giảm tồn kho trực tiếp và ghi lại nhật ký chuyển dịch kho (`inventory_movements`).
-- **Quy trình Đơn hàng (`/admin/orders`)**: State machine quản lý trạng thái đơn (`PENDING` -> `CONFIRMED` -> `PROCESSING` -> `SHIPPING` -> `DELIVERED`, `CANCELLED`, `REFUNDED`), tự động hoàn tồn kho khi hủy đơn.
-- **Khuyến mãi (`/admin/promotions`)**: Quản lý mã giảm giá (Phần trăm / Cố định), thời gian hiệu lực và hạn ngạch sử dụng.
-- **Bảo hành (`/admin/warranties`)**: Quản lý phiếu bảo hành tự động tạo khi hoàn tất đơn hàng và nhật ký sửa chữa.
-- **Trợ lý AI RAG (`/admin/rag`)**: Thống kê hiệu năng Provider, danh sách câu hỏi low-confidence cần nạp thêm kiến thức.
-- **Báo cáo Người dùng & Kinh doanh (`/admin/reports/*`)**: Báo cáo doanh thu thuần (Net Revenue), AOV, Top khách hàng VIP và **Xuất file CSV**.
-- **Cấu hình Hệ thống (`/admin/system-config`)**: Thay đổi tham số vận hành runtime không cần restart ứng dụng.
-- **Nhật ký Hoạt động (`/admin/audit-logs`)**: Audit Trail ghi lại mọi thao tác của quản trị viên và nhân viên.
-
----
-
-## 🤖 Kiến trúc RAG Provider Architecture
-
-Hệ thống RAG được thiết kế theo giao diện Provider Abstraction (`RagAssistantProvider`), cho phép chuyển đổi dễ dàng giữa môi trường Test/Dev và Production real-world chatbot:
-
-- **Mock Provider (Mặc định khi dev)**:
-  - Cấu hình trong `.env`: `RAG_PROVIDER=mock`
-  - Giả lập phản hồi nhanh kèm độ tin cậy và nguồn trích dẫn sản phẩm từ cơ sở dữ liệu local.
-
-- **HTTP/gRPC Provider (Khi nối RAG Server thật)**:
-  - Cấu hình trong `.env`: `RAG_PROVIDER=http`
-  - `RAG_HTTP_BASE_URL=http://localhost:8000/api/v1/rag`
-  - Tự động gọi REST/HTTP API của RAG microservice bên ngoài để sinh câu trả lời real-time.
+- **Best Sellers Product Showcase**: Trình diễn 5 sản phẩm bán chạy nhất kèm các huy hiệu `-20%`, `Bán chạy`, đánh giá sao, và thanh điều hướng Slider.
+- **Buy By Need (Mua theo nhu cầu)**: Phân loại mục đích sử dụng (*"Làm việc"*, *"Gaming"*, *"Thiết kế cho mọi nâng cấp"*).
+- **Categories Grid**: Lưới danh mục 3 cột (*Điện thoại, Máy tính xách tay, Phụ kiện*).
+- **Stories That Move**: Khối bài viết tin tức công nghệ cập nhật.
+- **Complete Authentication Suite**:
+  - **Sign In (`/login`)**: Form đăng nhập chuẩn 448px, bật/tắt hiển thị mật khẩu.
+  - **Sign Up (`/signup`)**: Form đăng ký với **Password Strength Checklist** kiểm tra độ mạnh mật khẩu động (chữ thường, chữ số, ký tự đặc biệt, ít nhất 8 ký tự).
+  - **Forgot Password (`/forgot-password`)**: Quy trình yêu cầu đặt lại mật khẩu qua Email.
+  - **Reset Password (`/reset-password`)**: Form đặt lại mật khẩu với cơ chế kiểm tra khớp mật khẩu động.
+- **Footer 7-Column Layout**: Tích hợp Đăng ký nhận tin khuyến mãi, 4 cột liên kết, các phương thức thanh toán và Logo ShopWise SVG siêu lớn.
 
 ---
 
@@ -68,8 +45,41 @@ Hệ thống RAG được thiết kế theo giao diện Provider Abstraction (`R
 ### ⚙️ Backend
 - **Framework**: Java 21, Spring Boot 3.x (Gradle)
 - **Database**: PostgreSQL / Supabase
-- **Migrations**: Flyway SQL Migrations (V1 đến V7)
-- **Security**: Spring Security, JWT Authentication, Permission-based RBAC
+- **Migrations**: Flyway SQL Migrations
+- **Security**: Spring Security, JWT Authentication, RBAC (Role-Based Access Control)
+
+### 🤖 AI & RAG Pipeline
+- **Web Scraping & ETL**: Python BeautifulSoup4, Selenium
+- **Data Vectorization**: Document Chunking (`documents.json`, `chunks.json`, `chunks_text.jsonl`)
+- **RAG Agents**: Product Ingestion & Hybrid Search Workflow (`agents/`)
+
+---
+
+## 📁 Cấu trúc Thư mục (Directory Structure)
+
+```text
+TTTN_D35/
+├── 📂 agents/                   # Quy trình cấu hình AI RAG Ingestion & Hybrid Search
+│   ├── 01_ingest_products.json
+│   └── 02_search_products.json
+├── 📂 backend/                  # Mã nguồn Spring Boot Backend Service
+│   ├── build.gradle
+│   ├── docker-compose.yml
+│   └── src/
+│       ├── main/java/ptithcm/tttnd35backend/
+│       └── main/resources/db/migration/
+├── 📂 data/                     # Dữ liệu Crawl sản phẩm & Tài liệu Chuẩn bị RAG
+│   ├── DB_Design.md
+│   ├── processed/              # Chunks dữ liệu đã được xử lý làm Vector DB
+│   └── raw/                    # Dữ liệu thô cào từ e-commerce
+├── 📂 frontend/                 # Mã nguồn Next.js 16 Frontend App
+│   ├── app/                    # App Router (/page.tsx, /login, /signup, /forgot-password, /reset-password)
+│   ├── public/figma/           # Tài nguyên hình ảnh nguyên bản lấy từ Figma
+│   ├── shared/                 # Core Components (Navbar, Footer, InputField) & Layouts
+│   ├── hooks/                  # Custom React Hooks (useAuth, TanStack Query hooks)
+│   └── services/               # API Call Services
+└── README.md
+```
 
 ---
 
@@ -77,52 +87,57 @@ Hệ thống RAG được thiết kế theo giao diện Provider Abstraction (`R
 
 ### Yêu cầu Hệ thống
 - **Node.js**: `v18+` (Khuyến nghị `v20+`)
-- **JDK**: `Java 21`
+- **Package Manager**: `npm`, `pnpm` hoặc `bun`
+- **JDK**: `Java 21` (Cho phần Backend)
 - **Database**: PostgreSQL / Supabase Instance
 
 ---
 
-### 1. Khởi chạy Backend (Spring Boot)
+### 1. Khởi chạy Frontend (Next.js 16)
 
 ```bash
+# Di chuyển vào thư mục frontend
+cd frontend
+
+# Cài đặt các thư viện phụ thuộc
+npm install
+
+# Khởi chạy server phát triển (Turbopack)
+npm run dev
+```
+
+Mở trình duyệt truy cập: `http://localhost:3000`
+
+---
+
+### 2. Khởi chạy Backend (Spring Boot)
+
+```bash
+# Di chuyển vào thư mục backend
 cd backend
 
-# Chạy Flyway migrations & Start backend service
+# Chạy ứng dụng với Gradle Wrapper
 ./gradlew bootRun
 ```
 
-- RESTful API Root: `http://localhost:8080/api/v1`
-- Swagger UI Documentations: `http://localhost:8080/api/v1/swagger-ui.html`
-
-#### Chạy Unit & Integration Tests:
-```bash
-./gradlew test
-```
+Backend RESTful API sẽ khởi chạy tại: `http://localhost:8080`
 
 ---
 
-### 2. Khởi chạy Frontend (Next.js 16)
+## 📸 Hình ảnh Minh họa Giao diện (Screenshots & Showcase)
 
-```bash
-cd frontend
+| Trang Chủ (Homepage) | Đăng Nhập (Sign In) |
+| :---: | :---: |
+| Hero Banner & Architectural Layout Grid | Form Đăng nhập 448px chuẩn Figma |
 
-# Cài đặt dependencies
-npm install
-
-# Khởi chạy dev server (Turbopack)
-npm run dev
-
-# Kiểm tra build production (Static & Dynamic Pages Optimization)
-npm run build
-```
-
-- Web Portal: `http://localhost:3000`
-- Admin Portal: `http://localhost:3000/admin`
+| Đăng Ký (Sign Up) | Đặt lại Mật khẩu (Reset Password) |
+| :---: | :---: |
+| Password Strength Checklist tự động | Kiểm tra trùng khớp mật khẩu động |
 
 ---
 
-## 📝 Giấy phép & Tác giả
+## 📝 Giấy phép (License) & Tác giả
 
 - **Dự án**: Đồ án Thực tập Tốt nghiệp PTIT (TTTN_D35)
-- **Tác giả**: Quốc Lương (`quocluongg`)
+- **Phát triển bởi**: Quốc Lương (`quocluongg`)
 - **Repository**: [GitHub - quocluongg/TTTN_D35](https://github.com/quocluongg/TTTN_D35)

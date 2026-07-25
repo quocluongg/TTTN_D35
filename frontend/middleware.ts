@@ -49,17 +49,18 @@ export function middleware(request: NextRequest) {
     }
 
     // Đã đăng nhập nhưng không phải admin → không cho vào /admin
-    if (isAdminPath && userRole !== "admin" && userRole !== "ADMIN") {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
+    // (Bypass check để cho phép xem giao diện admin)
+    // if (isAdminPath && userRole !== "admin" && userRole !== "ADMIN") {
+    //   return NextResponse.redirect(new URL("/", request.url));
+    // }
 
     return NextResponse.next();
   }
 
-  // Chưa đăng nhập → chặn /admin
-  if (isAdminPath) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
+  // Chưa đăng nhập → cho phép xem giao diện /admin theo yêu cầu
+  // if (isAdminPath) {
+  //   return NextResponse.redirect(new URL("/login", request.url));
+  // }
 
   // Chưa đăng nhập → chặn /account
   if (isProtectedPath) {

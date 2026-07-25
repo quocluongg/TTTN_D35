@@ -8,9 +8,9 @@ import ptithcm.tttnd35backend.service.ITokenBlacklistService;
 
 import java.time.Duration;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class TokenBlacklistServiceImpl implements ITokenBlacklistService {
 
     private static final String KEY_PREFIX = "auth:blacklist:jti:";
