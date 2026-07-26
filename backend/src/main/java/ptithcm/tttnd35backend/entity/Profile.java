@@ -2,13 +2,14 @@ package ptithcm.tttnd35backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import ptithcm.tttnd35backend.util.enums.AuthProvider;
 
 import java.util.UUID;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity

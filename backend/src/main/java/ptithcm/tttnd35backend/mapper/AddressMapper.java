@@ -14,17 +14,15 @@ public interface AddressMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "profile", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "isDefault", source = "default")
     Address toEntity(AddressRequest request);
 
+    @Mapping(target = "isDefault", source = "default")
     AddressResponse toResponse(Address address);
 
     List<AddressResponse> toResponseList(List<Address> addresses);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "profile", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
     void updateEntityFromRequest(AddressRequest request, @MappingTarget Address address);
 }
