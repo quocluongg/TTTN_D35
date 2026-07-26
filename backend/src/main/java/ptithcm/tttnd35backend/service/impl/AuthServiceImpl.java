@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ptithcm.tttnd35backend.config.jwt.JwtProvider;
 import ptithcm.tttnd35backend.config.security.UserPrincipal;
+import ptithcm.tttnd35backend.dto.internal.GoogleUserInfo;
+import ptithcm.tttnd35backend.dto.request.GoogleLoginRequest;
 import ptithcm.tttnd35backend.dto.request.LoginRequest;
 import ptithcm.tttnd35backend.dto.request.RegisterRequest;
 import ptithcm.tttnd35backend.dto.request.ResetPasswordRequest;
@@ -26,6 +28,7 @@ import ptithcm.tttnd35backend.repository.IProfileRepository;
 import ptithcm.tttnd35backend.repository.IRefreshTokenRepository;
 import ptithcm.tttnd35backend.repository.IRoleRepository;
 import ptithcm.tttnd35backend.service.IAuthService;
+import ptithcm.tttnd35backend.service.IGoogleTokenVerifier;
 import ptithcm.tttnd35backend.service.ITokenBlacklistService;
 import ptithcm.tttnd35backend.util.enums.AuthProvider;
 import ptithcm.tttnd35backend.util.enums.OtpPurpose;
@@ -48,6 +51,7 @@ public class AuthServiceImpl implements IAuthService {
     private final OtpServiceImpl otpService;
     private final JwtProvider jwtProvider;
     private final ITokenBlacklistService tokenBlacklistService;
+    private final IGoogleTokenVerifier googleTokenVerifier;
 
     @Value("${service.jwt.refresh-expiration}")
     private long refreshExpirationMs;
@@ -59,9 +63,7 @@ public class AuthServiceImpl implements IAuthService {
             throw new DuplicateResourceException("Email đã được sử dụng");
         }
 
-        Role customerRole = roleRepository.findByName(DEFAULT_ROLE)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Chưa seed role mặc định '" + DEFAULT_ROLE + "'"));
+        Role customerRole = getDefaultRole();
 
         Profile profile = Profile.builder()
                 .email(request.getEmail())
@@ -125,31 +127,49 @@ public class AuthServiceImpl implements IAuthService {
             throw new AccountNotVerifiedException("Tài khoản chưa xác thực email, vui lòng kiểm tra hộp thư");
         }
 
-        UserPrincipal principal = new UserPrincipal(profile);
-        String accessToken = jwtProvider.generateToken(principal);
+        return issueAuthResult(profile, deviceInfo, ipAddress);
+    }
 
-        String rawRefreshToken = TokenHasher.generateRawToken();
-        RefreshToken refreshToken = RefreshToken.builder()
-                .profile(profile)
-                .tokenHash(TokenHasher.sha256(rawRefreshToken))
-                .deviceInfo(deviceInfo)
-                .ipAddress(ipAddress)
-                .expiresAt(LocalDateTime.now().plus(refreshExpirationMs, ChronoUnit.MILLIS))
-                .revoked(false)
-                .build();
-        refreshTokenRepository.save(refreshToken);
+    @Override
+    @Transactional
+    public AuthResult loginWithGoogle(GoogleLoginRequest request, String deviceInfo, String ipAddress) {
+        GoogleUserInfo googleUser = googleTokenVerifier.verify(request.getIdToken());
 
-        TokenResponse tokenResponse = TokenResponse.builder()
-                .accessToken(accessToken)
-                .tokenType("Bearer")
-                .expiresIn(jwtProvider.getJwtExpiration() / 1000)
+        Profile profile = profileRepository.findByEmailWithRoleAndPermissions(googleUser.getEmail())
+                .map(existing -> {
+                    if (existing.getAuthProvider() == AuthProvider.LOCAL) {
+                        throw new DuplicateResourceException(
+                                "Email này đã được đăng ký bằng mật khẩu, vui lòng đăng nhập bằng email/mật khẩu");
+                    }
+                    return existing;
+                })
+                .orElseGet(() -> createGoogleProfile(googleUser));
+
+        if (!profile.isActive()) {
+            throw new BadRequestException("Tài khoản đã bị khóa, vui lòng liên hệ quản trị viên");
+        }
+
+        return issueAuthResult(profile, deviceInfo, ipAddress);
+    }
+
+    private Profile createGoogleProfile(GoogleUserInfo googleUser) {
+        Profile profile = Profile.builder()
+                .email(googleUser.getEmail())
+                .authProvider(AuthProvider.GOOGLE)
+                .providerUserId(googleUser.getProviderUserId())
+                .role(getDefaultRole())
+                .fullName(googleUser.getFullName())
+                .emailVerified(true) // Google đã tự verify email rồi, không cần OTP nữa
+                .isActive(true)
                 .build();
 
-        return AuthResult.builder()
-                .tokenResponse(tokenResponse)
-                .rawRefreshToken(rawRefreshToken)
-                .refreshExpirationMs(refreshExpirationMs)
-                .build();
+        return profileRepository.save(profile);
+    }
+
+    private Role getDefaultRole() {
+        return roleRepository.findByName(DEFAULT_ROLE)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Chưa seed role mặc định '" + DEFAULT_ROLE + "'"));
     }
 
     @Override
@@ -176,29 +196,38 @@ public class AuthServiceImpl implements IAuthService {
         oldToken.setRevoked(true);
         refreshTokenRepository.save(oldToken);
 
-        UserPrincipal principal = new UserPrincipal(profile);
-        String newAccessToken = jwtProvider.generateToken(principal);
+        return issueAuthResult(profile, deviceInfo, ipAddress);
+    }
 
-        String newRawRefreshToken = TokenHasher.generateRawToken();
-        RefreshToken newToken = RefreshToken.builder()
+    /**
+     * Sinh access token (JWT) + refresh token (random string, hash lưu DB) cho 1 Profile đã
+     * được xác thực hợp lệ (password đúng / Google token hợp lệ / refresh token rotation).
+     * Dùng chung cho login(), loginWithGoogle() và refreshToken() để tránh lặp code.
+     */
+    private AuthResult issueAuthResult(Profile profile, String deviceInfo, String ipAddress) {
+        UserPrincipal principal = new UserPrincipal(profile);
+        String accessToken = jwtProvider.generateToken(principal);
+
+        String rawRefreshToken = TokenHasher.generateRawToken();
+        RefreshToken refreshToken = RefreshToken.builder()
                 .profile(profile)
-                .tokenHash(TokenHasher.sha256(newRawRefreshToken))
+                .tokenHash(TokenHasher.sha256(rawRefreshToken))
                 .deviceInfo(deviceInfo)
                 .ipAddress(ipAddress)
                 .expiresAt(LocalDateTime.now().plus(refreshExpirationMs, ChronoUnit.MILLIS))
                 .revoked(false)
                 .build();
-        refreshTokenRepository.save(newToken);
+        refreshTokenRepository.save(refreshToken);
 
         TokenResponse tokenResponse = TokenResponse.builder()
-                .accessToken(newAccessToken)
+                .accessToken(accessToken)
                 .tokenType("Bearer")
                 .expiresIn(jwtProvider.getJwtExpiration() / 1000)
                 .build();
 
         return AuthResult.builder()
                 .tokenResponse(tokenResponse)
-                .rawRefreshToken(newRawRefreshToken)
+                .rawRefreshToken(rawRefreshToken)
                 .refreshExpirationMs(refreshExpirationMs)
                 .build();
     }
