@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ptithcm.tttnd35backend.dto.request.ForgotPasswordRequest;
+import ptithcm.tttnd35backend.dto.request.GoogleLoginRequest;
 import ptithcm.tttnd35backend.dto.request.LoginRequest;
 import ptithcm.tttnd35backend.dto.request.RegisterRequest;
 import ptithcm.tttnd35backend.dto.request.ResendOtpRequest;
@@ -103,6 +104,30 @@ public class AuthController {
                 .path(REFRESH_TOKEN_COOKIE_PATH)
                 .maxAge(Duration.ofMillis(maxAgeMs))
                 .build();
+    }
+
+    // Frontend dùng Google Identity Services lấy idToken phía client, gửi lên đây để backend
+    // tự verify với Google rồi tự cấp access/refresh token của hệ thống mình (không tin Google session).
+    @PostMapping("/google-login")
+    public ResponseEntity<ApiResponse<TokenResponse>> googleLogin(
+            @RequestBody @Valid GoogleLoginRequest request,
+            HttpServletRequest httpRequest) {
+
+        String deviceInfo = httpRequest.getHeader("User-Agent");
+        String ipAddress = extractClientIp(httpRequest);
+
+        AuthResult result = authService.loginWithGoogle(request, deviceInfo, ipAddress);
+
+        ResponseCookie cookie = buildRefreshTokenCookie(result.getRawRefreshToken(), result.getRefreshExpirationMs());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(ApiResponse.<TokenResponse>builder()
+                        .success(true)
+                        .message("Đăng nhập bằng Google thành công")
+                        .data(result.getTokenResponse())
+                        .timestamp(LocalDateTime.now())
+                        .build());
     }
 
     // Ưu tiên X-Forwarded-For nếu app chạy sau reverse proxy/load balancer, fallback về remote address
