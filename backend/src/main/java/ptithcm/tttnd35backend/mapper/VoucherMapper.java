@@ -17,7 +17,6 @@ public interface VoucherMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "usedCount", ignore = true)
-    @Mapping(target = "isActive", source = "active")
     void updateEntityFromRequest(VoucherRequest request, @MappingTarget Voucher voucher);
 
     @Mapping(target = "isActive", source = "active")

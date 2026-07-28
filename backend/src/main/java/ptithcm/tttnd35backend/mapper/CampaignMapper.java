@@ -15,7 +15,6 @@ public interface CampaignMapper {
     Campaign toEntity(CampaignRequest request);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "isActive", source = "active")
     void updateEntityFromRequest(CampaignRequest request, @MappingTarget Campaign campaign);
 
     @Mapping(target = "isActive", source = "active")
