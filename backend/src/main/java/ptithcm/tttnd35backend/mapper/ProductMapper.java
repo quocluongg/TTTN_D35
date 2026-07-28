@@ -32,7 +32,6 @@ public interface ProductMapper {
     @Mapping(target = "customTabs", ignore = true)
     @Mapping(target = "ratingAvg", ignore = true)
     @Mapping(target = "reviewCount", ignore = true)
-    @Mapping(target = "isActive", ignore = true)
     void updateEntityFromRequest(ProductAdminRequest request, @MappingTarget Product product);
 
     // Phần field phẳng của trang chi tiết. categoryBreadcrumb/variants/images do Service gán sau.

@@ -20,7 +20,6 @@ public interface CategoryMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "slug", ignore = true)
-    @Mapping(target = "isActive", ignore = true)
     void updateEntityFromRequest(CategoryRequest request, @MappingTarget Category category);
 
     @Mapping(target = "isActive", source = "active")
