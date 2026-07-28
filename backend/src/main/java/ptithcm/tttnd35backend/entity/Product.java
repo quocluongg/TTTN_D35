@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Cố tình KHÔNG map @OneToMany 2 chiều tới ProductImage/ProductVariant ở đây
+ * KHÔNG map @OneToMany 2 chiều tới ProductImage/ProductVariant ở đây
  * (tránh lazy-load kéo cả list mỗi lần load Product cho việc khác, vd chỉ cần
  * sửa tên sản phẩm cũng phải load hết ảnh/variant). Ảnh và variant được load
  * riêng qua IProductImageRepository/IProductVariantRepository theo productId
