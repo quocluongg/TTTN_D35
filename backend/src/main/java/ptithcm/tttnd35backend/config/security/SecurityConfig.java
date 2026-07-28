@@ -43,7 +43,13 @@ public class SecurityConfig {
             "/auth/reset-password",
             "/auth/google-login",
             "/swagger-ui/**",
-            "/v3/api-docs/**"
+            "/v3/api-docs/**",
+            // Catalog: khách xem/lọc/tìm sản phẩm không cần đăng nhập.
+            // (/admin/categories, /admin/products KHÔNG nằm trong whitelist này)
+            "/categories",
+            "/categories/**",
+            "/products",
+            "/products/**"
     };
 
     @Value("${service.domain.frontend}")
