@@ -13,7 +13,9 @@ import ptithcm.tttnd35backend.exception.DuplicateResourceException;
 import ptithcm.tttnd35backend.exception.ResourceNotFoundException;
 import ptithcm.tttnd35backend.mapper.VoucherMapper;
 import ptithcm.tttnd35backend.repository.IVoucherRepository;
+import ptithcm.tttnd35backend.repository.IVoucherUsageRepository;
 import ptithcm.tttnd35backend.service.IVoucherService;
+import ptithcm.tttnd35backend.service.VoucherResolution;
 import ptithcm.tttnd35backend.util.enums.DiscountType;
 
 import java.math.BigDecimal;
@@ -27,6 +29,7 @@ import java.util.UUID;
 public class VoucherServiceImpl implements IVoucherService {
 
     private final IVoucherRepository voucherRepository;
+    private final IVoucherUsageRepository voucherUsageRepository;
     private final VoucherMapper voucherMapper;
 
     @Override
@@ -78,6 +81,38 @@ public class VoucherServiceImpl implements IVoucherService {
         Voucher voucher = voucherRepository.findByCodeIgnoreCase(request.getCode().trim())
                 .orElseThrow(() -> new BadRequestException("Mã voucher không tồn tại"));
 
+        checkUsable(voucher, request.getEligibleAmount());
+
+        BigDecimal discountAmount = computeDiscountAmount(voucher, request.getEligibleAmount());
+        return VoucherValidateResponse.builder()
+                .code(voucher.getCode())
+                .discountAmount(discountAmount)
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public VoucherResolution resolveForOrder(String code, UUID profileId, BigDecimal eligibleAmount) {
+        Voucher voucher = voucherRepository.findByCodeIgnoreCase(code.trim())
+                .orElseThrow(() -> new BadRequestException("Mã voucher không tồn tại"));
+
+        checkUsable(voucher, eligibleAmount);
+
+        if (profileId != null) {
+            long usedByProfile = voucherUsageRepository.countByVoucherIdAndProfileId(voucher.getId(), profileId);
+            if (usedByProfile >= voucher.getMaxUsagePerUser()) {
+                throw new BadRequestException("Bạn đã dùng hết lượt cho voucher này");
+            }
+        }
+
+        return new VoucherResolution(voucher, computeDiscountAmount(voucher, eligibleAmount));
+    }
+
+    // ===== Helper =====
+
+    // Check chung cho cả validate() (preview) lẫn resolveForOrder() (lúc thật sự đặt hàng) - trừ
+    // max_usage_per_user (chỉ resolveForOrder mới có profileId để check).
+    private void checkUsable(Voucher voucher, BigDecimal eligibleAmount) {
         LocalDateTime now = LocalDateTime.now();
         if (!voucher.isActive()) {
             throw new BadRequestException("Voucher hiện không khả dụng");
@@ -88,19 +123,11 @@ public class VoucherServiceImpl implements IVoucherService {
         if (voucher.getMaxUsage() != null && voucher.getUsedCount() >= voucher.getMaxUsage()) {
             throw new BadRequestException("Voucher đã hết lượt sử dụng");
         }
-        if (request.getEligibleAmount().compareTo(voucher.getMinOrderValue()) < 0) {
+        if (eligibleAmount.compareTo(voucher.getMinOrderValue()) < 0) {
             throw new BadRequestException(
                     "Đơn hàng cần tối thiểu " + voucher.getMinOrderValue() + " để áp dụng voucher này");
         }
-
-        BigDecimal discountAmount = computeDiscountAmount(voucher, request.getEligibleAmount());
-        return VoucherValidateResponse.builder()
-                .code(voucher.getCode())
-                .discountAmount(discountAmount)
-                .build();
     }
-
-    // ===== Helper =====
 
     private Voucher loadVoucher(UUID id) {
         return voucherRepository.findById(id)

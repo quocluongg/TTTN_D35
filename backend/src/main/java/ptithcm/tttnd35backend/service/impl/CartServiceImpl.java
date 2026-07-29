@@ -16,6 +16,7 @@ import ptithcm.tttnd35backend.exception.ResourceNotFoundException;
 import ptithcm.tttnd35backend.repository.ICartItemRepository;
 import ptithcm.tttnd35backend.repository.IProductRepository;
 import ptithcm.tttnd35backend.repository.IProductVariantRepository;
+import ptithcm.tttnd35backend.service.ICampaignService;
 import ptithcm.tttnd35backend.service.ICartService;
 
 import java.math.BigDecimal;
@@ -32,6 +33,7 @@ public class CartServiceImpl implements ICartService {
     private final ICartItemRepository cartItemRepository;
     private final IProductVariantRepository productVariantRepository;
     private final IProductRepository productRepository;
+    private final ICampaignService campaignService;
 
     @Override
     @Transactional(readOnly = true)
@@ -127,10 +129,15 @@ public class CartServiceImpl implements ICartService {
         Map<UUID, Product> productById = productRepository.findAllById(productIds).stream()
                 .collect(Collectors.toMap(Product::getId, p -> p));
 
+        Set<UUID> variantIds = items.stream().map(i -> i.getVariant().getId()).collect(Collectors.toSet());
+        Map<UUID, BigDecimal> salePrices = campaignService.getActiveSalePrices(variantIds);
+
         List<CartItemResponse> itemResponses = items.stream().map(item -> {
             ProductVariant variant = item.getVariant();
             Product product = productById.get(variant.getProductId());
-            BigDecimal subtotal = variant.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+            BigDecimal salePrice = salePrices.get(variant.getId());
+            BigDecimal effectivePrice = salePrice != null ? salePrice : variant.getPrice();
+            BigDecimal subtotal = effectivePrice.multiply(BigDecimal.valueOf(item.getQuantity()));
 
             return CartItemResponse.builder()
                     .id(item.getId())
@@ -142,6 +149,7 @@ public class CartServiceImpl implements ICartService {
                     .attributes(variant.getAttributes())
                     .image(variant.getImage() != null ? variant.getImage() : (product != null ? product.getThumbnail() : null))
                     .price(variant.getPrice())
+                    .salePrice(salePrice)
                     .vatPercent(variant.getVatPercent())
                     .quantity(item.getQuantity())
                     .subtotal(subtotal)

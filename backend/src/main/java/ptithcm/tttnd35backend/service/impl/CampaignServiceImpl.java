@@ -21,9 +21,9 @@ import ptithcm.tttnd35backend.repository.IProductRepository;
 import ptithcm.tttnd35backend.repository.IProductVariantRepository;
 import ptithcm.tttnd35backend.service.ICampaignService;
 import ptithcm.tttnd35backend.util.enums.DiscountType;
+import ptithcm.tttnd35backend.util.helper.PriceCalculator;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -108,6 +108,7 @@ public class CampaignServiceImpl implements ICampaignService {
                 .variantId(variant.getId())
                 .discountType(request.getDiscountType())
                 .discountValue(request.getDiscountValue())
+                .stockQuantity(request.getStockQuantity())
                 .build();
         campaignItemRepository.save(item);
 
@@ -132,6 +133,7 @@ public class CampaignServiceImpl implements ICampaignService {
         item.setVariantId(variant.getId());
         item.setDiscountType(request.getDiscountType());
         item.setDiscountValue(request.getDiscountValue());
+        item.setStockQuantity(request.getStockQuantity());
         campaignItemRepository.save(item);
 
         return toItemResponses(List.of(item)).get(0);
@@ -147,12 +149,16 @@ public class CampaignServiceImpl implements ICampaignService {
 
     @Override
     @Transactional(readOnly = true)
-    public Map<UUID, BigDecimal> getActiveSalePrices(Set<UUID> variantIds) {
+    public Map<UUID, CampaignItem> getActiveSaleItems(Set<UUID> variantIds) {
         if (variantIds.isEmpty()) {
             return Map.of();
         }
 
-        List<CampaignItem> activeItems = campaignItemRepository.findActiveByVariantIds(variantIds, LocalDateTime.now());
+        List<CampaignItem> activeItems = campaignItemRepository.findActiveByVariantIds(variantIds, LocalDateTime.now())
+                .stream()
+                // Hết suất sale riêng thì coi như không sale (khác null - null nghĩa là không giới hạn)
+                .filter(item -> item.getStockQuantity() == null || item.getStockQuantity() > 0)
+                .toList();
         if (activeItems.isEmpty()) {
             return Map.of();
         }
@@ -161,7 +167,7 @@ public class CampaignServiceImpl implements ICampaignService {
                 .findAllById(activeItems.stream().map(CampaignItem::getVariantId).collect(Collectors.toSet()))
                 .stream().collect(Collectors.toMap(ProductVariant::getId, v -> v));
 
-        Map<UUID, BigDecimal> result = new LinkedHashMap<>();
+        Map<UUID, CampaignItem> result = new LinkedHashMap<>();
         for (CampaignItem item : activeItems) {
             ProductVariant variant = variantById.get(item.getVariantId());
             if (variant == null) {
@@ -169,8 +175,31 @@ public class CampaignServiceImpl implements ICampaignService {
             }
             // 1 variant có thể nằm trong nhiều campaign đang chạy cùng lúc (hiếm nhưng không cấm) -
             // ưu tiên giá thấp nhất, có lợi cho khách.
-            BigDecimal salePrice = computeSalePrice(variant.getPrice(), item.getDiscountType(), item.getDiscountValue());
-            result.merge(item.getVariantId(), salePrice, BigDecimal::min);
+            CampaignItem current = result.get(item.getVariantId());
+            if (current == null || PriceCalculator.applyDiscount(variant.getPrice(), item.getDiscountType(), item.getDiscountValue())
+                    .compareTo(PriceCalculator.applyDiscount(variant.getPrice(), current.getDiscountType(), current.getDiscountValue())) < 0) {
+                result.put(item.getVariantId(), item);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<UUID, BigDecimal> getActiveSalePrices(Set<UUID> variantIds) {
+        Map<UUID, CampaignItem> saleItems = getActiveSaleItems(variantIds);
+        Map<UUID, ProductVariant> variantById = productVariantRepository
+                .findAllById(saleItems.keySet())
+                .stream().collect(Collectors.toMap(ProductVariant::getId, v -> v));
+
+        Map<UUID, BigDecimal> result = new LinkedHashMap<>();
+        for (Map.Entry<UUID, CampaignItem> entry : saleItems.entrySet()) {
+            ProductVariant variant = variantById.get(entry.getKey());
+            CampaignItem item = entry.getValue();
+            if (variant == null) {
+                continue;
+            }
+            result.put(entry.getKey(), PriceCalculator.applyDiscount(variant.getPrice(), item.getDiscountType(), item.getDiscountValue()));
         }
         return result;
     }
@@ -197,13 +226,6 @@ public class CampaignServiceImpl implements ICampaignService {
         if (type == DiscountType.PERCENT && value.compareTo(BigDecimal.valueOf(100)) > 0) {
             throw new BadRequestException("Giảm theo % không được vượt quá 100");
         }
-    }
-
-    private BigDecimal computeSalePrice(BigDecimal originalPrice, DiscountType type, BigDecimal value) {
-        BigDecimal salePrice = type == DiscountType.PERCENT
-                ? originalPrice.multiply(BigDecimal.ONE.subtract(value.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP)))
-                : originalPrice.subtract(value);
-        return salePrice.max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
     }
 
     private CampaignResponse toResponseWithRunningFlag(Campaign campaign) {
@@ -242,7 +264,8 @@ public class CampaignServiceImpl implements ICampaignService {
                     .originalPrice(originalPrice)
                     .discountType(item.getDiscountType())
                     .discountValue(item.getDiscountValue())
-                    .salePrice(computeSalePrice(originalPrice, item.getDiscountType(), item.getDiscountValue()))
+                    .salePrice(PriceCalculator.applyDiscount(originalPrice, item.getDiscountType(), item.getDiscountValue()))
+                    .stockQuantity(item.getStockQuantity())
                     .build();
         }).toList();
     }
