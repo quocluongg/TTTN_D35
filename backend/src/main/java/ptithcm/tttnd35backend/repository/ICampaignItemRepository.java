@@ -1,6 +1,7 @@
 package ptithcm.tttnd35backend.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ptithcm.tttnd35backend.entity.CampaignItem;
@@ -32,4 +33,13 @@ public interface ICampaignItemRepository extends JpaRepository<CampaignItem, UUI
               AND :now BETWEEN c.startTime AND c.endTime
             """)
     List<CampaignItem> findActiveByVariantIds(@Param("variantIds") Collection<UUID> variantIds, @Param("now") LocalDateTime now);
+
+    // Chỉ áp dụng khi stock_quantity khác null (có giới hạn suất sale riêng). Trả về 0 = hết suất.
+    @Modifying(clearAutomatically = true)
+    @Query("update CampaignItem c set c.stockQuantity = c.stockQuantity - :qty where c.id = :id and c.stockQuantity >= :qty")
+    int decreaseStock(@Param("id") UUID id, @Param("qty") int qty);
+
+    @Modifying(clearAutomatically = true)
+    @Query("update CampaignItem c set c.stockQuantity = c.stockQuantity + :qty where c.id = :id and c.stockQuantity is not null")
+    int increaseStock(@Param("id") UUID id, @Param("qty") int qty);
 }
