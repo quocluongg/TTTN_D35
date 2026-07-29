@@ -48,7 +48,12 @@ public class SecurityConfig {
             "/categories/**",
             "/products",
             "/products/**",
-            "/campaigns"
+            "/campaigns",
+            "/orders/guest",
+            "/payments/*/init",
+            "/payments/vnpay/return",
+            "/payments/vnpay/ipn",
+            "/payments/stripe/webhook"
     };
 
     @Value("${service.domain.frontend}")
