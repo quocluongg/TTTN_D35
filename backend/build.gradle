@@ -47,6 +47,10 @@ dependencies {
     // Source: https://github.com/paulschwarz/spring-dotenv
     developmentOnly 'me.paulschwarz:springboot4-dotenv:5.1.0'
 
+    // Stripe SDK - thanh toán online
+    // Source: https://mvnrepository.com/artifact/com.stripe/stripe-java
+    implementation("com.stripe:stripe-java:29.0.0")
+
     // Mapstruct
     // Source: https://mvnrepository.com/artifact/org.mapstruct/mapstruct
     implementation("org.mapstruct:mapstruct:1.5.5.Final")
