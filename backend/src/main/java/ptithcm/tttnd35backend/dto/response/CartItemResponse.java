@@ -25,6 +25,8 @@ public class CartItemResponse {
     private String image;
 
     private BigDecimal price;
+    // Null = không đang sale, dùng price. Có giá trị = giá sau khuyến mãi campaign, subtotal tính theo giá này.
+    private BigDecimal salePrice;
     private BigDecimal vatPercent;
     private Integer quantity;
     private BigDecimal subtotal;

@@ -24,4 +24,7 @@ public class CampaignItemResponse {
 
     // Tính sẵn từ originalPrice + discountType/discountValue - FE không cần tự tính lại.
     private BigDecimal salePrice;
+
+    // Null = không giới hạn số suất sale riêng.
+    private Integer stockQuantity;
 }

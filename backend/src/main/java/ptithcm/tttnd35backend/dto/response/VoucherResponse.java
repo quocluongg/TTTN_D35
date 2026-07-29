@@ -15,6 +15,7 @@ import java.util.UUID;
 public class VoucherResponse {
     private UUID id;
     private String code;
+    private UUID campaignId;
     private String description;
     private DiscountType discountType;
     private BigDecimal discountValue;
