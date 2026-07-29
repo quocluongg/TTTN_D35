@@ -32,9 +32,14 @@ public interface ICampaignService {
     void deleteItem(UUID campaignId, UUID itemId);
 
     /**
-     * Giá sale hiện tại (nếu có) của từng variant - dùng cho Cart/Order/trang shop.
-     * Chỉ trả về variant đang thật sự nằm trong 1 campaign is_active=true và trong khoảng thời gian hiệu lực.
+     * CampaignItem đang thắng (giá thấp nhất) cho từng variant - dùng khi Order cần biết
+     * chính xác item nào để trừ stock_quantity riêng của suất sale.
      * Không có trong map = variant không đang sale, dùng giá gốc.
+     */
+    Map<UUID, ptithcm.tttnd35backend.entity.CampaignItem> getActiveSaleItems(Set<UUID> variantIds);
+
+    /**
+     * Giá sale hiện tại (nếu có) của từng variant - dùng cho Cart/trang shop khi chỉ cần hiển thị giá.
      */
     Map<UUID, BigDecimal> getActiveSalePrices(Set<UUID> variantIds);
 }

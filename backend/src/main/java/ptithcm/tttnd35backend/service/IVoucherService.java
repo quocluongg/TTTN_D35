@@ -28,4 +28,12 @@ public interface IVoucherService {
      * chưa chắc đã đặt hàng.
      */
     VoucherValidateResponse validate(VoucherValidateRequest request);
+
+    /**
+     * Dùng nội bộ khi OrderService tạo đơn - validate ĐẦY ĐỦ (kể cả max_usage_per_user, cần profileId)
+     * và trả về entity Voucher + số tiền giảm để Order dùng luôn trong transaction, không query lại.
+     * profileId null (khách vãng lai) -> bỏ qua check per-user.
+     * KHÔNG trừ lượt/ghi log ở đây - OrderService tự làm atomic trong transaction tạo đơn.
+     */
+    VoucherResolution resolveForOrder(String code, UUID profileId, java.math.BigDecimal eligibleAmount);
 }
