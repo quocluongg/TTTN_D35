@@ -39,4 +39,8 @@ public class CampaignItem extends BaseEntity {
     // PERCENT: 0-100 (vd 20 = giảm 20%). FIXED_AMOUNT: số tiền giảm trực tiếp trên giá variant hiện tại.
     @Column(name = "discount_value", nullable = false, precision = 12, scale = 2)
     private BigDecimal discountValue;
+
+    // Null = không giới hạn số suất sale riêng (chỉ bị chặn bởi tồn kho variant chung).
+    @Column(name = "stock_quantity")
+    private Integer stockQuantity;
 }

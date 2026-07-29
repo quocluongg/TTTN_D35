@@ -25,6 +25,10 @@ public class Voucher extends BaseEntity {
     @Column(nullable = false, unique = true, length = 50)
     private String code;
 
+    // Nullable - voucher có thể phát hành độc lập, không thuộc đợt khuyến mãi nào.
+    @Column(name = "campaign_id")
+    private UUID campaignId;
+
     @Column(columnDefinition = "text")
     private String description;
 
