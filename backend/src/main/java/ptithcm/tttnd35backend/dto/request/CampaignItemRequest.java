@@ -1,6 +1,7 @@
 package ptithcm.tttnd35backend.dto.request;
 
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import ptithcm.tttnd35backend.util.enums.DiscountType;
@@ -24,4 +25,8 @@ public class CampaignItemRequest {
     @NotNull(message = "Giá trị giảm không được để trống")
     @DecimalMin(value = "0", message = "Giá trị giảm phải >= 0")
     private BigDecimal discountValue;
+
+    // Null = không giới hạn số suất sale riêng.
+    @Min(value = 0, message = "Số suất sale phải >= 0")
+    private Integer stockQuantity;
 }

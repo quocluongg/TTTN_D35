@@ -18,6 +18,9 @@ public class VoucherRequest {
     @Size(max = 50, message = "Mã voucher tối đa 50 ký tự")
     private String code;
 
+    // Nullable - không bắt buộc gắn với đợt khuyến mãi nào.
+    private java.util.UUID campaignId;
+
     private String description;
 
     @NotNull(message = "Vui lòng chọn kiểu giảm giá")
