@@ -1,15 +1,14 @@
 package ptithcm.tttnd35backend.entity;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import ptithcm.tttnd35backend.entity.jsonb.CustomTabItem;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -59,10 +58,16 @@ public class Product extends BaseEntity {
     @Column(name = "warranty_months")
     private Integer warrantyMonths;
 
+    // Dữ liệu cột này là custom
+    // content của tab
+    //  - có lúc là object thông số kỹ thuật,
+    //  - có lúc là string mô tả;
+    //  - có lúc bị double JSON-encode).
+    // Dùng JsonNode (kiểu JSON tổng quát của Jackson) để load được mọi trường hợp
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "custom_tabs", columnDefinition = "jsonb")
     @Builder.Default
-    private List<CustomTabItem> customTabs = new ArrayList<>();
+    private JsonNode customTabs = JsonNodeFactory.instance.arrayNode();
 
     // Denormalized, cập nhật lại mỗi khi ProductReview thay đổi (module Review, giai đoạn 6).
     @Builder.Default

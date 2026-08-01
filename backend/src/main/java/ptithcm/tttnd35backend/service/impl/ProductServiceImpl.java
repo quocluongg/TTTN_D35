@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-import ptithcm.tttnd35backend.dto.request.CustomTabRequest;
 import ptithcm.tttnd35backend.dto.request.ProductAdminRequest;
 import ptithcm.tttnd35backend.dto.request.ProductVariantAdminRequest;
 import ptithcm.tttnd35backend.dto.response.ProductDetailResponse;
@@ -21,7 +20,6 @@ import ptithcm.tttnd35backend.entity.Category;
 import ptithcm.tttnd35backend.entity.Product;
 import ptithcm.tttnd35backend.entity.ProductImage;
 import ptithcm.tttnd35backend.entity.ProductVariant;
-import ptithcm.tttnd35backend.entity.jsonb.CustomTabItem;
 import ptithcm.tttnd35backend.exception.BadRequestException;
 import ptithcm.tttnd35backend.exception.ResourceNotFoundException;
 import ptithcm.tttnd35backend.mapper.ProductImageMapper;
@@ -36,6 +34,7 @@ import ptithcm.tttnd35backend.repository.spec.ProductSpecifications;
 import ptithcm.tttnd35backend.service.ICategoryService;
 import ptithcm.tttnd35backend.service.IProductService;
 import ptithcm.tttnd35backend.service.IStorageService;
+import ptithcm.tttnd35backend.util.helper.CustomTabJsonUtil;
 import ptithcm.tttnd35backend.util.helper.PageResponseHelper;
 import ptithcm.tttnd35backend.util.helper.SlugUtils;
 
@@ -151,6 +150,7 @@ public class ProductServiceImpl implements IProductService {
         // 3 query cố định (product+category đã fetch join sẵn, +variants, +images) - không N+1 dù
         // sản phẩm có bao nhiêu variant/ảnh.
         ProductDetailResponse response = productMapper.toDetailResponse(product);
+        response.setCustomTabs(CustomTabJsonUtil.toResponseList(product.getCustomTabs()));
         response.setCategoryBreadcrumb(categoryService.getBreadcrumb(product.getCategory().getSlug()));
         response.setVariants(productVariantMapper.toResponseList(
                 productVariantRepository.findAllByProductId(product.getId())));
@@ -169,7 +169,7 @@ public class ProductServiceImpl implements IProductService {
         Product product = productMapper.toEntity(request);
         product.setSlug(generateUniqueProductSlug(request.getName()));
         product.setCategory(category);
-        product.setCustomTabs(toCustomTabItems(request.getCustomTabs()));
+        product.setCustomTabs(CustomTabJsonUtil.buildFromRequests(request.getCustomTabs()));
         product.setActive(true);
         product = productRepository.save(product);
 
@@ -191,7 +191,7 @@ public class ProductServiceImpl implements IProductService {
         // Giữ nguyên slug cũ khi sửa (chuẩn SEO, giống Category) - không sinh lại slug ở update.
         productMapper.updateEntityFromRequest(request, product);
         product.setCategory(category);
-        product.setCustomTabs(toCustomTabItems(request.getCustomTabs()));
+        product.setCustomTabs(CustomTabJsonUtil.buildFromRequests(request.getCustomTabs()));
 
         return buildDetailResponse(productRepository.save(product));
     }
@@ -335,14 +335,5 @@ public class ProductServiceImpl implements IProductService {
             slug = base + "-" + suffix++;
         }
         return slug;
-    }
-
-    private List<CustomTabItem> toCustomTabItems(List<CustomTabRequest> requests) {
-        if (requests == null) {
-            return new ArrayList<>();
-        }
-        return requests.stream()
-                .map(r -> CustomTabItem.builder().title(r.getTitle()).content(r.getContent()).build())
-                .toList();
     }
 }

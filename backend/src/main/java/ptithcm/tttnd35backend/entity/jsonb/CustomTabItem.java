@@ -17,5 +17,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CustomTabItem {
     private String title;
-    private String content;
+    // Object thay vì String: tab có thể chứa văn bản tự do ("Mô tả chi tiết") hoặc bảng
+    // key-value thông số kỹ thuật ("Thông số kỹ thuật": {"CPU": "...", "RAM": "..."}).
+    // Jackson tự nhận diện: string JSON -> String, object JSON -> LinkedHashMap.
+    private Object content;
 }

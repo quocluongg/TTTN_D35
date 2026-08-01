@@ -4,19 +4,15 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Mapper;
 import ptithcm.tttnd35backend.dto.request.ProductAdminRequest;
-import ptithcm.tttnd35backend.dto.response.CustomTabResponse;
 import ptithcm.tttnd35backend.dto.response.ProductDetailResponse;
 import ptithcm.tttnd35backend.dto.response.ProductListItemResponse;
 import ptithcm.tttnd35backend.entity.Product;
-import ptithcm.tttnd35backend.entity.jsonb.CustomTabItem;
-
-import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
 
     // id, slug, category, customTabs, ratingAvg, reviewCount, isActive do Service tự xử lý
-    // (slug tự sinh, category load từ categoryId, customTabs map thủ công CustomTabRequest -> CustomTabItem).
+    // (slug tự sinh, category load từ categoryId, customTabs build JsonNode qua CustomTabJsonUtil).
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "slug", ignore = true)
     @Mapping(target = "category", ignore = true)
@@ -34,17 +30,15 @@ public interface ProductMapper {
     @Mapping(target = "reviewCount", ignore = true)
     void updateEntityFromRequest(ProductAdminRequest request, @MappingTarget Product product);
 
-    // Phần field phẳng của trang chi tiết. categoryBreadcrumb/variants/images do Service gán sau.
+    // customTabs: entity là JsonNode (cần chuẩn hóa), DTO là List<CustomTabResponse>
+    // -> khác kiểu, MapStruct không tự map được, Service gán thủ công qua CustomTabJsonUtil sau khi gọi mapper.
+    // categoryBreadcrumb/variants/images cũng do Service gán sau.
     @Mapping(target = "isActive", source = "active")
-    @Mapping(target = "customTabs", source = "customTabs")
+    @Mapping(target = "customTabs", ignore = true)
     @Mapping(target = "categoryBreadcrumb", ignore = true)
     @Mapping(target = "variants", ignore = true)
     @Mapping(target = "images", ignore = true)
     ProductDetailResponse toDetailResponse(Product product);
-
-    CustomTabResponse toCustomTabResponse(CustomTabItem item);
-
-    List<CustomTabResponse> toCustomTabResponseList(List<CustomTabItem> items);
 
     // priceFrom/categoryName gán thủ công ở Service (không có sẵn trên entity Product).
     @Mapping(target = "isActive", source = "active")
