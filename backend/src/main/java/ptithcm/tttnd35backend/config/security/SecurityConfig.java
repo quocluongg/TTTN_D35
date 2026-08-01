@@ -42,6 +42,7 @@ public class SecurityConfig {
             "/auth/forgot-password",
             "/auth/reset-password",
             "/auth/google-login",
+            "/swagger-ui.html",
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/categories",
