@@ -3,7 +3,7 @@ package ptithcm.tttnd35backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.ZonedDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -11,12 +11,13 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "category")
-public class Category {
+@Table(name = "categories")
+public class Category extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "UUID")
+    private UUID id;
 
     @Column(nullable = false, unique = true)
     private String name;
@@ -26,8 +27,6 @@ public class Category {
     private String description;
 
     @Column(name = "parent_id")
-    private Long parentId;
-
-    @Column(name = "created_at", updatable = false)
-    private ZonedDateTime createdAt;
+    private UUID parentId;
 }
+

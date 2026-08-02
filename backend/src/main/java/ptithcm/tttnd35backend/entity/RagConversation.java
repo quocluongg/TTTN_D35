@@ -2,7 +2,7 @@ package ptithcm.tttnd35backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Entity
@@ -28,10 +28,10 @@ public class RagConversation {
 
     @Column(name = "started_at", nullable = false, updatable = false)
     @Builder.Default
-    private LocalDateTime startedAt = LocalDateTime.now();
+    private ZonedDateTime startedAt = ZonedDateTime.now();
 
     @Column(name = "ended_at")
-    private LocalDateTime endedAt;
+    private ZonedDateTime endedAt;
 
     @Column(columnDefinition = "jsonb")
     private String metadata;

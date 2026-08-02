@@ -6,7 +6,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import ptithcm.tttnd35backend.util.enums.OtpPurpose;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Getter
@@ -36,7 +36,7 @@ public class OtpVerification {
     private OtpPurpose purpose;
 
     @Column(name = "expires_at", nullable = false)
-    private LocalDateTime expiresAt;
+    private ZonedDateTime expiresAt;
 
     @Builder.Default
     @Column(nullable = false)
@@ -48,5 +48,5 @@ public class OtpVerification {
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    private ZonedDateTime createdAt;
 }

@@ -4,7 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -12,12 +13,13 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "product_variant")
-public class ProductVariant {
+@Table(name = "product_variants")
+public class ProductVariant extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "UUID")
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
@@ -34,6 +36,14 @@ public class ProductVariant {
     @Column(name = "discount_percent")
     private BigDecimal discountPercent;
 
-    @Column(name = "created_at", updatable = false)
-    private ZonedDateTime createdAt;
+    @Column(columnDefinition = "jsonb")
+    private String attributes;
+
+    @Column(name = "vat_percent")
+    private BigDecimal vatPercent;
+
+    @Column(name = "is_active")
+    @Builder.Default
+    private Boolean isActive = true;
 }
+

@@ -1,112 +1,357 @@
 "use client";
 
-import React, { useState } from "react";
-import { Plus, Search, Filter, Edit, Trash2, Eye, CheckCircle2, XCircle, Package } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect } from "react";
+import AdminJSPageHeader from "@/components/adminjs/AdminJSPageHeader";
+import AdminJSResourceTable, { Column, AdminJSPillTag } from "@/components/adminjs/AdminJSResourceTable";
+import AdminJSFilterDrawer from "@/components/adminjs/AdminJSFilterDrawer";
+import { ExternalLink, Database, Filter, Eye, Layers } from "lucide-react";
 
-const MOCK_PRODUCTS = [
-  { id: "PROD-001", name: "Đồng hồ vạn năng Kyoritsu 1009", category: "Đồng hồ vạn năng", brand: "Kyoritsu", price: 1450000, stock: 45, status: "active" },
-  { id: "PROD-002", name: "Ampe kìm Hioki 3280-10F", category: "Ampe kìm", brand: "Hioki", price: 1250000, stock: 28, status: "active" },
-  { id: "PROD-003", name: "Máy đo điện trở cách điện Fluke 1507", category: "Máy đo cách điện", brand: "Fluke", price: 11200000, stock: 8, status: "active" },
-  { id: "PROD-004", name: "Đồng hồ vạn năng số Sanwa CD800a", category: "Đồng hồ vạn năng", brand: "Sanwa", price: 780000, stock: 0, status: "out_of_stock" },
-  { id: "PROD-005", name: "Máy đo nhiệt độ hồng ngoại Testo 830-T2", category: "Thiết bị đo nhiệt độ", brand: "Testo", price: 2350000, stock: 15, status: "active" },
-];
+type CrawledProduct = {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  specifications: Record<string, string>;
+  description: string;
+  url: string;
+  images: string[];
+  updated_at?: string;
+};
 
 export default function AdminProductsPage() {
-  const [search, setSearch] = useState("");
-  const [products, setProducts] = useState(MOCK_PRODUCTS);
+  const [products, setProducts] = useState<CrawledProduct[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [totalElements, setTotalElements] = useState<number>(0);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [page, setPage] = useState<number>(1);
 
-  const filtered = products.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase()) || p.brand.toLowerCase().includes(search.toLowerCase())
-  );
+  // Filters
+  const [search, setSearch] = useState<string>("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [selectedLayer, setSelectedLayer] = useState<"SILVER" | "BRONZE">("SILVER");
+  const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
+  const [detailProduct, setDetailProduct] = useState<CrawledProduct | null>(null);
+
+  // Fetch Crawled Products
+  const fetchProducts = async () => {
+    setIsLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        pageSize: "10",
+        layer: selectedLayer,
+      });
+      if (search) params.append("search", search);
+      if (categoryFilter) params.append("category", categoryFilter);
+
+      const res = await fetch(`/api/admin/crawled-products?${params.toString()}`);
+      const data = await res.json();
+
+      if (data.success) {
+        setProducts(data.data || []);
+        setCategories(data.categories || []);
+        setTotalElements(data.totalElements || 0);
+        setTotalPages(data.totalPages || 1);
+      }
+    } catch (err) {
+      console.error("Lỗi khi tải dữ liệu crawl:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, [page, selectedLayer, categoryFilter]);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPage(1);
+    fetchProducts();
+  };
+
+  const columns: Column<CrawledProduct>[] = [
+    {
+      header: "Mã SP / ID",
+      accessor: "id",
+      render: (p) => <span className="font-mono font-bold text-[#3C50E0] dark:text-[#80CAEE] text-xs">{p.id}</span>,
+    },
+    {
+      header: "Tên Sản Phẩm Crawl",
+      accessor: "name",
+      render: (p) => (
+        <div className="flex items-center gap-3 max-w-md">
+          {p.images && p.images[0] && !p.images[0].includes("no_selection") ? (
+            <img
+              src={p.images[0]}
+              alt={p.name}
+              className="w-10 h-10 object-contain rounded-lg border border-[#E2E8F0] dark:border-[#2E3A47] bg-white p-0.5 shrink-0"
+              onError={(e) => {
+                (e.target as HTMLElement).style.display = "none";
+              }}
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-lg bg-[#EFF4FB] dark:bg-[#24303F] text-[#3C50E0] flex items-center justify-center font-bold text-xs shrink-0">
+              SP
+            </div>
+          )}
+          <div className="min-w-0">
+            <p className="font-bold text-[#1C2434] dark:text-white truncate" title={p.name}>
+              {p.name}
+            </p>
+            <p className="text-[11px] text-[#64748B] dark:text-[#8A99AD] truncate">{p.url}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      header: "Danh Mục",
+      accessor: "category",
+      render: (p) => (
+        <span className="px-2.5 py-1 rounded-md bg-[#EFF4FB] dark:bg-[#24303F] text-[#1C2434] dark:text-slate-200 font-semibold text-[11px]">
+          {p.category || "Điện tử"}
+        </span>
+      ),
+    },
+    {
+      header: "Giá Niêm Yết (VNĐ)",
+      accessor: "price",
+      render: (p) => (
+        <span className="font-mono font-bold text-[#1C2434] dark:text-white">
+          {p.price > 0 ? `${new Intl.NumberFormat("vi-VN").format(p.price)}đ` : "Liên hệ / 0đ"}
+        </span>
+      ),
+    },
+    {
+      header: "Tầng Data Pipeline",
+      render: () => (
+        <AdminJSPillTag variant={selectedLayer === "SILVER" ? "success" : "warning"}>
+          {selectedLayer === "SILVER" ? "CLEANED (SILVER)" : "RAW (BRONZE)"}
+        </AdminJSPillTag>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Header Toolbar */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-lg border border-slate-200 shadow-xs">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Quản Lý Sản Phẩm</h1>
-          <p className="text-sm text-slate-500 mt-1">Danh sách tất cả thiết bị đo và tồn kho trong hệ thống</p>
-        </div>
-        <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          <span>Thêm Sản Phẩm Mới</span>
-        </Button>
-      </div>
+      {/* Header Bar */}
+      <AdminJSPageHeader
+        title="Dữ Liệu Sản Phẩm Crawl (Electronics Repository)"
+        resourceName="Crawled Data"
+        count={totalElements}
+        description="Toàn bộ danh mục sản phẩm thiết bị điện tử đã crawl từ CellphoneS và qua xử lý Medallion Pipeline."
+        onFilterToggle={() => setIsFilterOpen(true)}
+        onRefresh={() => fetchProducts()}
+      />
 
-      {/* Filter & Search Bar */}
-      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-xs flex flex-col sm:flex-row gap-4 justify-between items-center">
-        <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+      {/* Layer Switcher Tabs */}
+      <div className="flex items-center justify-between bg-white dark:bg-[#1E293B] p-4 rounded-xl border border-[#E2E8F0] dark:border-[#2E3A47] shadow-xs">
+        <div className="flex items-center gap-3">
+          <Database className="w-5 h-5 text-[#3C50E0] dark:text-[#80CAEE]" />
+          <span className="text-xs font-bold text-[#1C2434] dark:text-white">Chọn Tầng Dữ Liệu:</span>
+          <div className="flex items-center bg-[#F1F5F9] dark:bg-[#10172A] p-1 rounded-lg border border-[#E2E8F0] dark:border-[#2E3A47]">
+            <button
+              onClick={() => {
+                setSelectedLayer("SILVER");
+                setPage(1);
+              }}
+              className={`px-3 py-1.5 text-xs font-bold rounded-md transition ${
+                selectedLayer === "SILVER"
+                  ? "bg-[#3C50E0] text-white shadow-xs"
+                  : "text-[#64748B] dark:text-[#8A99AD] hover:text-[#1C2434] dark:hover:text-white"
+              }`}
+            >
+              Silver (Cleaned Data)
+            </button>
+            <button
+              onClick={() => {
+                setSelectedLayer("BRONZE");
+                setPage(1);
+              }}
+              className={`px-3 py-1.5 text-xs font-bold rounded-md transition ${
+                selectedLayer === "BRONZE"
+                  ? "bg-amber-600 text-white shadow-xs"
+                  : "text-[#64748B] dark:text-[#8A99AD] hover:text-[#1C2434] dark:hover:text-white"
+              }`}
+            >
+              Bronze (Raw Crawl)
+            </button>
+          </div>
+        </div>
+
+        {/* Quick Search */}
+        <form onSubmit={handleSearchSubmit} className="flex items-center gap-2">
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm kiếm sản phẩm, thương hiệu..."
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-md text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+            placeholder="Tìm theo tên sản phẩm..."
+            className="p-2 bg-[#F1F5F9] dark:bg-[#10172A] border border-[#E2E8F0] dark:border-[#2E3A47] rounded-lg text-xs text-[#1C2434] dark:text-white placeholder-slate-400 focus:outline-none focus:border-[#3C50E0]"
           />
-        </div>
-
-        <div className="flex items-center gap-2 text-xs font-mono text-slate-500">
-          <Package className="w-4 h-4" />
-          <span>Tổng số: {filtered.length} sản phẩm</span>
-        </div>
+          <button
+            type="submit"
+            className="px-3 py-2 bg-[#3C50E0] text-white rounded-lg text-xs font-bold hover:bg-[#3C50E0]/90 transition"
+          >
+            Tìm
+          </button>
+        </form>
       </div>
 
-      {/* Products Data Table */}
-      <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-xs font-mono uppercase text-slate-500">
-              <th className="p-4">Mã SP</th>
-              <th className="p-4">Tên Sản Phẩm</th>
-              <th className="p-4">Danh Mục</th>
-              <th className="p-4">Hãng</th>
-              <th className="p-4">Giá Bán</th>
-              <th className="p-4">Tồn Kho</th>
-              <th className="p-4">Trạng Thái</th>
-              <th className="p-4 text-right">Thao Tác</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200 text-sm">
-            {filtered.map((p) => (
-              <tr key={p.id} className="hover:bg-slate-50 transition-colors">
-                <td className="p-4 font-mono text-xs font-semibold text-slate-600">{p.id}</td>
-                <td className="p-4 font-medium text-slate-900">{p.name}</td>
-                <td className="p-4 text-slate-600">{p.category}</td>
-                <td className="p-4 font-semibold text-slate-700">{p.brand}</td>
-                <td className="p-4 font-mono font-bold text-slate-900">
-                  {new Intl.NumberFormat("vi-VN").format(p.price)}đ
-                </td>
-                <td className="p-4 font-mono">{p.stock}</td>
-                <td className="p-4">
-                  <span
-                    className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full ${
-                      p.status === "active"
-                        ? "bg-emerald-100 text-emerald-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {p.status === "active" ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                    {p.status === "active" ? "Đang bán" : "Hết hàng"}
+      {/* Main Crawled Products Resource Table */}
+      <AdminJSResourceTable<CrawledProduct>
+        columns={columns}
+        data={products}
+        isLoading={isLoading}
+        keyExtractor={(p) => p.id}
+        onView={(p) => setDetailProduct(p)}
+        currentPage={page}
+        totalPages={totalPages}
+        totalElements={totalElements}
+        onPageChange={(newPage) => setPage(newPage)}
+      />
+
+      {/* Filter Drawer */}
+      <AdminJSFilterDrawer
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        onApply={() => {
+          setIsFilterOpen(false);
+          setPage(1);
+          fetchProducts();
+        }}
+        onReset={() => {
+          setSearch("");
+          setCategoryFilter("");
+          setPage(1);
+        }}
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block font-bold text-[#1C2434] dark:text-white mb-1 text-xs">
+              Từ khóa sản phẩm
+            </label>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Nhập tên sản phẩm..."
+              className="w-full p-2.5 bg-[#F1F5F9] dark:bg-[#10172A] border border-[#E2E8F0] dark:border-[#2E3A47] rounded-md text-xs text-[#1C2434] dark:text-white focus:outline-none focus:border-[#3C50E0]"
+            />
+          </div>
+
+          <div>
+            <label className="block font-bold text-[#1C2434] dark:text-white mb-1 text-xs">
+              Lọc theo Danh mục
+            </label>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="w-full p-2.5 bg-[#F1F5F9] dark:bg-[#10172A] border border-[#E2E8F0] dark:border-[#2E3A47] rounded-md text-xs text-[#1C2434] dark:text-white focus:outline-none focus:border-[#3C50E0]"
+            >
+              <option value="">Tất cả danh mục ({categories.length})</option>
+              {categories.map((cat, idx) => (
+                <option key={idx} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </AdminJSFilterDrawer>
+
+      {/* Crawled Record Detail Drawer */}
+      {detailProduct && (
+        <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/60 backdrop-blur-xs flex justify-end">
+          <div className="w-full max-w-lg bg-white dark:bg-[#1E293B] h-full shadow-2xl border-l border-[#E2E8F0] dark:border-[#2E3A47] flex flex-col justify-between animate-in slide-in-from-right duration-200 text-xs">
+            <div className="p-5 border-b border-[#E2E8F0] dark:border-[#2E3A47] bg-[#1C2434] text-white flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Database className="w-4 h-4 text-[#80CAEE]" />
+                <h3 className="font-bold text-sm">Crawled Record Detail</h3>
+              </div>
+              <button
+                onClick={() => setDetailProduct(null)}
+                className="text-xs text-slate-400 hover:text-white px-2 py-1 bg-[#24303F] rounded"
+              >
+                Đóng
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-4 flex-1 text-[#1C2434] dark:text-slate-200">
+              <h4 className="font-bold text-sm text-[#3C50E0] dark:text-[#80CAEE]">{detailProduct.name}</h4>
+
+              {detailProduct.images && detailProduct.images[0] && (
+                <div className="flex justify-center p-4 bg-[#F1F5F9] dark:bg-[#10172A] rounded-xl border border-[#E2E8F0] dark:border-[#2E3A47]">
+                  <img
+                    src={detailProduct.images[0]}
+                    alt={detailProduct.name}
+                    className="max-h-48 object-contain rounded-md"
+                  />
+                </div>
+              )}
+
+              <div className="space-y-2 bg-[#F7F9FC] dark:bg-[#10172A] p-4 rounded-xl border border-[#E2E8F0] dark:border-[#2E3A47]">
+                <p>
+                  <strong className="text-slate-500">Mã ID:</strong> <span className="font-mono">{detailProduct.id}</span>
+                </p>
+                <p>
+                  <strong className="text-slate-500">Danh mục:</strong> {detailProduct.category}
+                </p>
+                <p>
+                  <strong className="text-slate-500">Giá niêm yết:</strong>{" "}
+                  <span className="font-mono font-bold">
+                    {detailProduct.price > 0 ? `${new Intl.NumberFormat("vi-VN").format(detailProduct.price)}đ` : "Liên hệ"}
                   </span>
-                </td>
-                <td className="p-4 text-right space-x-2">
-                  <button className="p-1 text-slate-500 hover:text-slate-900 rounded">
-                    <Eye className="w-4 h-4" />
-                  </button>
-                  <button className="p-1 text-blue-600 hover:text-blue-800 rounded">
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button className="p-1 text-red-600 hover:text-red-800 rounded">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                </p>
+                <p>
+                  <strong className="text-slate-500">URL Nguồn Crawl:</strong>{" "}
+                  <a
+                    href={detailProduct.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[#3C50E0] dark:text-[#80CAEE] hover:underline inline-flex items-center gap-1 font-mono text-[11px]"
+                  >
+                    <span>{detailProduct.url}</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </p>
+              </div>
+
+              {detailProduct.specifications && Object.keys(detailProduct.specifications).length > 0 && (
+                <div className="space-y-2">
+                  <h5 className="font-bold text-xs text-[#1C2434] dark:text-white uppercase tracking-wider">Thông Số Kỹ Thuật Crawled Specs:</h5>
+                  <div className="bg-[#F7F9FC] dark:bg-[#10172A] p-3 rounded-xl border border-[#E2E8F0] dark:border-[#2E3A47] divide-y divide-[#E2E8F0] dark:divide-[#2E3A47]">
+                    {Object.entries(detailProduct.specifications).map(([key, val], idx) => (
+                      <div key={idx} className="py-1.5 flex justify-between gap-4">
+                        <span className="font-bold text-slate-500">{key}:</span>
+                        <span className="text-right text-[#1C2434] dark:text-slate-200">{val}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {detailProduct.description && (
+                <div className="space-y-1">
+                  <h5 className="font-bold text-xs text-[#1C2434] dark:text-white uppercase tracking-wider">Mô Tả Sản Phẩm Crawled:</h5>
+                  <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-400 bg-[#F7F9FC] dark:bg-[#10172A] p-3 rounded-xl border border-[#E2E8F0] dark:border-[#2E3A47]">
+                    {detailProduct.description}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 border-t border-[#E2E8F0] dark:border-[#2E3A47] text-right bg-[#F7F9FC] dark:bg-[#24303F]">
+              <button
+                onClick={() => setDetailProduct(null)}
+                className="px-4 py-2 bg-[#3C50E0] text-white font-bold text-xs rounded-lg hover:bg-[#3C50E0]/90 transition"
+              >
+                Đóng Chi Tiết Record
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

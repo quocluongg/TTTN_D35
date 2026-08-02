@@ -2,7 +2,7 @@ package ptithcm.tttnd35backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
@@ -18,6 +18,6 @@ public class AuditLog {
     @Column(name = "new_value", columnDefinition = "jsonb") private String newValue;
     @Column(name = "ip_address", length = 64) private String ipAddress;
     @Column(name = "user_agent", length = 500) private String userAgent;
-    @Column(name = "created_at", nullable = false, updatable = false) private LocalDateTime createdAt;
-    @PrePersist void created() { if (createdAt == null) createdAt = LocalDateTime.now(); }
+    @Column(name = "created_at", nullable = false, updatable = false) private ZonedDateTime createdAt;
+    @PrePersist void created() { if (createdAt == null) createdAt = ZonedDateTime.now(); }
 }

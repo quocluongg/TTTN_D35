@@ -8,5 +8,5 @@ import ptithcm.tttnd35backend.entity.Product;
 import java.util.UUID;
 
 @Repository
-public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
+public interface IProductRepository extends JpaRepository<Product, UUID>, JpaSpecificationExecutor<Product> {
 }

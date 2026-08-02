@@ -1,0 +1,1616 @@
+[
+  {
+    "id": "Ugx8IZun1qRNL-xvIph4AaABAg",
+    "text": "Anh Duy Luân ơi, em học Thiết kế UI/UX thì nên dùng macbook hay window ạ. Và nếu mua macbook trong thời gian này thì nên mua con nào phù hợp với nhu cầu nhất ạ? Em cảm ơn anh",
+    "intent": "compare_products",
+    "author": "@auhu1861"
+  },
+  {
+    "id": "UgxDW0qoiCFBfIMDbyN4AaABAg",
+    "text": "Video chuẩn và đáng xem nhất trên Youtube giữa macbook vs laptop windows",
+    "intent": "compare_products",
+    "author": "@pixar3653"
+  },
+  {
+    "id": "UgxELyHFlavX7f63YPd4AaABAg",
+    "text": "2026 có nên mua macbook m1 pro cũ không hay mua windows để edit video ạ , tầm tiền ngang với mac m1 pro ạ",
+    "intent": "compare_products",
+    "author": "@HuyHoang-sg8xh"
+  },
+  {
+    "id": "Ugy4hlxggCNqr3zUset4AaABAg",
+    "text": "MÌnh dùng chủ yếu là văn phòng nên mua con Asus Vivobook s14. Máy có sẵn office 2024 bản quyền. Sạc nhanh. Kết nối màn hình TV không dây. Có màn hình Oled. Sử dụng thời gian rất lâu mới hết pin. Thấy cũng ổn. Đúng máy cần cho GV đem đi dạy.",
+    "intent": "purchase_consultation",
+    "author": "@thienthanbongdem9999"
+  },
+  {
+    "id": "UgzwlqH0sdZGKIw775V4AaABAg",
+    "text": "Chú muốn mua gửi sang Đức .bên shop gửi đc ko",
+    "intent": "general_query",
+    "author": "@TùngHansem-d3w3d"
+  },
+  {
+    "id": "UgxtohBHE59yA9R_eTR4AaABAg",
+    "text": "thiệt sự sài win 6-7 năm nay chơi game cũng có nhưng ít, chỉ ngán nhất khi chuyển qua macbook là vụ cài app đặc thù là chịu die",
+    "intent": "general_query",
+    "author": "@da1tdeptrai"
+  },
+  {
+    "id": "UgyoPP0WvRlGTWTlohV4AaABAg",
+    "text": "Macbook hoặc iMac có thể cân nổi tác vụ build game bằng Unreal Engine 5 không anh ơi. Hay là phải dùng các dòng có card quadro ạ",
+    "intent": "ask_specs",
+    "author": "@phamtoan4230"
+  },
+  {
+    "id": "Ugw3r6_YmAFmUAEBVXF4AaABAg",
+    "text": "dùng macboook có an toàn hơn ko",
+    "intent": "general_query",
+    "author": "@Ahnheeyeon92"
+  },
+  {
+    "id": "UgyBB0_JTsOnYEBG0B14AaABAg",
+    "text": "thích dùng window quá mà không con nào ngon được như macbook trong tầm tiền :( em đang dùng M4",
+    "intent": "general_query",
+    "author": "@Infl-f4m"
+  },
+  {
+    "id": "Ugy1uotFfgMEm5H3hbZ4AaABAg",
+    "text": "mình trk h dùng win làm pts, pr, figma trên pc, sau mình có mua thêm 1 con laptop, lời khuyên ngu ngốc nhất mình nhận được là làm media thì mua mac thay cho win, mình đã mua mac air m4 và thật sự thất vọng và quá khó để làm việc, macbook đk đúng 3 thứ mình thích là build kim loại, pin lâu và ko có quạt, còn đâu là hệ điều hành, bàn phím chán, phím tắt, cài app phức tạp và điều khó chịu nhất là các thao tác cơ bản như kéo thả, thu nhỏ, chuyển đổi nhanh giữa các tài khoản cho trải nghiệm rất tệ khiến công việc của mình gần như bị tê liệt.",
+    "intent": "ask_specs",
+    "author": "@JB00795"
+  },
+  {
+    "id": "UgxJYfMNyKwtqK_I9Mx4AaABAg",
+    "text": "quan điểm cá nhân : mình sử dụng 2 dòng Asus,Acec rồi , điều bị hư mọi mặt ( có khi ko sử dụng cũng hư ) , chuyển sang HP được 5 năm ( rớt 3 lần ko sau hết )",
+    "intent": "general_query",
+    "author": "@quoccanh11"
+  },
+  {
+    "id": "Ugw_H7KLojGWNOUyuDl4AaABAg",
+    "text": "Cứ mua Macbook ra quán ngồi cafe cho oai :((( lap Win không ai biết đâu =(((. Cứ giải quyết khâu oai sĩ trước đã🤣",
+    "intent": "general_query",
+    "author": "@congggdaiii19200"
+  },
+  {
+    "id": "UgzikxG7OBxCCvKAY5d4AaABAg",
+    "text": "Acer ngày nay thế nào chứ cái ngày tháng sinh viên năm 2010 nó làm ra những cái laptop tệ nhất ớn tới giờ. Huhu",
+    "intent": "ask_promotion",
+    "author": "@giangtientvcongaibotoan6937"
+  },
+  {
+    "id": "UgzKzZzBvqJppKADLR94AaABAg",
+    "text": "kế toán-kiểm toán nên mua mac hay win ạ?❤",
+    "intent": "compare_products",
+    "author": "@gowithvmp"
+  },
+  {
+    "id": "UgzyQx7rtdijtUqgENZ4AaABAg",
+    "text": "Em học kinh tế, chơi lol và muốn học tập lâu dài thì nên lấy máy nào tầm 20tr đổ lại ạ",
+    "intent": "general_query",
+    "author": "@NguyễnTuấnHùng-e4b"
+  },
+  {
+    "id": "UgzWKiKoVlPhgvnbjKx4AaABAg",
+    "text": "Làm Data Analyst dùng Mac được không anh?",
+    "intent": "general_query",
+    "author": "@03_thuyduyen38"
+  },
+  {
+    "id": "UgwSBOmvlHmksMMBpjt4AaABAg",
+    "text": "Macpro 2018 của mình pin chạy đowjc hẳn 2 tiếng",
+    "intent": "ask_specs",
+    "author": "@SonNguyen-kz2ry"
+  },
+  {
+    "id": "UgxAjYGNgUYysjJDg714AaABAg.AENktF30blXAFhwN8kDjdP",
+    "text": "Vì mình đang phân vân mua mac hay window, mình là dân IT nhưng gốc học Kinh tế: đã từng học quan cac module data science bên KHTN, làm web, ERP ....",
+    "intent": "general_query",
+    "author": "@bobbyl.sansone2848"
+  },
+  {
+    "id": "UgxAjYGNgUYysjJDg714AaABAg.AENktF30blXAFiCUx03hrN",
+    "text": "@ ChatGPT đâu phải nguồn tin cậy, bạn hỏi nó là dùng không đúng mục đích rồi. Còn nuốn học ML thì Mac hay Win gì cũng được, vì chủ yếu bạn sẽ chạy trên các nền tảng cloud như Colab cho khỏe.",
+    "intent": "general_query",
+    "author": "@duyluandethuong"
+  },
+  {
+    "id": "UgxAjYGNgUYysjJDg714AaABAg.AENktF30blXAF-wCFjI3xf",
+    "text": "@duyluandethuong  anh ơi cho em hỏi với ạ  \nMac mini m4 so sánh với macbook ari m2 thì máy nào hiệu năng mạnh hơn ạ k so sánh về phần di chuyển ạ \nMong anh trả lời em ạ",
+    "intent": "compare_products",
+    "author": "@TranHuuTrungFPLHCM"
+  },
+  {
+    "id": "UgxAjYGNgUYysjJDg714AaABAg.AENktF30blXAFhuVoaEzUf",
+    "text": "Nếu MacBook pro M4 pro mà so với Laptop window + RTX 8G thì window vẫn ngon hơn mac trong AI và Machine: chat GPT nó vậy",
+    "intent": "general_query",
+    "author": "@bobbyl.sansone2848"
+  },
+  {
+    "id": "UgxAjYGNgUYysjJDg714AaABAg.AENktF30blXAFhup3nF209",
+    "text": "@ sao bạn hỏi ChatGPT :)) nó chắc gì đúng.",
+    "intent": "general_query",
+    "author": "@duyluandethuong"
+  },
+  {
+    "id": "UgxAjYGNgUYysjJDg714AaABAg.AENktF30blXALbFWPtiwKg",
+    "text": "Học nghành quản trị khách sạn- mua MacBook được không anh",
+    "intent": "general_query",
+    "author": "@thanhquoc3629"
+  },
+  {
+    "id": "UgxAjYGNgUYysjJDg714AaABAg.AENktF30blXANCZx_A0rfH",
+    "text": "B ơi, vấn đề của chip M1 không chạy tốt với những phần mềm ảo hoá như VMWARE lên M2, M3, M4 đã khắc phục được chưa vậy b? Bây giờ Mackbook Intel đời gần nhất có chạy được các AI local không? Khi đó lợi thế Macook về AI có còn không? Cám ơn b nhé.",
+    "intent": "ask_specs",
+    "author": "@TueTriNhuThat"
+  },
+  {
+    "id": "Ugy1uotFfgMEm5H3hbZ4AaABAg.AOjl2lNY0eQAUbG2JdYCI2",
+    "text": "y chang mình, cũng chuyển từ win qua mac nhưng cài đặt app rất mệt, phải bỏ tiền mua nhiều chứ crack khó, chơi game coi như ko có. Thao tác trên macbook ko quen, bực lắm. nên sau đó cũng lại về win, mac m thích màn hình, pin và tính sang trọng",
+    "intent": "ask_specs",
+    "author": "@vnews365"
+  },
+  {
+    "id": "Ugw_H7KLojGWNOUyuDl4AaABAg.ANiP0ypYH5iAPeLkCrkNmZ",
+    "text": "Thời nào r lấy ba cái luận điểm cũ lỗ sĩ đó",
+    "intent": "general_query",
+    "author": "@YamamotoKisho"
+  },
+  {
+    "id": "UgzikxG7OBxCCvKAY5d4AaABAg.ANVQv_qHTr-AO7RpE-iwXV",
+    "text": "acer h cũng bth:))",
+    "intent": "general_query",
+    "author": "@mnhut2303"
+  },
+  {
+    "id": "UgzKzZzBvqJppKADLR94AaABAg.ANQBSPbChTFANoT2dU_iGF",
+    "text": "Mình đã từng xài Mac cho công việc Kiểm toán giống như bạn thì theo quan điểm cá nhân và cùng với các tham khảo khác thì bạn nên chọn Win vì có một số phần mềm không tương thích với Mac nên rất khó để sử dụng khi cần ạ. Bạn có thể tham khảo ý kiến của mình",
+    "intent": "general_query",
+    "author": "@KaiHan_n"
+  },
+  {
+    "id": "UgzWKiKoVlPhgvnbjKx4AaABAg.ALoZ5E70otZANb--kzLn4r",
+    "text": "không nha bạn",
+    "intent": "general_query",
+    "author": "@NguyenVanKhang-b4c"
+  },
+  {
+    "id": "Ugys4hPIpXuLquvdvhR4AaABAg",
+    "text": "Ae dev ko phải nền tảng windows như c# thì 100% xài mac pro. Ai xài windows thì chắc ko đủ tiền thôii",
+    "intent": "general_query",
+    "author": "@thanhonguyen5268"
+  },
+  {
+    "id": "Ugxb6FhoJG-oU56_d_p4AaABAg",
+    "text": "Chào @duyluandethuong. Mình đang làm thiết kế UI nên có ý định lấy con M4. \n\nLăn tăn duy nhất là mình mở khá nhiều tab trình duyệt trong lúc làm, bình thường dùng PC thì mở khoảng 2-30 tab, không biết với 16gb Ram trên con MBP M4 có cân nổi không nhỉ? \nPhiền Duy Luân trả lời giúp. \n\nXin cảm ơn",
+    "intent": "ask_specs",
+    "author": "@hungalexi89"
+  },
+  {
+    "id": "UgwT0GrTWLcpO2Yso154AaABAg",
+    "text": "A thích macbook vì đẹp tin tế nhưng không biết macbook có làm autocad  có được không Duy Luân ? Đang phân vân không biết chọn mac hay win nhờ e tư vấn giúp",
+    "intent": "purchase_consultation",
+    "author": "@chinhtran1273"
+  },
+  {
+    "id": "Ugxcl9l836PZ3Jp2J5N4AaABAg",
+    "text": "Duy lan hoc gioi ghê em khong hieu gi het",
+    "intent": "general_query",
+    "author": "@tâmdaongoc-l7k"
+  },
+  {
+    "id": "UgyhqedJU9p-GSifE2l4AaABAg",
+    "text": "quan điểm cấu hình cao thì có vấn đề gì đâu nhỉ!  hầu bao 40-50 củ thì ôg chọn hết là phải r, quan điểm cấu hình trên hết xuất phát từ phân khúc 10-15 củ mấy con trong video có cái gì kém đâu điểm yếu của nó còn hơn cả điểm khá của mặt bằng chung",
+    "intent": "ask_specs",
+    "author": "@ban1654"
+  },
+  {
+    "id": "UgzEVAlTHNIzCf-ZERh4AaABAg",
+    "text": "Em không rành về công nghệ lắm mà em đang cần tham khảo mẫu laptop windows nào pin trâu (chạy các phần mềm adobe với nhiều tab khác cùng lúc không cắm sạc mà vẫn trụ được nguyên ngày), màn hình chuẩn màu, tầm giá dưới 30tr ạ 😭😭 mọi người recc giúp em với",
+    "intent": "purchase_consultation",
+    "author": "@l4tt32"
+  },
+  {
+    "id": "UgxvUqYX0Gj6qAjFZVp4AaABAg",
+    "text": "Mn ơi e con gái nên hỏi thật, có dòng lap windows nào (mọi phân khúc) hơn Macbook k ạ? E k muốn dùng mac í mà kb win có dòng nào hơn k",
+    "intent": "general_query",
+    "author": "@ntna2310"
+  },
+  {
+    "id": "UgyPG47D_M5Jsm0fno14AaABAg",
+    "text": "Macbook dùng ổn định hơn, màn hình đẹp hơn, loa hay hơn, thiết kế đẹp hợn, máy bền hơn. Nhưng chơi game thì không nên mua Macbook vì ít game hơn Win và không có GPU rời. Có một số phần mềm chuyên dụng có thể chỉ có bản Win mà không có bản cho Mac. Tôi mua và dùng cả Mac cả Win là vì tôi thích Mac. Nhưng nếu chỉ được chọn 1, thì tôi bắt buộc phải chọn Win, mặc dầu tôi chán ngán các lỗi vặt của Win vô cùng.",
+    "intent": "purchase_consultation",
+    "author": "@HaveAniceDay-tks"
+  },
+  {
+    "id": "Ugx32EBzVY17anmlQgp4AaABAg",
+    "text": "Chỉ có nghèo mới mua mac thôi, mua con máy xài 5-8 năm, thậm chí là 10 năm, xài tới cục pin có chửa lun. Tg bạn t xài mac 2020 tới nay cũng gần 5 năm rồi, còn máy win qua 2-3 năm là chạy hụ hụ phải nâng cấp 😂",
+    "intent": "ask_specs",
+    "author": "@Thang_TOM_"
+  },
+  {
+    "id": "UgyCwP9YCZ59xInqC8F4AaABAg",
+    "text": "về phần AI, mac nó chia ram cho vga và vẫn phải chia ram cho cpu xử lý tác vụ thì làm sao mà băng như kiểu 32gb ram trên win và 8gb ram của card đồ họa đc",
+    "intent": "ask_specs",
+    "author": "@vuquyduong88"
+  },
+  {
+    "id": "UgzAV3YtuJLFqollhFR4AaABAg",
+    "text": "Cho e xin giá ạ",
+    "intent": "ask_price",
+    "author": "@DinhSon3003"
+  },
+  {
+    "id": "UgzdWZ9gTuUl83uW-fN4AaABAg",
+    "text": "Vì tính linh động cần có trong khi dùng nên mình sẽ ưu tiên chọn thiết kế đẹp, nhỏ gọn và pin ổn áp là ok nhất. Và Macbook Air đáp ứng đầy đủ nhu cầu của mình😃",
+    "intent": "purchase_consultation",
+    "author": "@liemphan9171"
+  },
+  {
+    "id": "Ugz6JW_4IbggWkmYxBd4AaABAg",
+    "text": "Mình ở HN có chiếc Huawei mate book mỏng nhẹ CPU i7 gen 11 cần pass",
+    "intent": "ask_specs",
+    "author": "@atlevan7265"
+  },
+  {
+    "id": "Ugy7K18g500YqL7I3zJ4AaABAg",
+    "text": "Chỉ cần 15 phút thiền mỗi ngày, bạn sẽ thấy tâm trí sáng hơn rất nhiều.",
+    "intent": "general_query",
+    "author": "@saturninaxiana"
+  },
+  {
+    "id": "UgyC6S-lPBPmcatFB0R4AaABAg",
+    "text": "thực ra cấu hình là thứ người dùng có thể biết được, cấu hình cũng chỉ biết ram ổ cứng thôi. Còn các thông số khác không biết để đối chiếu chứ không phải chăm chăm vào cấu hình :))",
+    "intent": "ask_specs",
+    "author": "@tueminhautotech"
+  },
+  {
+    "id": "Ugz8rnfoF-x9EBO0Oo94AaABAg",
+    "text": "Cho mình hỏi chút: laptop win con nào loa ngon, màn đẹp",
+    "intent": "general_query",
+    "author": "@vuvietdoc2010"
+  },
+  {
+    "id": "Ugw4BFnQDh2j3vJ4chh4AaABAg",
+    "text": "A ơi. Tầm 15tr có lap nào dùng văn phòng ok k a. Pin ổn xíu ạ",
+    "intent": "ask_specs",
+    "author": "@lamborghini8523"
+  },
+  {
+    "id": "UgxhLci6ZuG83aOeash4AaABAg",
+    "text": "mình hay làm việc với office, excel và nhiều tab, đôi khi cả chỉnh sửa video, ảnh nữa thì nên mua Mac hay Win vậy mn",
+    "intent": "compare_products",
+    "author": "@ngocthang4897"
+  },
+  {
+    "id": "UgxLcDnmchLL7xwoa5Z4AaABAg",
+    "text": "Mình là giáo viên tiếng anh thì có nên dùng macbook không ạ? Đang phân vân m1 16gb",
+    "intent": "ask_price",
+    "author": "@martin.nguyen282"
+  },
+  {
+    "id": "UgwriD3ZC_Kz3Z1Ur-54AaABAg",
+    "text": "anh thường dùng những trình duyệt nào cho các tác vụ hằng ngày và trong công việc vậy ạ",
+    "intent": "general_query",
+    "author": "@binoffical6737"
+  },
+  {
+    "id": "UgwT0GrTWLcpO2Yso154AaABAg.AJiPi87BHHNAJj7YSw_FAX",
+    "text": "dạ này em không biết ạ",
+    "intent": "general_query",
+    "author": "@duyluandethuong"
+  },
+  {
+    "id": "UgxvUqYX0Gj6qAjFZVp4AaABAg.AJOh8odBj9VAJqLIAyBORi",
+    "text": "lenovo xiaoxin nha b",
+    "intent": "general_query",
+    "author": "@DaiDoanDinh-b7p"
+  },
+  {
+    "id": "UgyPG47D_M5Jsm0fno14AaABAg.AIensFLMZDMAJ-9NsD9Qps",
+    "text": "bạn nói đúng, một số phần mềm đặc thù của công việc mà Mac không có nên tôi vẫn phải dùng win",
+    "intent": "general_query",
+    "author": "@ahrivip123"
+  },
+  {
+    "id": "UgyPG47D_M5Jsm0fno14AaABAg.AIensFLMZDMAJ2SyRfDhdI",
+    "text": "đúng, ví dụ mình dùng revit, xài bản quyền 34 củ 1/năm, tất nhiên công ty sẽ cấp nhưng nếu muốn làm job ngoài hoặc học thêm thì giá bỏ ra vậy là rất lớn (34 củ là được dàn PC chạy mượt mà revit công trình cấp 1 rồi)",
+    "intent": "ask_price",
+    "author": "@uongnguyen6753"
+  },
+  {
+    "id": "UgyPG47D_M5Jsm0fno14AaABAg.AIensFLMZDMAJlMHizR8bc",
+    "text": "do b k có tiền mua dòng xịn chứ mấy con mac bền hơn thế nào đc kiểm chứng thì chẳng có con mac nào cho chạy server như mấy con ws đc -)) màn lcd ăn thế nào đc oled (trừ bọn oled trên mấy con dưới 3 chục ) còn thiết kế gọi bằng cụ đi là vừa nhất là với các dòng xps đặc biệt cái tai trâu lù lù ra khen hơn đc thì thua -)) đc mỗi cái loa là hơn thôi chứ còn có vẹo gì đâu nhất là mỗi năm chẳng nâng cấp vẹo gì ngoài con chip đc 10-20% còn thua mấy con win 25-30%",
+    "intent": "purchase_consultation",
+    "author": "@10jsjhd"
+  },
+  {
+    "id": "UgyPG47D_M5Jsm0fno14AaABAg.AIensFLMZDMAKX6jsXmeRM",
+    "text": "@10jsjhd  Thử so cùng giá tiền đi xem dưới 20m có con nào ngon hơn macbook air m2 ko bạn :)) Ông bắt con macbook 20tr đi so đột bền với lap win 100tr chạy sever, so màn hình với lap 30tr, so thiết kế với dòng XPS 50tr. bó tay...",
+    "intent": "purchase_consultation",
+    "author": "@Hoangchungkhoan"
+  },
+  {
+    "id": "UgyPG47D_M5Jsm0fno14AaABAg.AIensFLMZDMALvZhKbUXYw",
+    "text": "⁠ @10jsjhd  tầm giá 20tr có con win nào hơn mac không bạn mình cx k có tiền chơi win xịn",
+    "intent": "purchase_consultation",
+    "author": "@thanhphuc-o6b"
+  },
+  {
+    "id": "Ugx32EBzVY17anmlQgp4AaABAg.AIWmJC3obuMAIkQwo3R3Bh",
+    "text": "@Thang_TOM_  Windows chạy 2 năm mà hụ hụ r b. M 7 năm đến h. Một con thời gen 3 cài w7 để chạy chuyên dụng nữa + lướt web, xem phim, office vẫn mượt.",
+    "intent": "general_query",
+    "author": "@luanngothanh7661"
+  },
+  {
+    "id": "Ugx32EBzVY17anmlQgp4AaABAg.AIWmJC3obuMAIlqEkAguNz",
+    "text": "@luanngothanh7661 nói biết lộn xào rồi. Cơ chế của máy win là chỉ cần bật lên là quạt chạy hụ hụ, ko làm cũng chạy",
+    "intent": "general_query",
+    "author": "@Thang_TOM_"
+  },
+  {
+    "id": "Ugx32EBzVY17anmlQgp4AaABAg.AIWmJC3obuMAIm8MbJaaDV",
+    "text": "​​ @Thang_TOM_ tưởng hụ hụ của b là hỏng r. Siêng vệ sinh bụi định kỳ thì mát máy thôi, 2 3 năm lên đời thì đúng b có đk. Còn máy mac thì ngon đó chứ làm việc vs nó m ko hợp, m dân kt.",
+    "intent": "compare_products",
+    "author": "@luanngothanh7661"
+  },
+  {
+    "id": "UgzdWZ9gTuUl83uW-fN4AaABAg.AHuRNf1DTe_AT3UzGhIXVK",
+    "text": "@liemphan9171  macbook dùng cho chỉnh sửa video đk ko b ví dụ mh tải capcut về đk ko b",
+    "intent": "general_query",
+    "author": "@HuyNguyen-sz5ue"
+  },
+  {
+    "id": "Ugz6JW_4IbggWkmYxBd4AaABAg.AHorIMELtSHAIhz29eEiSv",
+    "text": "@atlevan7265  giá cả sao",
+    "intent": "ask_price",
+    "author": "@thitramypham4181"
+  },
+  {
+    "id": "Ugy7K18g500YqL7I3zJ4AaABAg.AHi_e_n5lQrAIoYBeyjtsm",
+    "text": "that ko ban",
+    "intent": "general_query",
+    "author": "@Son19625"
+  },
+  {
+    "id": "UgyC6S-lPBPmcatFB0R4AaABAg.AHVqOaWPvE7AIPrgWbnzBd",
+    "text": "@tueminhautotech  chuẩn, các thông số như tỷ lệ phủ màu màn hình nhiều con nó nói trên web khá chung chung. Nếu không phải dòng flagship của hãng thì ít có kênh nào đo cái thông số màu cả. Hoặc về cái phần vỏ máy, cùng là kim loại nhưng không phải con nào cũng như con nào. Có con kim loại cầm thì sướng, có con thì lại ọp ẹp. Nên muốn nghiên cứu kỹ nhất vẫn là trải nghiệm thực tế",
+    "intent": "ask_specs",
+    "author": "@danganhminato"
+  },
+  {
+    "id": "Ugz8rnfoF-x9EBO0Oo94AaABAg.AHJceWtWdHvAHlFUwbLCEd",
+    "text": "@vuvietdoc2010  Asus Rog ạ",
+    "intent": "general_query",
+    "author": "@chuanvu6465"
+  },
+  {
+    "id": "UgxLcDnmchLL7xwoa5Z4AaABAg.AGUHNzmfjZtAIPrqkDDRaV",
+    "text": "Quan trọng nhu cầu bản thân cần gì chứ nghề nghiệp quan trọng gì. Phải list ra nhu cầu và mức tiền sẵn sàng chi mới biết được",
+    "intent": "purchase_consultation",
+    "author": "@danganhminato"
+  },
+  {
+    "id": "UgxLcDnmchLL7xwoa5Z4AaABAg.AGUHNzmfjZtAI1QRmQ1hkM",
+    "text": "@martin.nguyen282  rất nên",
+    "intent": "general_query",
+    "author": "@vietnamsunnytourist"
+  },
+  {
+    "id": "UgzwStc33nHj5nxcslB4AaABAg",
+    "text": "chào anh anh sắp có video  review New Dell Pro Premium chưa ?",
+    "intent": "general_query",
+    "author": "@NguyenTaiDuan"
+  },
+  {
+    "id": "UgwObR9xPpZGmivGUCR4AaABAg",
+    "text": "Em làm marketing muốn học thêm graphic design thì nên mua mac k ạ",
+    "intent": "purchase_consultation",
+    "author": "@fueledbycomtam832"
+  },
+  {
+    "id": "UgzDq-WL0J-wLxAar7B4AaABAg",
+    "text": "Mua ở đâu ạ",
+    "intent": "general_query",
+    "author": "@DuyênNguyễnThịCẩm-m1f"
+  },
+  {
+    "id": "Ugw5Bsv-zg34gEB2tEd4AaABAg",
+    "text": "đối với mình, người đã dùng windows toàn thời gian và đã thử dùng macbook. Thực sự với nhu cầu làm việc, gaming thì macbook khá tù. Còn lại thì ok fine",
+    "intent": "purchase_consultation",
+    "author": "@Surpremel"
+  },
+  {
+    "id": "Ugz7t4_M5ZUA5mujY4p4AaABAg",
+    "text": "Hiện mình đang sài 2 loại laptop, 1 là Macbook, 2 là máy PC. 2 hệ máy cái nào mình cũng thích. Giờ thì đang ngóng Windows 12, nếu mọi thứ ổn mình sẽ nâng cấp lên",
+    "intent": "general_query",
+    "author": "@nickviet9274"
+  },
+  {
+    "id": "UgzYdpVI3znK9hYqTUt4AaABAg",
+    "text": "Mua máy để trả lời bán hàng online là chính thì mua con nào bàn phím gõ ngon nhất ạ",
+    "intent": "general_query",
+    "author": "@gomsutramy"
+  },
+  {
+    "id": "UgyZ6O3OiRoWzT1tuqF4AaABAg",
+    "text": "Anh ơi làm video nên và ko nên mua mac air m1 năm 2025 đi anh",
+    "intent": "purchase_consultation",
+    "author": "@giaphu2694"
+  },
+  {
+    "id": "UgxErGxkERg-PSTZIgF4AaABAg",
+    "text": "Dạ cho e hỏi tầm 10~15tr nên mua máy nào dùng văn phòng thỉnh thoảng chơi game ạ a. E cảm ơn a nhiều ạ!",
+    "intent": "purchase_consultation",
+    "author": "@amusing9450"
+  },
+  {
+    "id": "UgzFuuYHHbR_p-eH5qR4AaABAg",
+    "text": "Em rất hay xem video của a và cũng rất thích cách mà anh làm review về từng chiếc laptop \nHiện tại em vẫn còn là sinh viên và có tìm hiểu về vài dòng laptop của Trung Quốc mong anh có thể làm review về máy bên đó em có tìm hiểu Honor magicbook Art 14 khá là hay và thú vị nhưng ở Việt Nam chưa có ai làm review về chiếc máy đó hoặc trong tầm giá trên 20tr có chiếc laptop win nào cũng mỏng nhẹ pin trâu và thú vị không em nhu cầu em chỉ làm công việc văn phòng cơ bản và không chơi game ạ mong được anh Duy vad mọi người tư vấn. Chúc anh và thật nhiều sức khỏe và ra thêm nhiều video bổ ích trong thời gian sắp tới",
+    "intent": "purchase_consultation",
+    "author": "@tranviethuynh5655"
+  },
+  {
+    "id": "UgxNwFUFOpQVINW7ez94AaABAg",
+    "text": "mình có máy case, xong vừa kiếm thêm 1 em dùng thi thoảng đem ra ngoài, vụt ngay 1 con pro 16inch 2019 i7 =))) ai không sợ nóng ấm nhẹ thì con này ngon tuỵet vời =)))) cơ mà thực ra cùng tầm giá mình nghĩ k có con nào mát đâu =)))",
+    "intent": "purchase_consultation",
+    "author": "@MinhBui-ri5ke"
+  },
+  {
+    "id": "UgzHV1zjZqiEEqDwI1B4AaABAg",
+    "text": "Anh ơi cho em hỏi về con Lenovo thinkpad x13 gen 5 và so sánh với con air m2 được không ạ?",
+    "intent": "compare_products",
+    "author": "@TuAnh-z6m"
+  },
+  {
+    "id": "UgyVSRedW6sqUPm7R894AaABAg",
+    "text": "mình làm video editor, chủ yếu dùng bộ adobe, và có dùng after effect, làm animation, template, còn AI thì chỉ có văn bản thành giọng nói, or render hình nhưng cũng k nhiều, thì theo Luân nên mua window hay mac, về khả năng thì mình có thể mua dc con m4 max options thấp nhất của nó, thì nên dùng tiền đó mua window hay macbook, vs mình cũng muốn sử dụng qua final cut pro để trải nghiệm dựng video, yêu cầu dựng cũng k quá nặng, vs cho mình hỏi là trên mac có các loại phần mềm bảo vệ, hay diệt virus dọn dẹp rác gì giống trên win không, cám ơn Luân nhé",
+    "intent": "compare_products",
+    "author": "@dongle9114"
+  },
+  {
+    "id": "Ugx2fewUjN14mVdzryt4AaABAg",
+    "text": "anh Duy Luan ơi cho em hỏi nếu dùng Mac để code mobile thì nên dùng máy thật để test hay dùng máy ảo anh nhỉ, kiểu dùng máy ảo nó có hại cho Mac về sau này không",
+    "intent": "general_query",
+    "author": "@khoanguyendang8129"
+  },
+  {
+    "id": "Ugzb0v7T6A0lEKYI_HZ4AaABAg",
+    "text": "Vài năm nữa dùng silicon carbon thì còn ngon hơn bữa 😊",
+    "intent": "general_query",
+    "author": "@MrHaiTiếngAnh"
+  },
+  {
+    "id": "Ugxho5RSbOJR9zxIQ8t4AaABAg",
+    "text": "em nên chọn macbook air m3 24gb ram 1tb ssd hay macbook pro 14’ m4 thường 16gb ram 512gb ssd á anh, nhu cầu edit render video 4k thực chiến tại set (em có sẵn pc ở nhà làm máy chính)",
+    "intent": "purchase_consultation",
+    "author": "@middudoan"
+  },
+  {
+    "id": "UgzGFe9zWEWod66RpcR4AaABAg",
+    "text": "Làm việc macbook đẳng cấp khỏi bàn",
+    "intent": "general_query",
+    "author": "@unghoangphuc161"
+  },
+  {
+    "id": "UgyvG9kI60ftt46MHY14AaABAg",
+    "text": "Mac ngon hơn Windows là vì các ông dùng Mac luôn so sánh con Mac giá hơn 30 củ với con laptop Windows giá bằng 1 nửa, chứ đã biết con Ultrabook trên 30 củ xài win 11 nó đã thế nào đâu =))))",
+    "intent": "compare_products",
+    "author": "@giaosudungrambo628"
+  },
+  {
+    "id": "Ugy30axjaMh546xgT7F4AaABAg",
+    "text": "Nhà e có một con prestige 13 evo với macbook air m2, so sánh chung thì prestige ngon hơn, pin trâu, nhẹ, win full app",
+    "intent": "compare_products",
+    "author": "@Клара54"
+  },
+  {
+    "id": "UgwWwfkzrMjZ6Oy9uwR4AaABAg",
+    "text": "Tôi dân game thì cứ win mà quất chứ mac ko chơi nổi. Có con prestige 14 làm tốt mà giải trí cũng ngon. Như mac chỉ hợp làm thôi",
+    "intent": "general_query",
+    "author": "@Тарасий1221"
+  },
+  {
+    "id": "Ugy3nxRczuU514Ogp3h4AaABAg",
+    "text": "A ơi trước đây e có 1 cái Thinkpad t450 i5 đời 5th. E dùng xong là cất vào balo ngay k để lung tung trên bàn. Vì cất vào balo nên cũng lười lấy ra, gần như always nằm yên trong balo. Chỉ khi nào đt e hết pin, e cần xem 1 sự kiện live trong nhiều giờ hay e ra quán cà phê thì mới lấy ra xem Youtube. Và lâu lâu hiếm lắm mới gõ Word hay làm powerpoint thôi còn Excel gần như k bao giờ đụng tới.\n\nGiờ nó bay màu rồi nên e muốn mua 1 cái Macbook. Hiện tại e đã có 1 cái iphone mới pin rất là trâu kèm 1 cái ipad màn to như lap để xem Youtube (e thích dùng ipad hơn lap vì cầm lên nằm quay tới quay lui xem đc) nên nhu cầu giải trí đối với lap không còn nữa. Giờ e muốn có lap để những khi cần học họp online trong nhiều giờ hay cần gõ những bài word dài tốn nhiều thời gian suy nghĩ còn có cái mà dùng vì ipad k vừa dùng vừa sạc như lap đc. E dự định mua Mac Air 2020 i3 thôi đc k a. 1 tháng e dùng lap chắc được 3 lần nên không muốn bỏ quá nhiều tiền cho Mac Air M1. E dùng Thinkpad i5 5th ram 8gb thấy ok k lag k out gì vì nặng lắm cũng chỉ bật 1 tab Youtube + 1 tab word + 1 tab zalo thôi.",
+    "intent": "purchase_consultation",
+    "author": "@tailevu7416"
+  },
+  {
+    "id": "UgwObR9xPpZGmivGUCR4AaABAg.AFu8y8TiSC8AGVrn2IVnj4",
+    "text": "Mua con window đi. Mình trước dùng Mac, xong có đợt Mac hỏng và đi sửa, mình mượn cu em con win, sửa xong mac rồi bán mua win luôn. \n \nHiện mình đang làm Content, Design cho mảng thể thao điện tử LQM và FF, PUBG.",
+    "intent": "complain",
+    "author": "@manhbasim34"
+  },
+  {
+    "id": "UgwObR9xPpZGmivGUCR4AaABAg.AFu8y8TiSC8AGYJgd8Jy80",
+    "text": "@manhbasim34  bác dùng con nào vậy ạ",
+    "intent": "general_query",
+    "author": "@fueledbycomtam832"
+  },
+  {
+    "id": "UgwObR9xPpZGmivGUCR4AaABAg.AFu8y8TiSC8AIutToHVXL1",
+    "text": "@manhbasim34  trong giá 15tr nên mua loại nào a. E người mới. Mún làm video hoặc đi học marketing và game ạ",
+    "intent": "purchase_consultation",
+    "author": "@AlmaInquebrantable12q"
+  },
+  {
+    "id": "Ugw5Bsv-zg34gEB2tEd4AaABAg.AFfNt_-OVqVALn5o6cy4Pk",
+    "text": "Mình cũng mới mua mac mini m4 ở cellphones đc 5 ngày, dùng ko thể nào quen đc. Cảm giác ko linh hoạt bằng win. Đang muốn bán 😂",
+    "intent": "ask_price",
+    "author": "@minhucpham9968"
+  },
+  {
+    "id": "Ugw5Bsv-zg34gEB2tEd4AaABAg.AFfNt_-OVqVALn71LRunnj",
+    "text": "@minhucpham9968  mình cx định bán lại mua con khác. Mà giá giảm hơn 25% nên đành giữ lại sài XD",
+    "intent": "ask_price",
+    "author": "@Surpremel"
+  },
+  {
+    "id": "UgyZ6O3OiRoWzT1tuqF4AaABAg.AFIqf37C_QqAF_l3VjcU9f",
+    "text": "Air M4 bản thấp nhất vẫn giá đó mà, $999",
+    "intent": "ask_price",
+    "author": "@nickviet9274"
+  },
+  {
+    "id": "UgxErGxkERg-PSTZIgF4AaABAg.AF06tyhgaFNAFHkTH_4QUZ",
+    "text": "@amusing9450  lap gaming",
+    "intent": "general_query",
+    "author": "@taolapro1q1"
+  },
+  {
+    "id": "UgxErGxkERg-PSTZIgF4AaABAg.AF06tyhgaFNAF_lITgh8Wq",
+    "text": "Thinkpad, hoặc gaming PC",
+    "intent": "general_query",
+    "author": "@nickviet9274"
+  },
+  {
+    "id": "UgxErGxkERg-PSTZIgF4AaABAg.AF06tyhgaFNANDEzcWsmm8",
+    "text": "@nickviet9274  thinkpad so vs macbook thì sao ạ",
+    "intent": "compare_products",
+    "author": "@LamNguyen-dz7fn"
+  },
+  {
+    "id": "UgxNwFUFOpQVINW7ez94AaABAg.AEtGw-GkfjBAEzi2ljznxg",
+    "text": "mang ra ngoài thì dùng air cho mỏng nhẹ mà mát :)",
+    "intent": "general_query",
+    "author": "@LucianaHasper"
+  },
+  {
+    "id": "UgxNwFUFOpQVINW7ez94AaABAg.AEtGw-GkfjBAGXjvFgifYo",
+    "text": "Vụt ở đâu vậy bạn. Mình cũng đang tính vụt, mà thấy review bảo là nóng ghê lắm",
+    "intent": "general_query",
+    "author": "@Minhan49"
+  },
+  {
+    "id": "UgxNwFUFOpQVINW7ez94AaABAg.AEtGw-GkfjBAGdAwRvm-B-",
+    "text": "@MinhBui-ri5ke  con này bàn phím gõ thế nào bạn ơi.",
+    "intent": "general_query",
+    "author": "@Hautiepthi"
+  },
+  {
+    "id": "UgyVSRedW6sqUPm7R894AaABAg.AEg-pmeGafhAH-RG_8--eF",
+    "text": "em thấy nhu cầu của bác mua mac là chuẩn bài rồi.. mac chỉ thua trải nghiệm game thôi",
+    "intent": "purchase_consultation",
+    "author": "@thanhtung-giaytayauthentic"
+  },
+  {
+    "id": "UgyVSRedW6sqUPm7R894AaABAg.AEg-pmeGafhAJl5zqCamOF",
+    "text": "Bạn ơi bạn đã chọn được máy chưa, mình cũng đang có nhu cầu như bạn mình muốn tham khảo",
+    "intent": "purchase_consultation",
+    "author": "@wakeuptohope"
+  },
+  {
+    "id": "Ugxho5RSbOJR9zxIQ8t4AaABAg.AEdIH67uFdJAEe1NLw5GSO",
+    "text": "pro 14 pro 16 luôn vượt trội hơn dòng air về khoản edit render mà bạn, air đc cái mỏng nhẹ pin trâu thôi, đặc biệt là air 15inch xài rất đã, màn to nhưng vẫn mỏng nhẹ",
+    "intent": "ask_specs",
+    "author": "@congdanhvo662"
+  },
+  {
+    "id": "Ugxho5RSbOJR9zxIQ8t4AaABAg.AEdIH67uFdJAEeAbLsRMcp",
+    "text": "@ mình phân vân là trong cùng tầm giá loanh quanh 39-42tr thì nên cố lấy m4 cho mạnh màn đẹp nhưng chỉ 16-512 hay lấy air 24-1tb đỡ dùng ssd ngoài (do edit render siêu nặng thì mình lấy pc ở nhà làm máy chính, lap chỉ để đem đi dựng draft thực chiến thôi)",
+    "intent": "purchase_consultation",
+    "author": "@middudoan"
+  },
+  {
+    "id": "UgzGFe9zWEWod66RpcR4AaABAg.AEd8VPPp1wCAEisE6TvWVG",
+    "text": "Làm việc gì nhỉ 😂😂😂 cụ thể đi chứ , chụp ảnh tự sướng hay phông bạt 😅😅😅 người sài máy tính lâu năm luôn kết luận 1 điều nếu ngang giá thì win luôn tiện lợi và mạnh mẽ hơn",
+    "intent": "ask_price",
+    "author": "@Tonrangbo"
+  },
+  {
+    "id": "UgyvG9kI60ftt46MHY14AaABAg.AEZLjxhBtgsAEirtUEpj_g",
+    "text": "@giaosudungrambo628  máy mac pro gặp mấy con máy trạm window ngang giá là khóc thét liền kkkkk",
+    "intent": "ask_specs",
+    "author": "@Tonrangbo"
+  },
+  {
+    "id": "UgyvG9kI60ftt46MHY14AaABAg.AEZLjxhBtgsAIWlrb56g1R",
+    "text": "@Tonrangbo khóc qq. Mac air t mua có 24tr, mấy con win mà để chạy mấy phần mềm đồ hoạ cũng trên 20tr thậm chí hơn, mỗi lần mở máy lên là trực thăng nó bay 😂, màn thì xấu",
+    "intent": "general_query",
+    "author": "@Thang_TOM_"
+  },
+  {
+    "id": "UgyvG9kI60ftt46MHY14AaABAg.AEZLjxhBtgsAF_kqVhXUWS",
+    "text": "Tiền 0 là rào cản, chơi max luôn cho sướng",
+    "intent": "general_query",
+    "author": "@nickviet9274"
+  },
+  {
+    "id": "UgyvG9kI60ftt46MHY14AaABAg.AEZLjxhBtgsAJMZ6HLEu_1",
+    "text": "vũ khí tối thượng khi so sánh ... mac giữ giá hơn",
+    "intent": "compare_products",
+    "author": "@ngocphuocnguyen2204"
+  },
+  {
+    "id": "UgyvG9kI60ftt46MHY14AaABAg.AEZLjxhBtgsASszl6g1Y_j",
+    "text": "@giaosudungrambo628  tui đag dùng air m4 bản base, nói thật so với mấy con lenovo ngang tầm mà bạn tôi sd thì thời lượng pin hay trải nghiệm dùng của mấy máy windows cảm giác ko thích bằng, tui thích ổn định nên mua macbook, loa dùng cơ bản tốt, màn retina đẹp dù ko phải oled hay mini led, trackpad xài rất thích, bàn phím gõ sướng bì rui thích phím hành trình thấp, nhược điểm là ssd 256, office ko ngon bằng windows, bộ gõ hơi hạn chế với màn 60hz",
+    "intent": "compare_products",
+    "author": "@trongpham6828"
+  },
+  {
+    "id": "UgyvG9kI60ftt46MHY14AaABAg.AEZLjxhBtgsAIX5o2-1wuM",
+    "text": "​ @Thang_TOM_ đồ họa gì bạn 😂😂😂 mac air làm đồ hoạ hình ảnh à 😂😂😂😂 nói cho vuông nhé máy trạm bên win vừa mạnh hơn vừa bền hơn vừa giá trị cao hơn gấp vài lần con mac nhé , mac kh  bao giờ có cửa so với máy trạm win , còn chuyện máy kêu thì là do máy hiệu năng cao thì kêu to thôi , giống xe phân khối lớn mạnh thì máy phải hú to thôi",
+    "intent": "ask_price",
+    "author": "@Tonrangbo"
+  },
+  {
+    "id": "UgyvG9kI60ftt46MHY14AaABAg.AEZLjxhBtgsAIX7YDYA-gY",
+    "text": "@Tonrangbo đi qua green academy, từ đồ hoạ 2D tới 3D lập trình game, nguyên phòng full mac do trường setup cho học viên. Đi đi cho biết",
+    "intent": "general_query",
+    "author": "@Thang_TOM_"
+  },
+  {
+    "id": "UgyvG9kI60ftt46MHY14AaABAg.AEZLjxhBtgsAIX9G--k_gD",
+    "text": "​ @Thang_TOM_ bên kĩ thuật 2d ,3d bạn mà mang con mac đi xin việc người ta đã kh thèm nhận rồi , vì người ta biết mac cùi vc , nơi nào sài mac là do nó là fan cứng của táo thôi",
+    "intent": "general_query",
+    "author": "@Tonrangbo"
+  },
+  {
+    "id": "UgyvG9kI60ftt46MHY14AaABAg.AEZLjxhBtgsAJMZMgfI39_",
+    "text": "@Thang_TOM_  chậc công nhận ông nào code unreal bằng mac chắc võ lâm chí tôn, khẩm dô vô thượng",
+    "intent": "general_query",
+    "author": "@ngocphuocnguyen2204"
+  },
+  {
+    "id": "UgwWwfkzrMjZ6Oy9uwR4AaABAg.AEYj44VuD_QAEYkksq9JB8",
+    "text": "@Тарасий1221 \tMình cũng dùng máy này, làm đồ hoạ nặng nặng ổn mà chơi game cũng ok",
+    "intent": "general_query",
+    "author": "@Филарет112"
+  },
+  {
+    "id": "Ugy3nxRczuU514Ogp3h4AaABAg.AEXPs3QtyMHAEc-Mao38kA",
+    "text": "ipad vừa dùng vừa sạc vẫn được mà bạn, đâu vấn đề gì đâu :D",
+    "intent": "general_query",
+    "author": "@duyluandethuong"
+  },
+  {
+    "id": "UgwSIn8hnYJxTP07-jp4AaABAg",
+    "text": "Em tui học Dh năm nhất học đồ họa mua MacBook air m2 xài rất ngon. Ngặt cái trường thi học kỳ chỉ cài được máy windows vậy là phải mua thêm một máy windows. Ai có con em học dh thì nên cân nhắc",
+    "intent": "general_query",
+    "author": "@highlightsgoals9949"
+  },
+  {
+    "id": "UgywH3zWmHbKmwJDsTl4AaABAg",
+    "text": "học ngành chế tạo máy thì dùng macbook đc ko ạ",
+    "intent": "general_query",
+    "author": "@huynopro8386"
+  },
+  {
+    "id": "UgxLAZNMBERwURDrKnB4AaABAg",
+    "text": "Làm dev thích linux thì có nên mua lap win rồi cài linux không anh, hay chạy mac vẫn ngon hơn ? Em lo nhất vụ tối ưu pin của linux",
+    "intent": "compare_products",
+    "author": "@SonRadio-rs8sw"
+  },
+  {
+    "id": "UgyfAmXpZlt3qpob8xd4AaABAg",
+    "text": "Màn con asus Luân chỉ ngồi nói thôi mà nó rung bần bật :)))",
+    "intent": "general_query",
+    "author": "@hoangnamle8349"
+  },
+  {
+    "id": "Ugw0iQJGE7AWmCh-L7p4AaABAg",
+    "text": "màng hình của mac vs mấy màng hình của mấy con precision dòng cao cấp của dell không biết màng nào ok hơn nhỉ.",
+    "intent": "compare_products",
+    "author": "@thanhbinhnguyen2520"
+  },
+  {
+    "id": "UgwkN5MjwlrBGyZkFrF4AaABAg",
+    "text": "laptop window xưa giờ ngáo giá, ngáo mọi thứ cho đến khi apple ra chip M thay đổi mới bớt ngáo :))",
+    "intent": "ask_specs",
+    "author": "@kinhquocnguyen3889"
+  },
+  {
+    "id": "Ugy_pWfOFeIgiDUnqQt4AaABAg",
+    "text": "Xin anh làm thêm 1 Clip cài đặt Win trên Mac ạ",
+    "intent": "general_query",
+    "author": "@LamVuTruongGiang"
+  },
+  {
+    "id": "Ugz9Fi03Nl1CKEXGPkF4AaABAg",
+    "text": "Comment bài này trong lúc ngồi kiểm soát lượng màn hình Macbook sản xuất ca đêm nay, tự hào là một phần tham dự quá trình tạo ra em nó",
+    "intent": "ask_specs",
+    "author": "@tuandiepnguyen99"
+  },
+  {
+    "id": "Ugzp3OE5d37j4T8kyzJ4AaABAg",
+    "text": "Facts: Thứ đáng tiền nhất trên máy Mac là Mac OS. Thứ đáng tiền nhất trên laptop Windows là cái củ sạc\n Càng so sánh thì Macbook càng thể hiện nó đáng tiền.",
+    "intent": "compare_products",
+    "author": "@nguyenvanthuatofficial2000"
+  },
+  {
+    "id": "UgzHOJi_lbD7qb6ADn94AaABAg",
+    "text": "Anh Luân làm review con Lenovo Think Book x AI 2024 đi anh, con này dc mệnh danh là có cửa đứng chung mâm thậm chính nhỉnh hơn dc với các con Macbook của Apple, tiếc cái là ko bán chính hãng tại VN.",
+    "intent": "general_query",
+    "author": "@MinhNguyen-fs5ko"
+  },
+  {
+    "id": "UgzN9ag6wzjMFi4KXYN4AaABAg",
+    "text": "Anh cho em hỏi là laptop giá 13-15 củ văn phòng thì con nào ngon nhất vậy ạ ,game em chơi mỗi lol",
+    "intent": "ask_price",
+    "author": "@HaNguyen-Tkos"
+  },
+  {
+    "id": "UgwDYVrE9vi9osdPTpt4AaABAg",
+    "text": "Anh cho e hỏi, e mới hoc edit video thi nên mua dòng laptop nào vậy ạ ? Gia tầm 10tr-15tr thôi ạ",
+    "intent": "purchase_consultation",
+    "author": "@dieplinhnguyen999"
+  },
+  {
+    "id": "UgxJuE75YM6pHl37QnJ4AaABAg",
+    "text": "A Duy Luân dễ thương ơi, học Y có nên mua Mac k ạ ?",
+    "intent": "purchase_consultation",
+    "author": "@lenguyenanhvan4378"
+  },
+  {
+    "id": "Ugym42V-Fn49Er5Bm8t4AaABAg",
+    "text": "Window mãi đỉnh dù nhiều lúc hơi ngoo",
+    "intent": "general_query",
+    "author": "@lunaking-g5t"
+  },
+  {
+    "id": "Ugwhc1HE_ZYdAvtBxgJ4AaABAg",
+    "text": "cho mình hỏi mình học về Cntt thì nên mua con nào á.Dòng Thinkpad thì mình thấy nó hơi xấu á nên momg muốn dòng khác.",
+    "intent": "purchase_consultation",
+    "author": "@siucabao"
+  },
+  {
+    "id": "Ugz8_igFyBjheYgQMFt4AaABAg",
+    "text": "Cái đoạn nói về game dễ thương thực sự =))",
+    "intent": "general_query",
+    "author": "@TháiNguyễn-q9i9n"
+  },
+  {
+    "id": "Ugwd8YcQO_kgGew-m8R4AaABAg",
+    "text": "core ultra 5 226v với ultra 5 125h thì chọn chip nào để lập trình web tốt hơn a",
+    "intent": "ask_specs",
+    "author": "@Itev-z3y"
+  },
+  {
+    "id": "UgyvknGb7le0OlkyKjB4AaABAg",
+    "text": "và một điểm nữa là mac xuất ra màn hình dưới 4k thì chất lượng sẽ không tốt như win xuất ra( còn 4k trở lên thì khá tương đồng): theo thực tế e sử dụng e thấy v không biết mng có thấy v không?",
+    "intent": "purchase_consultation",
+    "author": "@TruongGiangHuynhNguyen"
+  },
+  {
+    "id": "UgzgpT5W-CpmQd2luzh4AaABAg",
+    "text": "Mua 1 con laptop ngon thì tất cả mọi thử điều phải ngon khi không phải gắng màng hình, chuột, bàn phím hay loa các thứ. So với chất lượng lẫn tầm giá dòng Mac Air vô đối rồi.",
+    "intent": "purchase_consultation",
+    "author": "@tranhoai8836"
+  },
+  {
+    "id": "Ugx188_D1l1irKobp2V4AaABAg",
+    "text": "So sánh Mac vs Win (thang 10 điểm)\nTốc độ:\n- Mac 10 điểm, Win 2 điểm\n- Mở bất kỳ App nào trên Mac đều không có độ trễ, tick vào icon là có\n- Mở App trên Win phải chờ 1-3 giây, mở xong cũng không dùng luôn được, chờ thêm 1-2 giây cho App ổn định —> mất nhiều thời gian hơn khi dùng Win\nWifi:\n- Mac 10 điểm, Win 1 điểm\n- Bắt wifi trên Mac cực nhanh và ổn định, không hiểu card wifi của Mac là loại gì mà cảm giác băng thông còn hơn card dây\n- Wifi trên win khá tệ, có lúc chập chờn, băng thông rất thấp\nMàn hình:\n- Mac 10 điểm, Win 2 điểm\n- Nhìn trên màn của Mac cả ngày làm việc không mỏi mắt, không cần điều chỉnh nhiều option\n- Nhìn trên màn Oled 4K của Win chỉ 2 tiếng là mỏi mắt\nTắt/Mở:\n- Mac 10 điểm, Win 1 điểm\n- Với Mac chỉ gập màn là tắt, mở màn là mở máy, các App đang làm việc vẫn còn và tiếp tục làm việc được luôn\n- Win mỗi lần tắt chờ 1-2 phút, mở chờ 1-2 phút, sau đó mở các App để làm việc từ đầu —> mất nhiều thời gian ở khoản này\nPin:\n- Mac 10 điểm, Win 2 điểm\n- Thời gian dùng pin trên Mac vượt trội so với Win\n- Mac được 8-10 tiếng hỗn hợp, Win được 4 tiếng\n- Khi dùng pin trên Mac, hiệu năng vẫn giữ nguyên, dùng pin trên Win hiệu năng bị hạn chế nhiều\nLâu dài:\n- Mac 10 điểm, Win 2 điểm\n- Dùng Mac với các App có license cảm giác được bảo vệ, ổn định lâu dài, không chậm giật theo thời gian\n- Win dùng một thời gian App bị chậm đi đáng kể\nBàn phím:\n- Mac 10 điểm, Win 4 điểm\n- Phím trên Mac nẩy, gõ êm tay, phím thấp, gõ nhanh hơn\nTrackpad:\n- Mac 10 điểm, Win 3 điểm\n- Trackpad của Mac quá ghê gớm, có thể thay thế được 90% chuột\n- Dùng trên win chỉ ở mức chấp nhận được\nKết nối màn hình ngoài:\n- 2 máy tương đương \nTương thích với chuột:\n- 2 máy tương đương \nTương thích với điện thoại:\n- Mac kết hợp với Iphone ăn ý\n- Win không kết hợp được với iphone",
+    "intent": "compare_products",
+    "author": "@thieuvu2520"
+  },
+  {
+    "id": "UgwSIn8hnYJxTP07-jp4AaABAg.AEX7SRvJ4mQAEXk5Cz-__T",
+    "text": "@highlightsgoals9949   vậy hỏi em nó có muốn bán con macbook air m2 không?",
+    "intent": "general_query",
+    "author": "@ADC-836"
+  },
+  {
+    "id": "UgwSIn8hnYJxTP07-jp4AaABAg.AEX7SRvJ4mQAJgxL6czwG-",
+    "text": "@ADC-836  mình pass , bản 2022, ram 16, 256gb",
+    "intent": "ask_specs",
+    "author": "@hongminh.0501"
+  },
+  {
+    "id": "UgwSIn8hnYJxTP07-jp4AaABAg.AEX7SRvJ4mQALTfeNYwJkW",
+    "text": "@highlightsgoals9949  fpt edu hả bro =))",
+    "intent": "general_query",
+    "author": "@lvna1610"
+  },
+  {
+    "id": "UgywH3zWmHbKmwJDsTl4AaABAg.AEX5ZVtvu05AEZ3eadBRbw",
+    "text": "@huynopro8386  dòng thinkpad ok hơn ông ơi",
+    "intent": "general_query",
+    "author": "@Lambert-N"
+  },
+  {
+    "id": "UgxLAZNMBERwURDrKnB4AaABAg.AEVIifY-bhwAEbm1U2xMgl",
+    "text": "Linux tối ưu nhất là ThinkPad full amd nha",
+    "intent": "general_query",
+    "author": "@nguyentuannguyen2203"
+  },
+  {
+    "id": "UgxLAZNMBERwURDrKnB4AaABAg.AEVIifY-bhwAEd6zZ90pkz",
+    "text": "@ thinkpad t14 gen 5 ryzen 7pro 8840U bác thấy sao",
+    "intent": "general_query",
+    "author": "@SonRadio-rs8sw"
+  },
+  {
+    "id": "UgxLAZNMBERwURDrKnB4AaABAg.AEVIifY-bhwAEc-PgCcnrY",
+    "text": "Mac đi bạn :))",
+    "intent": "general_query",
+    "author": "@duyluandethuong"
+  },
+  {
+    "id": "UgxLAZNMBERwURDrKnB4AaABAg.AEVIifY-bhwAEWXfOx7T2y",
+    "text": "Mac 100% nhé bro , mình cũng làm dev. dùng mac quen gõ command sướng tay lắm. qua linux cũng nhanh",
+    "intent": "general_query",
+    "author": "@udemytiengviet956"
+  },
+  {
+    "id": "UgxLAZNMBERwURDrKnB4AaABAg.AEVIifY-bhwAEWY44T2mWn",
+    "text": "@ linux cài trên mac có ngon k bác",
+    "intent": "general_query",
+    "author": "@SonRadio-rs8sw"
+  },
+  {
+    "id": "UgyfAmXpZlt3qpob8xd4AaABAg.AEUjPw44Q7TAE_609yfExQ",
+    "text": "Rung thật bác ạ, e thấy nó k chắc chắn gì, nhưng e làm việc bình thường thì cũng k ảnh hưởng lắm",
+    "intent": "general_query",
+    "author": "@SonLeMinh-sj4hv"
+  },
+  {
+    "id": "UgyfAmXpZlt3qpob8xd4AaABAg.AEUjPw44Q7TAEc-T0pM5fG",
+    "text": "con này build nó đến thế thôi hahaha, trong video review con này năm ngoái mình có nói tới",
+    "intent": "general_query",
+    "author": "@duyluandethuong"
+  },
+  {
+    "id": "Ugw0iQJGE7AWmCh-L7p4AaABAg.AEU6sR-leNVAEc-UWLac5N",
+    "text": "tùy dòng, tùy model bạn ạ, không so chung chung được",
+    "intent": "general_query",
+    "author": "@duyluandethuong"
+  },
+  {
+    "id": "Ugy_pWfOFeIgiDUnqQt4AaABAg.AETFA7uQHmPAEWiZsgrnbE",
+    "text": "@LamVuTruongGiang  cái ứng dụng windows vào và xaid thôi",
+    "intent": "general_query",
+    "author": "@PhongNguyen-bg8bl"
+  },
+  {
+    "id": "Ugz9Fi03Nl1CKEXGPkF4AaABAg.AESodC8luJXAEcrbulCE9U",
+    "text": "Tự hào khi dân mình sản xuất, sáng tạo thôi chứ bạn. Chứ mấy cái này bên nc ngoài làm hết đem cho mình khâu lắm rap kiêm tra vì nhân công rẻ mà",
+    "intent": "general_query",
+    "author": "@7fly400"
+  },
+  {
+    "id": "Ugz9Fi03Nl1CKEXGPkF4AaABAg.AESodC8luJXAH-R6MmfRsB",
+    "text": "chúc bác nhiều sức khỏe",
+    "intent": "general_query",
+    "author": "@thanhtung-giaytayauthentic"
+  },
+  {
+    "id": "Ugzp3OE5d37j4T8kyzJ4AaABAg.AESlTlXmVYIAE_uA8Zx60P",
+    "text": "@nguyenvanthuatofficial2000  1 chú ếch cho hay. Bao giờ làm việc phải dùng cả 2 loại máy mới biết thứ đáng tiền là gì. Như tôi phải xài 1 iMac và laptop Windows, 1 điện thoại iPhone và 1 điện thoại Android.",
+    "intent": "general_query",
+    "author": "@Cuong.777"
+  },
+  {
+    "id": "Ugzp3OE5d37j4T8kyzJ4AaABAg.AESlTlXmVYIAEaqLZKyqWk",
+    "text": "@Cuong.777  bạn có nhiều tiền không có nghĩa người khác không nhiều bằng bạn , nhớ nhé bạn thượng đẳng",
+    "intent": "general_query",
+    "author": "@nguyenvanthuatofficial2000"
+  },
+  {
+    "id": "Ugzp3OE5d37j4T8kyzJ4AaABAg.AESlTlXmVYIAJMYvqkkc8R",
+    "text": "mình thấy ngược lại mac máy tốt và giá mà nó chạy window arm, tiên sư macos ngôn lù",
+    "intent": "ask_price",
+    "author": "@ngocphuocnguyen2204"
+  },
+  {
+    "id": "Ugzp3OE5d37j4T8kyzJ4AaABAg.AESlTlXmVYIAEziVWxIVm1",
+    "text": "@nguyenvanthuatofficial2000  thượng đẳng éo gì. nó nói đúng đấy. t cũng dùng 2 máy win 1 mac. 2 ip 2 android đây. công việc cần thì phải dùng thôi. ếch",
+    "intent": "general_query",
+    "author": "@LucianaHasper"
+  },
+  {
+    "id": "Ugzp3OE5d37j4T8kyzJ4AaABAg.AESlTlXmVYIALwBT0_ilRU",
+    "text": "@nguyenvanthuatofficial2000  Chụp mũ ghê, bạn ý nói đúng đấy, đáng tiền hay không nó phải áp dụng vào công việc của bạn cần gì",
+    "intent": "general_query",
+    "author": "@TuanDuongAnh-k5g"
+  },
+  {
+    "id": "Ugzp3OE5d37j4T8kyzJ4AaABAg.AESlTlXmVYIAUD34KVjbns",
+    "text": "@nguyenvanthuatofficial2000  Ếch là đúng rồi. Chọn máy nào là do công việc thôi, ví như làm 3d thì lapwin nó chả ẻ lên đầu mac",
+    "intent": "general_query",
+    "author": "@MrTuanAnh1"
+  },
+  {
+    "id": "UgzHOJi_lbD7qb6ADn94AaABAg.AERtmKyNugcAETaSyst26s",
+    "text": "chứng tỏ nó ko chung mâm :)))",
+    "intent": "general_query",
+    "author": "@kinhquocnguyen3889"
+  },
+  {
+    "id": "UgwDYVrE9vi9osdPTpt4AaABAg.AER8Fy1-KYEAGgSEHL9uQL",
+    "text": "@dieplinhnguyen999  Air M1 b nhé, best phân khúc chỉnh ảnh rồi",
+    "intent": "general_query",
+    "author": "@LocDang-lp5ut"
+  },
+  {
+    "id": "UgxJuE75YM6pHl37QnJ4AaABAg.AER7RkjoDAPAEVZXWXLf0m",
+    "text": "recommend mua nha bạn, ko cần cấu hình khủng, ko cần phần mềm chuyên dùng, hay mở để tra tài liệu lặt vặt rất tiện, pin trâu mang đi học cũng oke. Mình học 6 năm xài con air, đi làm rồi sắm hẳn con m4pro bao tiện, có điều office ko ngon = window nhưng ko quá cần thiết",
+    "intent": "ask_specs",
+    "author": "@dr.lixinbao"
+  },
+  {
+    "id": "UgxJuE75YM6pHl37QnJ4AaABAg.AER7RkjoDAPAERYRt7ktdb",
+    "text": "@lenguyenanhvan4378  đầu tiên em tự hỏi mua mac để làm gì đã. Mua để show off thì nên quên đi, chả ai care đâu. Trả lời được thì biết nên mua gì.",
+    "intent": "purchase_consultation",
+    "author": "@devilking367"
+  },
+  {
+    "id": "Ugwhc1HE_ZYdAvtBxgJ4AaABAg.AEQxlu-cDRwAE_5qeEjPKj",
+    "text": "@siucabao  thì bác cứ mua mấy con đẹp bác thích thôi, đi học IT cũng có làm gì nặng đâu bác",
+    "intent": "general_query",
+    "author": "@SonLeMinh-sj4hv"
+  },
+  {
+    "id": "UgyvknGb7le0OlkyKjB4AaABAg.AEQgwbJAfcNAGDoUAgz8tJ",
+    "text": "@TruongGiangHuynhNguyen  xuất fhd 24inch k muốn dùng luôn từ không gian làm việc cho tới độ nét, 2k27inch không gian rộng hơn hơi nét thôi, mình đang định chuyển sang 4k27 mà buồn mua đc mỗi 60hz chắc vẫn phải chấp nhận lấy độ mịn còn về màu thì k ngon lắm kể cả 4k, mình k sài nh về đồ hoạ nên mua ips h tiêu chuẩn đủ cao r nhìn tạm đc nhưng phải mướt mịn 4k là ngon 2k vẫn hơi rỗ nhưng đỡ hơn fhd24 nhiều sài vs mac tối thiểu 2k đổ lên, cắm mac muốn ngon mới ra con xiaomi miniled 27inch 2k, còn giàu mua màn oled :))",
+    "intent": "compare_products",
+    "author": "@tranminhanh451"
+  },
+  {
+    "id": "UgyvknGb7le0OlkyKjB4AaABAg.AEQgwbJAfcNAGJ_Veh4aDG",
+    "text": "@ và nên né 2k 24inch vì nó khá nhỏ, mình đã lên 4k và dùng màn 2k 24inch làm màn dọc hh",
+    "intent": "general_query",
+    "author": "@TruongGiangHuynhNguyen"
+  },
+  {
+    "id": "UgzgpT5W-CpmQd2luzh4AaABAg.AEQgolACVoFAS9uh7NZTvI",
+    "text": "@tranhoai8836  nên sài dòng nào ổn bạn,mình sữ dụng công việc",
+    "intent": "general_query",
+    "author": "@nghiengo6768"
+  },
+  {
+    "id": "Ugx188_D1l1irKobp2V4AaABAg.AEQezRogMy2AFNSz8Ck978",
+    "text": "chắc bạn đang so con win 10 củ với macbook 30 củ",
+    "intent": "general_query",
+    "author": "@manhinhuc7017"
+  },
+  {
+    "id": "Ugx188_D1l1irKobp2V4AaABAg.AEQezRogMy2AEYfeCpFjiu",
+    "text": "@thieuvu2520  mày dùng máy đời tống à dm =))",
+    "intent": "general_query",
+    "author": "@MrThuongtb"
+  },
+  {
+    "id": "Ugx188_D1l1irKobp2V4AaABAg.AEQezRogMy2AEd8vHgM6pp",
+    "text": "Tôi tin mua mb nghe nói yên tâm",
+    "intent": "general_query",
+    "author": "@unghoangphuc161"
+  },
+  {
+    "id": "Ugx188_D1l1irKobp2V4AaABAg.AEQezRogMy2AJMZfc_BUgo",
+    "text": "\"Dùng Mac với các App có license cảm giác được bảo vệ\" =)) thanh niên dùng win lậu phần mềm lậu đi so, đúng isheep =))",
+    "intent": "ask_price",
+    "author": "@ngocphuocnguyen2204"
+  },
+  {
+    "id": "Ugx188_D1l1irKobp2V4AaABAg.AEQezRogMy2ANiPLEMHRca",
+    "text": "Cứ mua Macbook cho em được cái Mác và ha oai được nữa 😊",
+    "intent": "general_query",
+    "author": "@congggdaiii19200"
+  },
+  {
+    "id": "Ugx188_D1l1irKobp2V4AaABAg.AEQezRogMy2ANmCrAANhGD",
+    "text": "Cho e hỏi về tính năng soạn thảo văn bản như Word, Excel, Powerpoint… thì con nào hơn vậy anh?",
+    "intent": "general_query",
+    "author": "@modelname"
+  },
+  {
+    "id": "UgykKM6NncNOOwCFoUF4AaABAg",
+    "text": "Bạn cho mình hỏi: Con mình học ngành thiết kế đồ họa thì nên dùng máy Mac hay Win?",
+    "intent": "general_query",
+    "author": "@khanhtranhoai4171"
+  },
+  {
+    "id": "Ugyz7KKh8AtdiAMbxyN4AaABAg",
+    "text": "ủa gpu m3 thua gpu của amd lun hả",
+    "intent": "ask_specs",
+    "author": "@trlkhai"
+  },
+  {
+    "id": "UgyOWjde2YWZtro-f0N4AaABAg",
+    "text": "Trên mac mình k thể sửa file trực tiếp trên ổ cứng di động giống như windows, xin các bác hướng dẫn cách khắc phục ạ, mình dùng mac pro 16 2019",
+    "intent": "general_query",
+    "author": "@ThanhHoang-cz6rb"
+  },
+  {
+    "id": "Ugwg2sPVQUrS5m9Gz954AaABAg",
+    "text": "đang dùng imac nhưng mà nói thật imac apple làm chán thật sự.",
+    "intent": "general_query",
+    "author": "@PhuongThaoyk"
+  },
+  {
+    "id": "UgxR1cyI_ekOB9rmiIR4AaABAg",
+    "text": "Microsoft chiếm hầu hết thị phần cá nhân nên cứ nghĩ tất cả người dùng không có sự lựa chọn nào khác ngoài hệ điều hành windows. Phối hợp với các hãng phần cứng để áp đặt người dùng cứ như nô lệ, đỉnh điểm là đến lúc ép buộc người dùng phải lên cái hệ điều hành gây ức chế nhất trong lịch sử Windows 11 ( đảm bảo những người dùng thiết bị phần cứng cũ phải nâng cấp hardware ). Tôi đã hoàn toàn chuyển sang dùng MacOS cách đây 2 năm và cảm thấy hoàn toàn thoải mái với lựa chọn của mình.",
+    "intent": "general_query",
+    "author": "@Tran-v4w"
+  },
+  {
+    "id": "UgyJPU8lXPpQnP61tsl4AaABAg",
+    "text": "Trc m có xem cái kênh Andrew Tsai, ông này chuyên đi test game trên mac, đủ thể loại game có cả AAA. M thấy thì hầu hết các game đều chạy ổn trên mac, nhưng đòi hỏi phải cài các app tương thích như Crossover, hay vọc vạch bộ Game Porting Toolkit của chính Apple. M nghĩ nếu thỉnh thoảng nổi hứng muốn chơi vài game và có tí kinh nghiệm vọc vạch thì có thể thử cách trên. Còn nếu kb vọc vạch, hoặc muốn game siêu nặng hay có anticheat thì mua máy win.",
+    "intent": "general_query",
+    "author": "@WindDasher1029"
+  },
+  {
+    "id": "Ugzib7yolqA-wGIbSqB4AaABAg",
+    "text": "Đúng là trải rồi mới ớn đòn màn hình OLED giá rẻ. Các bạn ơi, màn hình OLED giá rẻ tầm dưới 30tr nó thua LCD nha, thậm chỉ thua LCD trên những mẫu cao cấp của win luôn chứ ko phải so với mỗi macbook đâu, mặc dù lấy máy đo ra thông số màu rất khủng, nhưng thực tế nhìn bằng mắt là thấy sai màu tùm lum. Lí do đơn giản là do dùng loại kính chất lượng không cao, khi có ánh đèn hắt vào là sai màu ngay, chư kể bóng gương phản chiếu rất nhiều lên màn hình khi xem nội dung tối",
+    "intent": "purchase_consultation",
+    "author": "@congdanhvo662"
+  },
+  {
+    "id": "UgzQOHtbY26CAzue2Nd4AaABAg",
+    "text": "Em vừa mua Asus TUF A14, ngon mà mát. Dùng sướng gì đâu",
+    "intent": "general_query",
+    "author": "@Nanh1930"
+  },
+  {
+    "id": "Ugzf3vA-0qO6AM8vTzp4AaABAg",
+    "text": "27tr em tính mua air m2 nhưng sợ nó hư không có tiền sửa😢",
+    "intent": "general_query",
+    "author": "@Itev-z3y"
+  },
+  {
+    "id": "UgzfeOHBRHat4ap92N94AaABAg",
+    "text": "Hồi mac còn cài được win Mac là laptop Win tốt nhất, còn bây giờ build ngang Mac thì phải tầm XPS mà giá phải gấp rưỡi Mac xong lại chip yếu pin hẻo",
+    "intent": "ask_specs",
+    "author": "@NN-dg2xw"
+  },
+  {
+    "id": "UgyXKZ4W9zBOjJDJIHd4AaABAg",
+    "text": "Ai dùng office thì nên chon win nhé",
+    "intent": "general_query",
+    "author": "@TruongNguyen-nb1tg"
+  },
+  {
+    "id": "UgwD_vEjFBtfu4bMRVd4AaABAg",
+    "text": "Nói chung công việc ko quá đặc thù, như tự động hóa sẽ cần TIA Portal, hay CAD này kia. Thì dùng Mac vẫn ngon hơn, hệ điều hành ổn định cần là mở ra dùng, dùng mac 1 năm chắc reboot ko tới 10 lần, kiểu dáng đẹp, pin trâu.",
+    "intent": "ask_specs",
+    "author": "@HoangNguyen-sb7kw"
+  },
+  {
+    "id": "UgxEjeB5T7q2XpcdnJJ4AaABAg",
+    "text": "Chờ a Luân review con Zbook ultra G1a 😊",
+    "intent": "general_query",
+    "author": "@ngochaitruong"
+  },
+  {
+    "id": "UgxGl8sqxazPVk8uBAV4AaABAg",
+    "text": "Trackpad trên mac vẫn là cái gì đó khó mà hơn dc",
+    "intent": "general_query",
+    "author": "@dnntung"
+  },
+  {
+    "id": "UgxbPVvVE8BWMQDGwtl4AaABAg",
+    "text": "Ôi, tôi vẫn nhớ trong video mac vs win của anh Luân hồi năm 2023 có cái cmt rằng \"100 năm nữa máy win cũng không đọ pin được với mac\", mới đó mà đã qua 100 năm rồi, thời gian trôi nhanh thật :v\nTôi đang dùng mac air m2 và mini pc windows, nói nghe nói hơi sai sai nhưng tôi mua mac chỉ vì nó rẻ, lúc đó mac m2 tôi mua chỉ có 25tr, trong khi lap win cùng phân khúc toàn trên 30... vậy thôi, chứ tôi nói thật, dùng mac cũng được sắp tròn 1 năm rồi, định kiến chỉ có tăng chứ không giảm... macos tù vl...",
+    "intent": "compare_products",
+    "author": "@SeaNart8"
+  },
+  {
+    "id": "Ugz9_pib2D9PbUaEoFB4AaABAg",
+    "text": "Mình thì sài cả 2. Chơi game thì win còn code với làm việc chính thì mac.",
+    "intent": "general_query",
+    "author": "@dangnhutranluong"
+  },
+  {
+    "id": "UgyxngMOkfs6Jc2PpEd4AaABAg",
+    "text": "Mình bắt buộc phải dùng Windows vì app làm việc chạy trên win tốt",
+    "intent": "general_query",
+    "author": "@hthmobile"
+  },
+  {
+    "id": "UgxD5-mkfm0nQHEPblZ4AaABAg",
+    "text": "Cho em hỏi em học y dùng cơ bản nên 8gb ram hay 16 gb ạ em định mua bản 15inch m2",
+    "intent": "ask_specs",
+    "author": "@DungNguyen-sd8cc"
+  },
+  {
+    "id": "UgwsIpSgY1mP_kDcJFp4AaABAg",
+    "text": "Cho em hởi Mac có xài được cho các phần mềm đồ hoạ xây dựng kiến trúc không ạ. Phần mềm autodesk, revit",
+    "intent": "general_query",
+    "author": "@Nhannt31663"
+  },
+  {
+    "id": "UgzC7F3qzYL9PyZzQnp4AaABAg",
+    "text": "laptop Windows pin trâu thì phải xài core ultra series 2 hoặc amd ryzen ai, snap x elite, và hiện tại những con lap có chip này đang có giá rất cao, chưa được phổ cập. trong khi đó macbook air m1 m2 đang có giá ngon hơn nhiều, tính đa dụng thì k bằng Windows nhưng pin thì đập lỗ đầu windows cùng tầm giá",
+    "intent": "purchase_consultation",
+    "author": "@khoanguyendang1106"
+  },
+  {
+    "id": "UgykKM6NncNOOwCFoUF4AaABAg.AEQWyc7QjShAEQanSoqH_c",
+    "text": "Cứ window mà sài, cài phần mềm lậu dễ :))",
+    "intent": "general_query",
+    "author": "@VỹNguyên-m4f7n"
+  },
+  {
+    "id": "UgykKM6NncNOOwCFoUF4AaABAg.AEQWyc7QjShAEQj_G69JDo",
+    "text": "còn tùy vào kinh tế của bạn :))) \nkinh tế bạn ko cao và bạn chỉ đang học thì đừng mua MAC vì giá khá chát với lại số tiền bạn bỏ ra hàng tháng cho bộ tool Adobe là ko nhỏ đâu nha do crack trên MacOS nó rất phiền mà nếu có được thì cũng bị tụi Adobe nó quét à \nưu tiên mua máy Win có màn hình DCI-P3 100% hoặc ít nhất là 100% sRGB, tối thiểu 16GB Ram, CPU intel ! \ncòn nếu bạn giàu thì cứ Mac mà giã :))))))",
+    "intent": "ask_specs",
+    "author": "@teeofficial4934"
+  },
+  {
+    "id": "Ugyz7KKh8AtdiAMbxyN4AaABAg.AEPke7yRiF0AEQ9d1Tmh-O",
+    "text": "thua bạn, mình có từng test rồi á, ví dụ render video thì nó chậm hơn xíu, còn gaming thì thôi khỏi bàn =))",
+    "intent": "general_query",
+    "author": "@duyluandethuong"
+  },
+  {
+    "id": "UgyOWjde2YWZtro-f0N4AaABAg.AEPX5ICdsZ5AEPcfjqtn5n",
+    "text": "@ThanhHoang-cz6rb  nếu ổ cứng di động của bạn mà có format ntfs thì bạn chỉ đọc đc chứ k ghi đc dữ liệu trên ở cứng đấy bạn nhé",
+    "intent": "general_query",
+    "author": "@WindDasher1029"
+  },
+  {
+    "id": "UgyOWjde2YWZtro-f0N4AaABAg.AEPX5ICdsZ5AEPd5UZPyzq",
+    "text": "@ format định dạng gì có thì có thể ghi đc dữ liệu trên cả mac và win vậy bác",
+    "intent": "general_query",
+    "author": "@ThanhHoang-cz6rb"
+  },
+  {
+    "id": "UgyOWjde2YWZtro-f0N4AaABAg.AEPX5ICdsZ5AEQ9f3ia3ii",
+    "text": "Bạn format ổ theo dạng exFAT là ngon lành nhe",
+    "intent": "general_query",
+    "author": "@duyluandethuong"
+  },
+  {
+    "id": "UgyOWjde2YWZtro-f0N4AaABAg.AEPX5ICdsZ5AEPdYNcqAJA",
+    "text": "@ThanhHoang-cz6rb  exfat nha bạn. Nhưng rất chú ý là nếu bạn định format lại ổ cứng thì phải backup hết dữ liệu, vì format lại ổ cứng sẽ mất hết dữ liệu trong đó",
+    "intent": "general_query",
+    "author": "@WindDasher1029"
+  },
+  {
+    "id": "UgyOWjde2YWZtro-f0N4AaABAg.AEPX5ICdsZ5AEPe7_nMGWs",
+    "text": "@WindDasher1029  cảm ơn bác, cũng may là dữ liệu mình k quá nhiều",
+    "intent": "general_query",
+    "author": "@ThanhHoang-cz6rb"
+  },
+  {
+    "id": "Ugwg2sPVQUrS5m9Gz954AaABAg.AEPWxFOLXQyAEQck2cM1gN",
+    "text": "@PhuongThaoyk  ở điểm nào vậy bạn, m dự định mua cần tham khảo",
+    "intent": "general_query",
+    "author": "@annguyenchannel3137"
+  },
+  {
+    "id": "Ugwg2sPVQUrS5m9Gz954AaABAg.AEPWxFOLXQyAElAe8oUwLg",
+    "text": "@annguyenchannel3137  Máy mình mới mua và bóc hộp ở cửa hàng cellphones luôn. Cảm thấy dùng khá lag mặc dù mình chỉ dùng đơn giản thôi. Được hơn tháng thì bị bung cái viền khung nhựa màn hình ( hầu như máy nào cũng vậy vì cái khung màn hình bằng nhựa), bàn phím thì gõ chán lắm, chuột thì mặc dù đã chỉnh max rồi nhưng tốc độ vẫn như rùa bò (vẫn phải mua thêm bàn phím vs chuột logi ngoài, dùng hãng t3 mới thấy bàn phím vs chuôt imac quá tệ). HĐH macos thì tuỳ ng thích hoặc không nhưng nó khá là tù (dùng cơ bản thì cũng ổn thôi). Nói chung apple hoàn thiện imac quá kém không đc như macbook, dùng cũng chán, phải trải nghiệm thực tế mới hiểu được. Trước khi mua mình cũng lên mạng xem review mấy kênh, đáng lẽ ra phải hỏi đúng người dùng đã trải nghiệm mới là khách quan nhất. Bây giờ mình chủ yếu dùng imac cho tác vụ nhẹ nhàng như lướt web, nghe nhạc, xem phim thôi (nhưng vẫn khá là nóng máy nhé chả hiếu tại sao nữa =.=)",
+    "intent": "compare_products",
+    "author": "@PhuongThaoyk"
+  },
+  {
+    "id": "Ugwg2sPVQUrS5m9Gz954AaABAg.AEPWxFOLXQyAElAx6pzVtw",
+    "text": "@annguyenchannel3137  mình rep cmt bạn rồi á mà không thấy hiện",
+    "intent": "general_query",
+    "author": "@PhuongThaoyk"
+  },
+  {
+    "id": "UgxR1cyI_ekOB9rmiIR4AaABAg.AEPTrwRD8MZAEzzX6mhBYK",
+    "text": "tư duy thiển cận. con ếch trong cái giếng của chính mình",
+    "intent": "general_query",
+    "author": "@LucianaHasper"
+  },
+  {
+    "id": "UgxR1cyI_ekOB9rmiIR4AaABAg.AEPTrwRD8MZAFFicP1IWC8",
+    "text": "@LucianaHasper  Cách nói không đầu không đuôi vầy là ví dụ điển hình của các cá thể sinh trưởng trong môi trường thiếu thốn giáo dục. Khả năng cao xuất phát từ phía gia đình. Dự đoán là ba mẹ khá ngu đần nhỉ :)",
+    "intent": "ask_price",
+    "author": "@Tran-v4w"
+  },
+  {
+    "id": "UgxR1cyI_ekOB9rmiIR4AaABAg.AEPTrwRD8MZAEPUZ4kCl7l",
+    "text": "ừm, macos ngon, nhưng k đa dụng được. điển hình là bạn tôi học kỹ thuật, lỡ mua macbook không cài được phần mềm chuyên ngành nên lại phải cài win trên mac",
+    "intent": "general_query",
+    "author": "@khoanguyendang1106"
+  },
+  {
+    "id": "UgxR1cyI_ekOB9rmiIR4AaABAg.AEPTrwRD8MZAERFS3BTXrR",
+    "text": "@khoanguyendang1106  win trên mac dùng vẫn rất ngon nha =))",
+    "intent": "general_query",
+    "author": "@cuongnguyennhu7343"
+  },
+  {
+    "id": "Ugzib7yolqA-wGIbSqB4AaABAg.AEPMvgMylaXAGKhOh0nhht",
+    "text": "Màn lcd lúc nào chả bền hơn mà oled",
+    "intent": "general_query",
+    "author": "@HaiXuan-dw9fb"
+  },
+  {
+    "id": "Ugzib7yolqA-wGIbSqB4AaABAg.AEPMvgMylaXAEcol5aD__A",
+    "text": "@congdanhvo662  ý bạn là màn asus 2,8k oled hả",
+    "intent": "general_query",
+    "author": "@BảnhNguyên-h2v"
+  },
+  {
+    "id": "Ugzib7yolqA-wGIbSqB4AaABAg.AEPMvgMylaXAEcpIUbJWhc",
+    "text": "@ mình dùng qua zenbook oled với yoga slim 7 pro. Cả 2 đều bị tình trạng loa kính và sai màu dưới ánh đèn studio",
+    "intent": "general_query",
+    "author": "@congdanhvo662"
+  },
+  {
+    "id": "Ugzib7yolqA-wGIbSqB4AaABAg.AEPMvgMylaXAEddvFt1GIj",
+    "text": "@congdanhvo662  macbook m2 màu có chuẩn ko bạn",
+    "intent": "general_query",
+    "author": "@Chinchan0204"
+  },
+  {
+    "id": "Ugzib7yolqA-wGIbSqB4AaABAg.AEPMvgMylaXAEe12n0vref",
+    "text": "@Chinchan0204  Macbook dùng màn retina là màu chuẩn rồi b, đặc biệt là mấy con độ sáng 500 nits là nó chuẩn màu ngay cả trong điều kiện ánh sáng mạnh, chứ ko bị lệch màu như máy win dùng kính gương",
+    "intent": "general_query",
+    "author": "@congdanhvo662"
+  },
+  {
+    "id": "Ugzib7yolqA-wGIbSqB4AaABAg.AEPMvgMylaXAFOZknUDyuC",
+    "text": "@congdanhvo662  thinkpad x1 màn 2,8k với 4k là loại xịn đúng ko bác. So với màn mac thì như nào ạ",
+    "intent": "general_query",
+    "author": "@ThànhĐạtNguyễnQuý"
+  },
+  {
+    "id": "Ugzf3vA-0qO6AM8vTzp4AaABAg.AEPMYhvCJTmAEPOMtuIClE",
+    "text": "mua con asusvivobook ultra 5 226v bảo hành 2 năm pin trâu, dễ sửa chữa, 27tr",
+    "intent": "ask_specs",
+    "author": "@truongevil"
+  },
+  {
+    "id": "Ugzf3vA-0qO6AM8vTzp4AaABAg.AEPMYhvCJTmAEQWszCcnBr",
+    "text": "@Itev-z3y  dùng cẩn thận thì biết chừng nào nó hư ,nhưng mac chủ yếu dùng để giải trí và công việc cơ bản nên bạn xem nhu cầu nhé",
+    "intent": "purchase_consultation",
+    "author": "@Musicandlife1998"
+  },
+  {
+    "id": "Ugzf3vA-0qO6AM8vTzp4AaABAg.AEPMYhvCJTmAJZuCBYD51t",
+    "text": "@Musicandlife1998  tôi mua MacBook Pro 2018 dùng 1 năm tự dưng hỏng touch bar màn không lên.\n\n Tự cho rằng đen nên bị rơi vào tỷ lệ lỗi tuy nhiên m dùng thêm 1 năm nữa tự dưng màn hình sọc rồi hỏng thỉnh thoảng lên nháy sọc tý rồi đen thui . Cho dù m dùng nó khá ít, lúc này m thấy khá mất niềm tin vào mac.\n\nNếu xét đến việc tuổi thọ linh kiện thì m thấy nó quá dễ hỏng. Máy mua 4 chục triệu mà quá dễ hỏng. Và nghe báo giá sửa là quoăng cái máy giờ cắm màn hình ngoài dùng cho con học.\n\nĐây là thiết bị apple mình thấy kém bền nhất, hỏng vô lý nhất mà mình dùng. \nSau đó chuyển qua dùng máy window và cảm thấy nó trâu bò hơn macbook nhiều lần, cảm thấy dùng nó đáng đồng tiền bỏ ra hơn hẳn.",
+    "intent": "ask_specs",
+    "author": "@thangvn06"
+  },
+  {
+    "id": "UgzfeOHBRHat4ap92N94AaABAg.AEPJAi_evzVAEPYio4g1Nd",
+    "text": "@NN-dg2xw  xps mới nhất bạn xài chưa mà phán như đúng rồi",
+    "intent": "general_query",
+    "author": "@nguyenphuongnam9708"
+  },
+  {
+    "id": "UgzfeOHBRHat4ap92N94AaABAg.AEPJAi_evzVAJMZV-q9QzB",
+    "text": "@nguyenphuongnam9708  chắc xps 10 triệu đồ cũ",
+    "intent": "general_query",
+    "author": "@ngocphuocnguyen2204"
+  },
+  {
+    "id": "UgzfeOHBRHat4ap92N94AaABAg.AEPJAi_evzVAERA5CIVw0n",
+    "text": "máy win thời nào vậy, chứ laptop win của 2023 đổ về đây, nhất là amd thì tầm 1k đô là ngang kèo nhau nhé, nhất là mấy máy của lenubu như yoga, thinkbook",
+    "intent": "general_query",
+    "author": "@MrMQuang"
+  },
+  {
+    "id": "UgzfeOHBRHat4ap92N94AaABAg.AEPJAi_evzVAEYb3_7cbj1",
+    "text": "Ai mượn mua dell xong chê mắc 😂😂😂",
+    "intent": "general_query",
+    "author": "@EmCocos"
+  },
+  {
+    "id": "UgyXKZ4W9zBOjJDJIHd4AaABAg.AEPJ401KU7-AEPM8pUhFLA",
+    "text": "office có nhều cấp độ lắm b, office như kế toán thì mới bắt buộc phải dùng win, còn office cơ bản như giáo viên hoặc sale, cskh thì macbook air m1 thậm chí nó còn ko có đối thủ",
+    "intent": "ask_price",
+    "author": "@congdanhvo662"
+  },
+  {
+    "id": "UgyXKZ4W9zBOjJDJIHd4AaABAg.AEPJ401KU7-AEQ9mCRneLc",
+    "text": "kế toán cũng nhiều cấp độ lắm bạn, kế toán bên mình xài Mac, thỉnh thoảng mới cần vào Win thì chạy máy ảo chứ bình thường chạy ấy cũng Mac =))",
+    "intent": "general_query",
+    "author": "@duyluandethuong"
+  },
+  {
+    "id": "UgyXKZ4W9zBOjJDJIHd4AaABAg.AEPJ401KU7-AERUYfT5rxw",
+    "text": "@duyluandethuong  bất tiện khoản không chèn được bảng excel vào word ấy anh em hay soạn hợp đồng nên đổi vội sang surface",
+    "intent": "general_query",
+    "author": "@TruongNguyen-nb1tg"
+  },
+  {
+    "id": "UgwD_vEjFBtfu4bMRVd4AaABAg.AEPIny300hFAFCCty2DC-Q",
+    "text": "t dùng con lap cùi cùi vài gần 2 chục vài tháng mới reboot 1 lần cũng chả làm sao, pin Mac dòng air so với mấy con windows cùng tầm tiền thì trâu hơn. Còn kiểu dáng thì tùy gu mỗi người chứ cũng chả có cái nào đẹp hơn cái nào",
+    "intent": "ask_specs",
+    "author": "@NamNam2412"
+  },
+  {
+    "id": "UgwD_vEjFBtfu4bMRVd4AaABAg.AEPIny300hFAESQXmvwaTH",
+    "text": "@HoangNguyen-sb7kw  bro ơi, plc tương thích sao bro :v",
+    "intent": "general_query",
+    "author": "@phucvan8181"
+  },
+  {
+    "id": "UgwD_vEjFBtfu4bMRVd4AaABAg.AEPIny300hFAET5jud5mBt",
+    "text": "@ t kêu plc thì đặc thù dùng windows r chứ tương thích gì?",
+    "intent": "general_query",
+    "author": "@HoangNguyen-sb7kw"
+  },
+  {
+    "id": "UgwD_vEjFBtfu4bMRVd4AaABAg.AEPIny300hFAEcrS7k0LTn",
+    "text": "@HoangNguyen-sb7kw  thiết kế chán nhất TG luôn. Đời đầu con sang. Mấy đơi sau đúng đi lùi luôn á bạn",
+    "intent": "general_query",
+    "author": "@7fly400"
+  },
+  {
+    "id": "UgxEjeB5T7q2XpcdnJJ4AaABAg.AEPFdLSk1FvAEPbofoLv8d",
+    "text": "@ngochaitruong  e tưởng nó chưa ra ạ",
+    "intent": "general_query",
+    "author": "@nguyenong2921"
+  },
+  {
+    "id": "UgxEjeB5T7q2XpcdnJJ4AaABAg.AEPFdLSk1FvAET7jhOQbZ1",
+    "text": "@nguyenong2921  dạ nó chưa ra,nên e cũng đang chờ á",
+    "intent": "general_query",
+    "author": "@ngochaitruong"
+  },
+  {
+    "id": "UgxbPVvVE8BWMQDGwtl4AaABAg.AEPEH1MxoqxAEUWOCOHHK8",
+    "text": "Đúng nhé bạn, trước tôi dùng laptop window. Xong sau có điều kiện hơn build một con PC với RTX4070 để chơi game AAA và dùng cả Mac air mỏng nhẹ mang ra ngoài. Nhưng đa số anh em con trai dùng laptop thích cài nhiều thứ và cả chơi game giải trí thì cái hệ điều hành của Mac phải gọi là bố của tù trưởng, dùng rất khó chịu, không cài hay thay đổi được cái gì cả. May là tôi có PC chạy window tương đối mạnh rồi không là cũng sút luôn con Mac đi rồi.\nNói thật anh em nào chỉ đủ tài chính mua laptop thì nên mua laptop window dùng đa dụng và hệ điều hành quen thuộc. Vì giờ pin, màn hình, trackpad, ... của laptop window đã cải thiện rất nhiều và tiệm cận Mac so với năm bảy năm trước rồi.",
+    "intent": "purchase_consultation",
+    "author": "@hoangnguyen-yw6bj"
+  },
+  {
+    "id": "UgxbPVvVE8BWMQDGwtl4AaABAg.AEPEH1MxoqxAEgSJf7ZN8q",
+    "text": "@hoangnguyen-yw6bj  Chắc bạn dùng mac intel, mình cũng tính chuyển lại sang win, nhưng từ khi dùng mac M là vẫn dính cứng ngắt với mac. Cơ bản là giờ bất kỳ con windows nào ngon hơn macbook air m2 bản 16GB new seal giá 22tr cả",
+    "intent": "ask_price",
+    "author": "@congdanhvo662"
+  },
+  {
+    "id": "UgxbPVvVE8BWMQDGwtl4AaABAg.AEPEH1MxoqxAEPLJM9UPHT",
+    "text": "@SeaNart8  tù sao vậy bác, em tính mua macbook để mở port remote con pc ở nhà, chủ yếu Power BI với lại AE, Davinci",
+    "intent": "general_query",
+    "author": "@givaymaycha"
+  },
+  {
+    "id": "UgxbPVvVE8BWMQDGwtl4AaABAg.AEPEH1MxoqxAEPZniSAjCq",
+    "text": "@KhaiLinhTinh 2 máy thì ok... nói chung là sài con này thì xác định nó chỉ là cái laptop để mang ra ngoài làm chill chill thôi, mình đang sài như thế, mình cũng remote vào máy của công ty để code những ngày không có nhiều task, muốn ra cf ngồi cho nó thay đổi không gian, cũng khá ổn...\r\nCòn điểm tù thì muôn vàn lắm, có nhiều cái bé tý tưởng chừng hiển nhiên nhưng mac cũng làm cho nó rắc rối, ví dụ như hôm trước vừa vật lộn cả tối chỉ để tìm cách tắt nguồn cổng usb khi máy sleep, cuối cùng đành chịu vì nếu muốn sleep thì phải chuyển sang chế độ ngủ sâu, mà chuyển qua cái đó thì khi đánh thức máy nó vừa chậm lại không dùng vân tay được, trong khi windows chỉ cần vào Registry tắt là xong, rồi cái vụ cắm ngoại vi cũng ối dồi ôi luôn, đấy chỉ là cái gần nhất mà tớ gặp thôi, còn một tá cái khác không nhớ nổi nữa, dỡ khóc dỡ cười lắm :v",
+    "intent": "general_query",
+    "author": "@SeaNart8"
+  },
+  {
+    "id": "UgxbPVvVE8BWMQDGwtl4AaABAg.AEPEH1MxoqxAEPTP2ZGizO",
+    "text": "@givaymaycha  remote thì bác mua con air m2 bản base á, bao ngon",
+    "intent": "general_query",
+    "author": "@congdanhvo662"
+  },
+  {
+    "id": "UgxbPVvVE8BWMQDGwtl4AaABAg.AEPEH1MxoqxAEQd03gDln-",
+    "text": "@givaymaycha  mình đang dùng mac và thấy nó tù vl vì làm Excel không dùng shortcut đc như bên Windows nên làm việc khá chậm và thiếu hiệu quả. Sang dùng Win mình nhớ shortcut nên là navigate cthu rất dễ",
+    "intent": "general_query",
+    "author": "@phantrungai8585"
+  },
+  {
+    "id": "UgxbPVvVE8BWMQDGwtl4AaABAg.AEPEH1MxoqxAEPOY3aH7cF",
+    "text": "chắc bác sang mac vì pin à :))))",
+    "intent": "ask_specs",
+    "author": "@truongevil"
+  },
+  {
+    "id": "UgxbPVvVE8BWMQDGwtl4AaABAg.AEPEH1MxoqxAEPUZN-CwsW",
+    "text": "@congdanhvo662  đang định dứt m1 14inch 32GB luôn bác ơi",
+    "intent": "general_query",
+    "author": "@givaymaycha"
+  },
+  {
+    "id": "UgxbPVvVE8BWMQDGwtl4AaABAg.AEPEH1MxoqxAEwlW_zV8ED",
+    "text": "@ Bạn nhầm nhé.\n\nTôi dùng 1 con PC I5 13500 RTX 4070 12G VRAM build cuối 2023 giá 40 triệu để chơi game AAA max setting 2k. Riêng sức mạnh thì PC = 2 lần laptop cùng cấu hình do PC airflow tốt hơn, linh kiện to nạc hơn.\n\nMacbook Air M1 mua đầu 2023 giá 20 triệu mỏng nhẹ tôi chỉ dùng mang đi cafe lướt web nghe nhạc xem phim. \n\nPC chơi game AAA như cyberpunk 2077, game con khỉ black myth wukong, ... max setting phải gọi là 1 trải nghiệm cực kì tuyệt vời với màn 27 - 32 inck 2k 4k.  Điều mà con laptop đắt nhất không bao giờ làm được. \n\nNghe bạn nói thì tôi đoán bạn chỉ dùng Mac để làm việc, ok vì nếu chỉ dùng như vậy thì Mac đáp ứng tốt. Nhưng bạn sẽ không có trải nghiệm chơi game AAA như tôi kể ở trên và đó là 1 điểm bạn không bằng tôi vì bạn chưa hiểu nó bao giờ.",
+    "intent": "ask_specs",
+    "author": "@hoangnguyen-yw6bj"
+  },
+  {
+    "id": "UgxbPVvVE8BWMQDGwtl4AaABAg.AEPEH1MxoqxAExLuZtQC1T",
+    "text": "@hoangnguyen-yw6bj  bạn chưa hiểu ý mình rồi, mình đang so laptop win với macbook. Bây giờ bỏ cái PC ra 1 bên đi, thì laptop mỏng nhẹ macbook đang là trùm, vì laptop win mỏng nhẹ cũng chẳng chơi game đc, option và hiệu quả công việc cũng chẳng bằng macbook. Màn hình, trackpad, pin cũng chưa bằng như bạn nói đâu. Và quan trọng hơn hết là mấy máy win ngon thì toàn giá trên 30tr",
+    "intent": "ask_specs",
+    "author": "@congdanhvo662"
+  },
+  {
+    "id": "UgxbPVvVE8BWMQDGwtl4AaABAg.AEPEH1MxoqxAEymQULL8h_",
+    "text": "@congdanhvo662  bạn dùng m2 trong khi apple ra đến m4 rồi. Bạn này chắc ít cập nhật intel giờ đã ra core ultra 2 với pin cực ngon ăn đứt macbook, ryzen 9 AI hx 365 370 của amd vừa mạnh vừa tiết kiệm điện vã mấy con macbook như bố hành con :)) macbook cho làm code với designer editor với mấy em gái 18 tuổi chụp ảnh loè loẹt thôi. Còn người dùng văn phòng như tôi cần excel, powerpoint, 1 số phần mềm kế toán, … cần cài crack thì macbook và macos như quần què. Nói chung là apple chỉ dùng iphone ipad còn macbook không dành cho số đông người dùng vì nó quá tù trưởng so với window",
+    "intent": "ask_specs",
+    "author": "@hoangnguyen-yw6bj"
+  },
+  {
+    "id": "UgxbPVvVE8BWMQDGwtl4AaABAg.AEPEH1MxoqxAEymykcPGKI",
+    "text": "@ bạn cứ ko đọc kỹ, đầu bạn ở trên cao quá nên cứ thích nói hơn là nghe. Core ultra 2, HX370 giá toàn 40 triệu. Bạn có dám bỏ 40tr ra để mua 1 con máy về chỉ để gõ word, excel và pin trâu hơn air m2 1 xíu không? Trong khi m2 giá có 20tr đã đáp ứng gần như đủ nhu càu từ văn phòng, tới edit",
+    "intent": "ask_specs",
+    "author": "@congdanhvo662"
+  },
+  {
+    "id": "UgxbPVvVE8BWMQDGwtl4AaABAg.AEPEH1MxoqxAJ-6mB5Mn0h",
+    "text": "@congdanhvo662  Tôi săn đc deal con mac air m2 16gb ram có 19tr, phải nói đó là món hời nhất từ mấy năm trở lại đây, độ hoàn thiện thì xứng đáng làm bố của tất cả các con lap win dưới 20tr hiện tại, còn ông ở trên thì như kiểu đọc hiểu có vấn đề, đang so lap thì lôi pc chơi game vô 😂",
+    "intent": "purchase_consultation",
+    "author": "@nghiaakcodm4813"
+  },
+  {
+    "id": "UgxD5-mkfm0nQHEPblZ4AaABAg.AEP80dy3Ti2AEPEyJhQ8oy",
+    "text": "sinh viên lại còn sinh viên y mình mua lap phải sát định luôn là dùng trong ít nhất 5 năm, nên dẹp cái 8gb ram đi bạn, 8gb ở năm 2025 chỉ gọi là tạm đủ, thì mấy năm nữa sài kiểu gì? ko lẽ đời sinh viên mua 2 đời lap :v",
+    "intent": "ask_specs",
+    "author": "@SeaNart8"
+  },
+  {
+    "id": "UgxD5-mkfm0nQHEPblZ4AaABAg.AEP80dy3Ti2AEPRvWFYAyQ",
+    "text": "@SeaNart8  ở tpho lớn dễ bị mất kk :v",
+    "intent": "general_query",
+    "author": "@theenglishhouse2537"
+  },
+  {
+    "id": "UgxD5-mkfm0nQHEPblZ4AaABAg.AEP80dy3Ti2AEQaEtjd1R1",
+    "text": "Bây giờ ram mặc định của Mac là 16GB rồi á, sau đợt ra M4 thì mọi máy của Mac  bán mới được update lên 16gb ram giá ko đổi. Nên h 16 hết r, hoặc bạn có thể order từ apple store online",
+    "intent": "ask_specs",
+    "author": "@hoangthanhphuong0709"
+  },
+  {
+    "id": "UgxD5-mkfm0nQHEPblZ4AaABAg.AEP80dy3Ti2AEP8uMDsdIW",
+    "text": "@DungNguyen-sd8cc  16 đi bạn. Theo bạn 6 năm mà.",
+    "intent": "general_query",
+    "author": "@chienangvan8126"
+  },
+  {
+    "id": "UgxD5-mkfm0nQHEPblZ4AaABAg.AEP80dy3Ti2AEPAULExN3I",
+    "text": "Giờ nên mua 16gb trở lên bạn",
+    "intent": "purchase_consultation",
+    "author": "@hthmobile"
+  },
+  {
+    "id": "UgxD5-mkfm0nQHEPblZ4AaABAg.AEP80dy3Ti2AEPAzoyXLOJ",
+    "text": "H mà Sv dùng 8gb hơi bị đúi. Bản 15inch hơi to bỏ cặp mang lại hơi bất tiện",
+    "intent": "general_query",
+    "author": "@thienlam3910"
+  },
+  {
+    "id": "UgxD5-mkfm0nQHEPblZ4AaABAg.AEP80dy3Ti2AEPCe9F4c_c",
+    "text": "Macbook thì 8gb cũng được, window thì nên 16gb",
+    "intent": "general_query",
+    "author": "@trungvinhnguyen7439"
+  },
+  {
+    "id": "UgxD5-mkfm0nQHEPblZ4AaABAg.AEP80dy3Ti2AEPMN2GONj6",
+    "text": "8GB thì giờ chỉ có lướt web xem video cơ bản thôi, phù hợp với giáo viên hoặc sale. Mà công nhận ko có bất cứ con laptop win 8GB ram nào mượt đc như air m1 air m2 bản 8GB :3",
+    "intent": "purchase_consultation",
+    "author": "@congdanhvo662"
+  },
+  {
+    "id": "UgxD5-mkfm0nQHEPblZ4AaABAg.AEP80dy3Ti2AFDMv__zluC",
+    "text": "bạn mua air m2 15inch ở shop nào vậy, mình cx đang tìm mua mà thấy hiếm nơi bán",
+    "intent": "general_query",
+    "author": "@Tiến-Digital"
+  },
+  {
+    "id": "UgwsIpSgY1mP_kDcJFp4AaABAg.AEP7jHR4GqDAEQ9r5mCRnh",
+    "text": "mình thì không trong ngành nên không rõ, nhưng thấy các bạn làm ngành này toàn xài Win",
+    "intent": "general_query",
+    "author": "@duyluandethuong"
+  },
+  {
+    "id": "UgwsIpSgY1mP_kDcJFp4AaABAg.AEP7jHR4GqDAEPCqr72TFk",
+    "text": "có nhưng không ngon bằng Windows bạn",
+    "intent": "general_query",
+    "author": "@nguyenquocanh5337"
+  },
+  {
+    "id": "UgwsIpSgY1mP_kDcJFp4AaABAg.AEP7jHR4GqDAEPDb-fJq5h",
+    "text": "Tuỳ bạn ạ, như Maya hay Autocad thì dùng đc, nhưng 3DS Max hay Revit thì k dùng đc",
+    "intent": "general_query",
+    "author": "@WindDasher1029"
+  },
+  {
+    "id": "UgwsIpSgY1mP_kDcJFp4AaABAg.AEP7jHR4GqDAEPPkuA4fo6",
+    "text": "bỏ Mac mà làm người =)))",
+    "intent": "general_query",
+    "author": "@truongevil"
+  },
+  {
+    "id": "UgwsIpSgY1mP_kDcJFp4AaABAg.AEP7jHR4GqDAEPQCdXkhNt",
+    "text": "@Nhannt31663  đã dùng mấy phần mềm đó thì mua máy trạm win đấy. Chứ Mac nó nhắm đến ng dùng phổ thông hoặc media mà",
+    "intent": "general_query",
+    "author": "@phucnguyenhoang1834"
+  },
+  {
+    "id": "UgwsIpSgY1mP_kDcJFp4AaABAg.AEP7jHR4GqDAG0IJ5eKJSt",
+    "text": "bác chọn Windows nhé. MacOS không phù hợp",
+    "intent": "general_query",
+    "author": "@dinhbaonguyen9488"
+  },
+  {
+    "id": "UgzC7F3qzYL9PyZzQnp4AaABAg.AEP3J9o2vK4AEPBlMqW5Vt",
+    "text": "Tr ơi 9xac, nên năm ngoái vẫn quyết định mua macbook air m1 mới, dù 8gb ram thôi nhưng dùng để văn phòng với học đh mượt k có tí gợn nào, ưng ơi là ưng, k chút hối hận =)) pin 10 tiếng tr ơi window khóc tiếng mán, bởi vậy",
+    "intent": "ask_specs",
+    "author": "@Huydobryan"
+  },
+  {
+    "id": "UgzC7F3qzYL9PyZzQnp4AaABAg.AEP3J9o2vK4AEPUj-5bGoU",
+    "text": "​ @Huydobryan ừ, ngon nhưng mỗi tội màn bé và thiếu ứng dụng chuyên ngành kỹ thuật, và ít chơi được game",
+    "intent": "general_query",
+    "author": "@khoanguyendang1106"
+  },
+  {
+    "id": "UgzC7F3qzYL9PyZzQnp4AaABAg.AEP3J9o2vK4AEPX9t9_tCV",
+    "text": "do laptop win ở VN nhà phân phối ăn dày quá, chứ giá máy như thế giới bên ngoài xem lap win nó có đập cho lủng đầu ko, tôi mua con lenovo yoga pro 7 nội địa Trung 32g ram, 1t SSD, chip 7840HS nó đập lủng đầu con M2 với tầm giá 25 triệu",
+    "intent": "purchase_consultation",
+    "author": "@MrMQuang"
+  },
+  {
+    "id": "UgzC7F3qzYL9PyZzQnp4AaABAg.AEP3J9o2vK4AEQ9xeFbVMG",
+    "text": "bạn so máy nội địa Trung thì không được đâu, vì nội địa Trung và máy của các hãng TQ có chính sách giá khác với phần còn lại của thế giới, nếu so thì so với Mỹ thì ok.",
+    "intent": "ask_price",
+    "author": "@duyluandethuong"
+  },
+  {
+    "id": "UgzC7F3qzYL9PyZzQnp4AaABAg.AEP3J9o2vK4AER9jjvtUAO",
+    "text": "@ chính sách giá giống nhau bạn ơi, chỉ hơn là cấu hình ngon hơn ở SSD với ram thôi, giá bestbuy con air14s của tôi là con yoga slim 7 bên Mẽo Best buy bán có 900 đồng, quy ra giá bên Trung là ngang nhau. Bản Trung hơn là 32Gb vs 16 GB ram, 1T ssd vs 512 ssd.",
+    "intent": "compare_products",
+    "author": "@MrMQuang"
+  },
+  {
+    "id": "UgyDIk5wurfMbhG9Bu94AaABAg",
+    "text": "Asus s 16 oled mua chíp của Intel hay AMD hơn vậy bạn.❤️",
+    "intent": "general_query",
+    "author": "@KienNguyen-ze4cd"
+  },
+  {
+    "id": "UgyDIk5wurfMbhG9Bu94AaABAg.AEP36i3eEeQAEP3jQn_n1q",
+    "text": "AMD bạn ơi",
+    "intent": "general_query",
+    "author": "@typ1469"
+  },
+  {
+    "id": "UgyDIk5wurfMbhG9Bu94AaABAg.AEP36i3eEeQAEP8p20BJ6o",
+    "text": "mình chưa được test con AMD nên cũng không rõ nữa",
+    "intent": "general_query",
+    "author": "@duyluandethuong"
+  },
+  {
+    "id": "UgxAjYGNgUYysjJDg714AaABAg.AENktF30blXAFhwN8kDjdP",
+    "text": "Vì mình đang phân vân mua mac hay window, mình là dân IT nhưng gốc học Kinh tế: đã từng học quan cac module data science bên KHTN, làm web, ERP ....",
+    "intent": "general_query",
+    "author": "@bobbyl.sansone2848"
+  },
+  {
+    "id": "UgxAjYGNgUYysjJDg714AaABAg.AENktF30blXAFiCUx03hrN",
+    "text": "@ ChatGPT đâu phải nguồn tin cậy, bạn hỏi nó là dùng không đúng mục đích rồi. Còn nuốn học ML thì Mac hay Win gì cũng được, vì chủ yếu bạn sẽ chạy trên các nền tảng cloud như Colab cho khỏe.",
+    "intent": "general_query",
+    "author": "@duyluandethuong"
+  },
+  {
+    "id": "UgxAjYGNgUYysjJDg714AaABAg.AENktF30blXAF-wCFjI3xf",
+    "text": "@duyluandethuong  anh ơi cho em hỏi với ạ  \nMac mini m4 so sánh với macbook ari m2 thì máy nào hiệu năng mạnh hơn ạ k so sánh về phần di chuyển ạ \nMong anh trả lời em ạ",
+    "intent": "compare_products",
+    "author": "@TranHuuTrungFPLHCM"
+  },
+  {
+    "id": "UgxAjYGNgUYysjJDg714AaABAg.AENktF30blXAFhuVoaEzUf",
+    "text": "Nếu MacBook pro M4 pro mà so với Laptop window + RTX 8G thì window vẫn ngon hơn mac trong AI và Machine: chat GPT nó vậy",
+    "intent": "general_query",
+    "author": "@bobbyl.sansone2848"
+  },
+  {
+    "id": "UgxAjYGNgUYysjJDg714AaABAg.AENktF30blXAFhup3nF209",
+    "text": "@ sao bạn hỏi ChatGPT :)) nó chắc gì đúng.",
+    "intent": "general_query",
+    "author": "@duyluandethuong"
+  },
+  {
+    "id": "UgxAjYGNgUYysjJDg714AaABAg.AENktF30blXALbFWPtiwKg",
+    "text": "Học nghành quản trị khách sạn- mua MacBook được không anh",
+    "intent": "general_query",
+    "author": "@thanhquoc3629"
+  },
+  {
+    "id": "UgxAjYGNgUYysjJDg714AaABAg.AENktF30blXANCZx_A0rfH",
+    "text": "B ơi, vấn đề của chip M1 không chạy tốt với những phần mềm ảo hoá như VMWARE lên M2, M3, M4 đã khắc phục được chưa vậy b? Bây giờ Mackbook Intel đời gần nhất có chạy được các AI local không? Khi đó lợi thế Macook về AI có còn không? Cám ơn b nhé.",
+    "intent": "ask_specs",
+    "author": "@TueTriNhuThat"
+  }
+]
