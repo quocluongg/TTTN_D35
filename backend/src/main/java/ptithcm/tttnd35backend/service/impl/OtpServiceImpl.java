@@ -17,7 +17,7 @@ import ptithcm.tttnd35backend.util.enums.OtpPurpose;
 
 import java.security.SecureRandom;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 /**
  * Sinh, gửi và xác thực mã OTP.
@@ -65,7 +65,7 @@ public class OtpServiceImpl implements IOtpService {
                 .profile(profile)
                 .otpHash(passwordEncoder.encode(otpCode))
                 .purpose(purpose)
-                .expiresAt(LocalDateTime.now().plusMinutes(expirationMinutes))
+                .expiresAt(ZonedDateTime.now().plusMinutes(expirationMinutes))
                 .verified(false)
                 .attemptCount(0)
                 .build();
@@ -83,7 +83,7 @@ public class OtpServiceImpl implements IOtpService {
                 .findFirstByProfileIdAndPurposeAndVerifiedFalseOrderByCreatedAtDesc(profile.getId(), purpose)
                 .orElseThrow(() -> new InvalidOtpException("Không tìm thấy mã OTP, vui lòng yêu cầu gửi lại"));
 
-        if (otp.getExpiresAt().isBefore(LocalDateTime.now())) {
+        if (otp.getExpiresAt().isBefore(ZonedDateTime.now())) {
             throw new InvalidOtpException("Mã OTP đã hết hạn, vui lòng yêu cầu gửi lại");
         }
 

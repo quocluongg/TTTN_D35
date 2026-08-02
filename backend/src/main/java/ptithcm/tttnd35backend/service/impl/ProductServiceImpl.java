@@ -31,10 +31,15 @@ public class ProductServiceImpl implements IProductService {
     @Override
     public List<ProductResponse> getProducts(String category, List<String> useCases, Long maxPrice, String sortBy, String search) {
         Specification<Product> spec = (root, query, criteriaBuilder) -> {
-            // Prevent duplicate products from joins
             query.distinct(true);
 
             List<Predicate> predicates = new ArrayList<>();
+
+            // 0. Only active products
+            predicates.add(criteriaBuilder.or(
+                criteriaBuilder.isNull(root.get("isActive")),
+                criteriaBuilder.equal(root.get("isActive"), true)
+            ));
 
             // 1. Filter by category
             if (category != null && !category.trim().isEmpty() && !category.equalsIgnoreCase("Tất cả")) {
@@ -45,46 +50,22 @@ public class ProductServiceImpl implements IProductService {
             if (maxPrice != null) {
                 Join<Product, ProductVariant> variantsJoin = root.join("variants");
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(variantsJoin.get("price"), new BigDecimal(maxPrice)));
-                // Only consider active variants with price > 0
                 predicates.add(criteriaBuilder.greaterThan(variantsJoin.get("price"), BigDecimal.ZERO));
             }
 
-            // 3. Filter by useCases keyword in name
+            // 3. Filter by useCases
             if (useCases != null && !useCases.isEmpty()) {
                 List<Predicate> useCasePredicates = new ArrayList<>();
                 for (String uc : useCases) {
-                    if (uc.equalsIgnoreCase("Gaming")) {
-                        useCasePredicates.add(criteriaBuilder.or(
-                            criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%gaming%"),
-                            criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%tuf%"),
-                            criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%playstation%"),
-                            criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%xbox%")
-                        ));
-                    } else if (uc.equalsIgnoreCase("Làm việc")) {
-                        useCasePredicates.add(criteriaBuilder.or(
-                            criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%laptop%"),
-                            criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%acer%"),
-                            criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%lenovo%"),
-                            criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%ideapad%"),
-                            criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%chuột%"),
-                            criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%bàn phím%")
-                        ));
-                    } else if (uc.equalsIgnoreCase("Giải trí")) {
-                        useCasePredicates.add(criteriaBuilder.and(
-                            criteriaBuilder.notLike(criteriaBuilder.lower(root.get("name")), "%gaming%"),
-                            criteriaBuilder.notLike(criteriaBuilder.lower(root.get("name")), "%tuf%"),
-                            criteriaBuilder.notLike(criteriaBuilder.lower(root.get("name")), "%playstation%"),
-                            criteriaBuilder.notLike(criteriaBuilder.lower(root.get("name")), "%xbox%"),
-                            criteriaBuilder.notLike(criteriaBuilder.lower(root.get("name")), "%laptop%"),
-                            criteriaBuilder.notLike(criteriaBuilder.lower(root.get("name")), "%acer%"),
-                            criteriaBuilder.notLike(criteriaBuilder.lower(root.get("name")), "%lenovo%"),
-                            criteriaBuilder.notLike(criteriaBuilder.lower(root.get("name")), "%ideapad%"),
-                            criteriaBuilder.notLike(criteriaBuilder.lower(root.get("name")), "%chuột%"),
-                            criteriaBuilder.notLike(criteriaBuilder.lower(root.get("name")), "%bàn phím%")
-                        ));
+                    if (uc != null && !uc.trim().isEmpty()) {
+                        String ucLower = uc.trim().toLowerCase();
+                        useCasePredicates.add(criteriaBuilder.equal(criteriaBuilder.lower(root.get("useCase")), ucLower));
+                        useCasePredicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + ucLower + "%"));
                     }
                 }
-                predicates.add(criteriaBuilder.or(useCasePredicates.toArray(new Predicate[0])));
+                if (!useCasePredicates.isEmpty()) {
+                    predicates.add(criteriaBuilder.or(useCasePredicates.toArray(new Predicate[0])));
+                }
             }
 
             // 4. Filter by search keyword
@@ -95,17 +76,18 @@ public class ProductServiceImpl implements IProductService {
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
 
-        // Fetch filtered list
         List<Product> products = productRepository.findAll(spec);
 
-        // Map and sort in memory for accuracy with dynamic properties
         List<ProductResponse> responses = products.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
 
         if (sortBy != null && !sortBy.trim().isEmpty()) {
             if (sortBy.equalsIgnoreCase("bestseller")) {
-                responses.sort((a, b) -> Integer.compare(b.getReviewsCount(), a.getReviewsCount()));
+                responses.sort((a, b) -> Integer.compare(
+                    b.getSoldQuantity() != null ? b.getSoldQuantity() : (b.getReviewsCount() != null ? b.getReviewsCount() : 0),
+                    a.getSoldQuantity() != null ? a.getSoldQuantity() : (a.getReviewsCount() != null ? a.getReviewsCount() : 0)
+                ));
             } else if (sortBy.equalsIgnoreCase("price-low")) {
                 responses.sort((a, b) -> Long.compare(a.getPrice(), b.getPrice()));
             } else if (sortBy.equalsIgnoreCase("price-high")) {
@@ -126,7 +108,6 @@ public class ProductServiceImpl implements IProductService {
     }
 
     private ProductResponse mapToResponse(Product product) {
-        // Price resolution: get minimum price of active variants (> 0), fallback to 0 or a base price if all 0
         long price = 0L;
         if (product.getVariants() != null && !product.getVariants().isEmpty()) {
             price = product.getVariants().stream()
@@ -136,14 +117,12 @@ public class ProductServiceImpl implements IProductService {
                     .min()
                     .orElse(0L);
 
-            // If minimum active price is 0, just get the first variant's price
             if (price == 0L) {
                 BigDecimal firstPrice = product.getVariants().get(0).getPrice();
                 price = firstPrice != null ? firstPrice.longValue() : 0L;
             }
         }
 
-        // Original price calculation
         Long originalPrice = null;
         BigDecimal dp = product.getDiscountPercent();
         if (dp == null && product.getVariants() != null && !product.getVariants().isEmpty()) {
@@ -151,39 +130,43 @@ public class ProductServiceImpl implements IProductService {
         }
 
         if (dp != null && dp.compareTo(BigDecimal.ZERO) > 0 && price > 0) {
-            // Original = price / (1 - discount/100)
             BigDecimal factor = BigDecimal.ONE.subtract(dp.divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP));
             if (factor.compareTo(BigDecimal.ZERO) > 0) {
                 originalPrice = new BigDecimal(price).divide(factor, 0, RoundingMode.HALF_UP).longValue();
             }
         }
 
-        // Badges
         String discountBadge = (dp != null && dp.compareTo(BigDecimal.ZERO) > 0)
                 ? "-" + dp.setScale(0, RoundingMode.HALF_UP) + "%"
                 : null;
 
+        Integer soldQty = product.getSoldQuantity() != null ? product.getSoldQuantity() : 0;
         String statusBadge = null;
-        if (product.getId() % 6 == 0) {
+        if (soldQty > 15) {
             statusBadge = "Bán chạy";
-        } else if (product.getId() % 8 == 0) {
+        } else if (product.getCreatedAt() != null) {
             statusBadge = "Mới ra mắt";
         }
 
-        // Dynamic use-case assignment
-        String nameLower = product.getName().toLowerCase();
-        String useCase = "Giải trí";
-        if (nameLower.contains("gaming") || nameLower.contains("tuf") || nameLower.contains("playstation") || nameLower.contains("xbox")) {
-            useCase = "Gaming";
-        } else if (nameLower.contains("laptop") || nameLower.contains("acer") || nameLower.contains("lenovo") || nameLower.contains("ideapad") || nameLower.contains("chuột") || nameLower.contains("bàn phím")) {
-            useCase = "Làm việc";
+        String useCase = product.getUseCase();
+        if (useCase == null || useCase.trim().isEmpty()) {
+            String nameLower = product.getName().toLowerCase();
+            if (nameLower.contains("gaming") || nameLower.contains("tuf") || nameLower.contains("playstation") || nameLower.contains("xbox")) {
+                useCase = "Gaming";
+            } else if (nameLower.contains("laptop") || nameLower.contains("acer") || nameLower.contains("lenovo") || nameLower.contains("ideapad") || nameLower.contains("chuột") || nameLower.contains("bàn phím")) {
+                useCase = "Làm việc";
+            } else {
+                useCase = "Giải trí";
+            }
         }
 
-        // Image resolution
         String imageUrl = product.getThumbnail();
         if (imageUrl == null || imageUrl.trim().isEmpty()) {
-            imageUrl = "/figma/product_1.png"; // Fallback
+            imageUrl = "/figma/product_1.png";
         }
+
+        Double rating = product.getRatingAvg() != null ? product.getRatingAvg().doubleValue() : 5.0;
+        Integer reviewsCount = product.getReviewCount() != null ? product.getReviewCount() : 0;
 
         return ProductResponse.builder()
                 .id(product.getId().toString())
@@ -194,10 +177,11 @@ public class ProductServiceImpl implements IProductService {
                 .discountBadge(discountBadge)
                 .statusBadge(statusBadge)
                 .imageUrl(imageUrl)
-                .rating(4.5 + (product.getId() % 6) * 0.1)
-                .reviewsCount(5 + (int) (product.getId() % 45))
+                .rating(rating)
+                .reviewsCount(reviewsCount)
+                .soldQuantity(soldQty)
                 .useCase(useCase)
-                .isFeatured(product.getId() % 3 == 0)
+                .isFeatured(soldQty > 10 || (product.getId().hashCode() % 3 == 0))
                 .description(product.getDescription())
                 .build();
     }

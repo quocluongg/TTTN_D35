@@ -2,7 +2,7 @@ package ptithcm.tttnd35backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Entity
@@ -34,5 +34,5 @@ public class RagFeedback {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private ZonedDateTime createdAt = ZonedDateTime.now();
 }

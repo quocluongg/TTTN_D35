@@ -20,6 +20,7 @@ public class ProductResponse {
     private String imageUrl;
     private Double rating;
     private Integer reviewsCount;
+    private Integer soldQuantity;
     private String useCase;
     private boolean isFeatured;
     private String description;

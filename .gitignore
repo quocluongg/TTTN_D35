@@ -3,6 +3,8 @@ __pycache__/
 *.pyc
 .venv/
 env/
+hs_err_*.log
+
 
 # Ignore scripts directory completely
 scripts/

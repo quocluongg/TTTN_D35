@@ -31,7 +31,7 @@ import ptithcm.tttnd35backend.util.enums.AuthProvider;
 import ptithcm.tttnd35backend.util.enums.OtpPurpose;
 import ptithcm.tttnd35backend.util.helper.TokenHasher;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
@@ -134,7 +134,7 @@ public class AuthServiceImpl implements IAuthService {
                 .tokenHash(TokenHasher.sha256(rawRefreshToken))
                 .deviceInfo(deviceInfo)
                 .ipAddress(ipAddress)
-                .expiresAt(LocalDateTime.now().plus(refreshExpirationMs, ChronoUnit.MILLIS))
+                .expiresAt(ZonedDateTime.now().plus(refreshExpirationMs, ChronoUnit.MILLIS))
                 .revoked(false)
                 .build();
         refreshTokenRepository.save(refreshToken);
@@ -168,7 +168,7 @@ public class AuthServiceImpl implements IAuthService {
             throw new InvalidRefreshTokenException("Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại");
         }
 
-        if (oldToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+        if (oldToken.getExpiresAt().isBefore(ZonedDateTime.now())) {
             throw new InvalidRefreshTokenException("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại");
         }
 
@@ -185,7 +185,7 @@ public class AuthServiceImpl implements IAuthService {
                 .tokenHash(TokenHasher.sha256(newRawRefreshToken))
                 .deviceInfo(deviceInfo)
                 .ipAddress(ipAddress)
-                .expiresAt(LocalDateTime.now().plus(refreshExpirationMs, ChronoUnit.MILLIS))
+                .expiresAt(ZonedDateTime.now().plus(refreshExpirationMs, ChronoUnit.MILLIS))
                 .revoked(false)
                 .build();
         refreshTokenRepository.save(newToken);
