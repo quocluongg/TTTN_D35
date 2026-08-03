@@ -12,7 +12,7 @@ import java.util.List;
 
 /** Public - khách xem danh mục, không cần đăng nhập. */
 @RestController
-@RequestMapping("/categories")
+@RequestMapping({"/api/v1/categories", "/categories"})
 @RequiredArgsConstructor
 public class CategoryController {
 

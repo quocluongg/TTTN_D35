@@ -57,8 +57,14 @@ http.interceptors.response.use(
       } catch {
         Cookies.remove("token");
         Cookies.remove("user");
-        if (typeof window !== "undefined" && !window.location.pathname.startsWith("/admin")) {
-          window.location.href = "/login";
+        if (typeof window !== "undefined") {
+          const currentPath = window.location.pathname;
+          const isProtectedPath = currentPath.startsWith("/account") || 
+                                 currentPath.startsWith("/checkout") || 
+                                 currentPath.startsWith("/orders");
+          if (isProtectedPath) {
+            window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+          }
         }
       }
     }

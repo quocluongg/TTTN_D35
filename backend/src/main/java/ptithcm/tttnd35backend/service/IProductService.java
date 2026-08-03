@@ -18,12 +18,12 @@ public interface IProductService {
     // Public - chỉ trả sản phẩm đang active.
     PageResponse<ProductListItemResponse> getList(
             String categorySlug, String brand, BigDecimal minPrice, BigDecimal maxPrice,
-            String search, String sortBy, int page, int size);
+            String search, String specKey, String specValue, String sortBy, int page, int size);
 
     // Admin - trả cả sản phẩm đang bị ẩn, để còn thấy mà bật lại/sửa. Cùng bộ filter với getList().
     PageResponse<ProductListItemResponse> getListForAdmin(
             String categorySlug, String brand, BigDecimal minPrice, BigDecimal maxPrice,
-            String search, String sortBy, int page, int size);
+            String search, String specKey, String specValue, String sortBy, int page, int size);
 
     // Public - chỉ trả sản phẩm đang active.
     ProductDetailResponse getDetailBySlug(String slug);

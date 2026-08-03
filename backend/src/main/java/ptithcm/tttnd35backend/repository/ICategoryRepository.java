@@ -21,4 +21,6 @@ public interface ICategoryRepository extends JpaRepository<Category, UUID> {
 
     // Kiểm tra danh mục có phải lá hay không (còn danh mục con) - dùng khi gán Product vào Category.
     boolean existsByParentId(UUID parentId);
+
+    List<Category> findAllByParentId(UUID parentId);
 }

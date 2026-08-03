@@ -66,20 +66,20 @@ public class ProductServiceImpl implements IProductService {
     @Override
     public PageResponse<ProductListItemResponse> getList(
             String categorySlug, String brand, BigDecimal minPrice, BigDecimal maxPrice,
-            String search, String sortBy, int page, int size) {
-        return buildPageResponse(true, categorySlug, brand, minPrice, maxPrice, search, sortBy, page, size);
+            String search, String specKey, String specValue, String sortBy, int page, int size) {
+        return buildPageResponse(true, categorySlug, brand, minPrice, maxPrice, search, specKey, specValue, sortBy, page, size);
     }
 
     @Override
     public PageResponse<ProductListItemResponse> getListForAdmin(
             String categorySlug, String brand, BigDecimal minPrice, BigDecimal maxPrice,
-            String search, String sortBy, int page, int size) {
-        return buildPageResponse(false, categorySlug, brand, minPrice, maxPrice, search, sortBy, page, size);
+            String search, String specKey, String specValue, String sortBy, int page, int size) {
+        return buildPageResponse(false, categorySlug, brand, minPrice, maxPrice, search, specKey, specValue, sortBy, page, size);
     }
 
     private PageResponse<ProductListItemResponse> buildPageResponse(
             boolean onlyActive, String categorySlug, String brand, BigDecimal minPrice, BigDecimal maxPrice,
-            String search, String sortBy, int page, int size) {
+            String search, String specKey, String specValue, String sortBy, int page, int size) {
 
         // Sort theo giá không diễn đạt được bằng Pageable Sort thường (giá nằm ở bảng ProductVariant,
         // không phải cột trên Product) nên phải set trực tiếp query.orderBy() trong Specification -
@@ -88,9 +88,10 @@ public class ProductServiceImpl implements IProductService {
 
         Specification<Product> spec = Specification.allOf(
                 onlyActive ? ProductSpecifications.isActive() : Specification.allOf(),
-                nonNull(ProductSpecifications.hasCategorySlug(categorySlug)),
+                nonNull(resolveCategorySpec(categorySlug)),
                 nonNull(ProductSpecifications.hasBrand(brand)),
                 nonNull(ProductSpecifications.nameContains(search)),
+                nonNull(ProductSpecifications.hasSpec(specKey, specValue)),
                 nonNull(ProductSpecifications.priceFromBetween(minPrice, maxPrice)),
                 sortByPrice ? ProductSpecifications.orderByMinPrice("price-asc".equals(sortBy)) : Specification.allOf()
         );
@@ -335,5 +336,23 @@ public class ProductServiceImpl implements IProductService {
             slug = base + "-" + suffix++;
         }
         return slug;
+    }
+
+    private Specification<Product> resolveCategorySpec(String categorySlug) {
+        if (!StringUtils.hasText(categorySlug)) {
+            return null;
+        }
+        var catOpt = categoryRepository.findBySlug(categorySlug);
+        if (catOpt.isEmpty()) {
+            return ProductSpecifications.hasCategorySlug(categorySlug);
+        }
+        Category cat = catOpt.get();
+        List<UUID> catIds = new ArrayList<>();
+        catIds.add(cat.getId());
+        List<Category> children = categoryRepository.findAllByParentId(cat.getId());
+        for (Category child : children) {
+            catIds.add(child.getId());
+        }
+        return ProductSpecifications.hasCategoryIds(catIds);
     }
 }

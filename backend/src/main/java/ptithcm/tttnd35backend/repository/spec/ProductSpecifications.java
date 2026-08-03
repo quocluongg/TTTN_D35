@@ -67,6 +67,13 @@ public class ProductSpecifications {
 
     // Sort theo giá thấp nhất của variant. Set trực tiếp query.orderBy() trong toPredicate() (thay vì
     // qua Pageable Sort) vì Sort không biết cách diễn đạt "sort theo subquery" - đây là cách chuẩn để
+    public static Specification<Product> hasCategoryIds(java.util.List<java.util.UUID> categoryIds) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            return null;
+        }
+        return (root, query, cb) -> root.get("category").get("id").in(categoryIds);
+    }
+
     // làm ORDER BY theo 1 cột không nằm trên chính bảng Product. Trả về cb.conjunction() vì spec này
     // không lọc gì, chỉ có tác dụng phụ set order.
     public static Specification<Product> orderByMinPrice(boolean ascending) {
@@ -78,6 +85,31 @@ public class ProductSpecifications {
 
             query.orderBy(ascending ? cb.asc(minSubquery) : cb.desc(minSubquery));
             return cb.conjunction();
+        };
+    }
+
+    public static Specification<Product> hasSpec(String key, String value) {
+        if (!StringUtils.hasText(key) || !StringUtils.hasText(value)) {
+            return null;
+        }
+        return (root, query, cb) -> {
+            var subquery = query.subquery(java.util.UUID.class);
+            var specRoot = subquery.from(ptithcm.tttnd35backend.entity.ProductSpecification.class);
+            var attrKeyJoin = specRoot.join("attributeKey");
+
+            String keyPattern = "%" + key.trim().toLowerCase() + "%";
+            String valuePattern = "%" + value.trim().toLowerCase() + "%";
+
+            var keyPredicate = cb.or(
+                    cb.like(cb.lower(attrKeyJoin.get("name")), keyPattern),
+                    cb.like(cb.lower(attrKeyJoin.get("displayName")), keyPattern)
+            );
+            var valuePredicate = cb.like(cb.lower(specRoot.get("specValue")), valuePattern);
+
+            subquery.select(specRoot.get("productId"))
+                    .where(cb.equal(specRoot.get("productId"), root.get("id")), keyPredicate, valuePredicate);
+
+            return cb.exists(subquery);
         };
     }
 }

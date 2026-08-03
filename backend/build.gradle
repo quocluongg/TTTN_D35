@@ -43,9 +43,8 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testAnnotationProcessor 'org.projectlombok:lombok'
 
-    // spring-dotenv
-    // Source: https://github.com/paulschwarz/spring-dotenv
-    developmentOnly 'me.paulschwarz:springboot4-dotenv:5.1.0'
+    // spring-dotenv (tự nạp file .env khi chạy)
+    implementation 'me.paulschwarz:springboot4-dotenv:5.1.0'
 
     // Stripe SDK - thanh toán online
     // Source: https://mvnrepository.com/artifact/com.stripe/stripe-java

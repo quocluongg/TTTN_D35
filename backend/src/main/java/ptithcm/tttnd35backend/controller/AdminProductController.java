@@ -36,11 +36,13 @@ public class AdminProductController {
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) String specKey,
+            @RequestParam(required = false) String specValue,
             @RequestParam(required = false) String sortBy,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
-        var data = productService.getListForAdmin(categorySlug, brand, minPrice, maxPrice, search, sortBy, page, size);
+        var data = productService.getListForAdmin(categorySlug, brand, minPrice, maxPrice, search, specKey, specValue, sortBy, page, size);
         return ApiResponse.<PageResponse<ProductListItemResponse>>builder()
                 .success(true)
                 .data(data)
