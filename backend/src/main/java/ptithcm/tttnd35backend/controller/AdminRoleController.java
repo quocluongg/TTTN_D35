@@ -22,7 +22,7 @@ public class AdminRoleController {
     private final IAdminRoleService roleService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ROLE_VIEW')")
+    @PreAuthorize("hasAuthority('ROLE_VIEW') or hasAuthority('ROLE_MANAGE')")
     public ApiResponse<List<RoleResponse>> getAllRoles() {
         return ApiResponse.<List<RoleResponse>>builder()
                 .success(true)
@@ -32,7 +32,7 @@ public class AdminRoleController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_VIEW')")
+    @PreAuthorize("hasAuthority('ROLE_VIEW') or hasAuthority('ROLE_MANAGE')")
     public ApiResponse<RoleResponse> getRoleById(@PathVariable UUID id) {
         return ApiResponse.<RoleResponse>builder()
                 .success(true)

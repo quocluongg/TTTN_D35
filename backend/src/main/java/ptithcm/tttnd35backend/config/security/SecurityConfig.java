@@ -28,11 +28,10 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // bật @PreAuthorize/@PostAuthorize trên method
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    // Endpoint không yêu cầu đăng nhập (Không cần Access Token).
     private static final String[] PUBLIC_ENDPOINTS = {
             "/auth/**",
             "/api/v1/auth/**",
@@ -57,10 +56,15 @@ public class SecurityConfig {
             "/payments/vnpay/ipn",
             "/payments/stripe/webhook",
             "/api/v1/payments/**",
+            "/news",
+            "/news/**",
             "/api/v1/news",
             "/api/v1/news/**",
+            "/home/**",
             "/api/v1/home/**",
+            "/warranty/lookup",
             "/api/v1/warranty/lookup",
+            "/system-configs/public",
             "/api/v1/system-configs/public"
     };
 
@@ -114,7 +118,14 @@ public class SecurityConfig {
                         .accessDeniedHandler(customAccessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/products/**", "/categories/**", "/api/v1/products/**", "/api/v1/categories/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,
+                                "/products", "/products/**", "/api/v1/products", "/api/v1/products/**",
+                                "/categories", "/categories/**", "/api/v1/categories", "/api/v1/categories/**",
+                                "/news", "/news/**", "/api/v1/news", "/api/v1/news/**",
+                                "/home", "/home/**", "/api/v1/home", "/api/v1/home/**",
+                                "/warranty/lookup", "/api/v1/warranty/lookup",
+                                "/system-configs/public", "/api/v1/system-configs/public"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

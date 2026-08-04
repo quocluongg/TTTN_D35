@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/home")
+@RequestMapping({"/api/v1/home", "/home"})
 @RequiredArgsConstructor
 public class HomeController {
 

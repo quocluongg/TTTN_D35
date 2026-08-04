@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/system-configs")
+@RequestMapping({"/api/v1/system-configs", "/system-configs"})
 @RequiredArgsConstructor
 public class SystemConfigController {
 

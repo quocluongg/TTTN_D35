@@ -9,7 +9,7 @@ import ptithcm.tttnd35backend.service.IWarrantyService;
 import java.time.LocalDateTime;
 
 @RestController
-@RequestMapping("/api/v1/warranty")
+@RequestMapping({"/api/v1/warranty", "/warranty"})
 @RequiredArgsConstructor
 public class WarrantyController {
 

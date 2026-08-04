@@ -23,7 +23,7 @@ public class AdminSystemConfigController {
     private final ISystemConfigService configService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('SYSTEM_CONFIG_VIEW')")
+    @PreAuthorize("hasAuthority('SYSTEM_CONFIG_VIEW') or hasAuthority('SYSTEM_CONFIG_MANAGE')")
     public ApiResponse<List<SystemConfigResponse>> getAllConfigs() {
         return ApiResponse.<List<SystemConfigResponse>>builder()
                 .success(true)
@@ -33,7 +33,7 @@ public class AdminSystemConfigController {
     }
 
     @GetMapping("/{key}")
-    @PreAuthorize("hasAuthority('SYSTEM_CONFIG_VIEW')")
+    @PreAuthorize("hasAuthority('SYSTEM_CONFIG_VIEW') or hasAuthority('SYSTEM_CONFIG_MANAGE')")
     public ApiResponse<SystemConfigResponse> getConfigByKey(@PathVariable String key) {
         return ApiResponse.<SystemConfigResponse>builder()
                 .success(true)

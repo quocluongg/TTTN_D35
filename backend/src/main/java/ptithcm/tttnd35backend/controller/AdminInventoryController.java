@@ -27,7 +27,7 @@ public class AdminInventoryController {
     private final IInventoryService inventoryService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('INVENTORY_VIEW')")
+    @PreAuthorize("hasAuthority('INVENTORY_VIEW') or hasAuthority('INVENTORY_MANAGE')")
     public ApiResponse<PageResponse<LowStockVariantResponse>> getInventory(
             @RequestParam(required = false) UUID productId,
             @RequestParam(required = false) Boolean lowStock,
