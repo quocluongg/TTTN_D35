@@ -15,6 +15,8 @@ public interface IProductVariantRepository extends JpaRepository<ProductVariant,
 
     List<ProductVariant> findAllByProductId(UUID productId);
 
+    org.springframework.data.domain.Page<ProductVariant> findAllByProductId(UUID productId, org.springframework.data.domain.Pageable pageable);
+
     Optional<ProductVariant> findByIdAndProductId(UUID id, UUID productId);
 
     boolean existsBySku(String sku);
@@ -45,4 +47,15 @@ public interface IProductVariantRepository extends JpaRepository<ProductVariant,
     @Modifying(clearAutomatically = true)
     @Query("update ProductVariant v set v.stock = v.stock + :qty where v.id = :id")
     int increaseStock(@Param("id") UUID id, @Param("qty") int qty);
+
+    @Query("""
+            SELECT new ptithcm.tttnd35backend.dto.response.LowStockVariantResponse(
+                v.id, v.variantName, v.sku, p.id, p.name, v.stock, v.price
+            )
+            FROM ProductVariant v
+            JOIN Product p ON v.productId = p.id
+            WHERE v.stock <= :threshold
+            ORDER BY v.stock ASC
+            """)
+    List<ptithcm.tttnd35backend.dto.response.LowStockVariantResponse> findLowStockVariants(@Param("threshold") int threshold);
 }

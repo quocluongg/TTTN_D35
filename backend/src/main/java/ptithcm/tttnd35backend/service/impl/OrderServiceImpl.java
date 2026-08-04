@@ -28,6 +28,8 @@ import ptithcm.tttnd35backend.util.enums.PaymentStatus;
 import ptithcm.tttnd35backend.util.helper.PageResponseHelper;
 import ptithcm.tttnd35backend.util.helper.PriceCalculator;
 
+import ptithcm.tttnd35backend.service.IWarrantyService;
+
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -48,6 +50,7 @@ public class OrderServiceImpl implements IOrderService {
     private final IVoucherUsageRepository voucherUsageRepository;
     private final IVoucherRepository voucherRepository;
     private final IPaymentTransactionRepository paymentTransactionRepository;
+    private final IWarrantyService warrantyService;
 
     @Override
     @Transactional
@@ -161,6 +164,9 @@ public class OrderServiceImpl implements IOrderService {
                 order.setPaymentStatus(PaymentStatus.PAID);
             }
             orderRepository.save(order);
+            if (request.getStatus() == OrderStatus.COMPLETED) {
+                warrantyService.generateWarrantyCardsFromOrder(order);
+            }
         }
         return toResponse(order, orderItemRepository.findAllByOrderId(orderId));
     }

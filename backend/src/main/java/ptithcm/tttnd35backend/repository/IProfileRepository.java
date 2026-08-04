@@ -1,6 +1,7 @@
 package ptithcm.tttnd35backend.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import ptithcm.tttnd35backend.entity.Profile;
@@ -9,7 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface IProfileRepository extends JpaRepository<Profile, UUID> {
+public interface IProfileRepository extends JpaRepository<Profile, UUID>, JpaSpecificationExecutor<Profile> {
 
     Optional<Profile> findByEmail(String email);
 

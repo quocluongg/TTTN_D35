@@ -56,7 +56,12 @@ public class SecurityConfig {
             "/payments/vnpay/return",
             "/payments/vnpay/ipn",
             "/payments/stripe/webhook",
-            "/api/v1/payments/**"
+            "/api/v1/payments/**",
+            "/api/v1/news",
+            "/api/v1/news/**",
+            "/api/v1/home/**",
+            "/api/v1/warranty/lookup",
+            "/api/v1/system-configs/public"
     };
 
     @Value("${service.domain.frontend}")

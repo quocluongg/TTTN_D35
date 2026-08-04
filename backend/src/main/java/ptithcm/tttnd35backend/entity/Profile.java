@@ -42,6 +42,9 @@ public class Profile extends BaseEntity {
     @Column(name = "full_name", length = 150)
     private String fullName;
 
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
+
     @Builder.Default
     @Column(name = "email_notif")
     private boolean emailNotif = true;
