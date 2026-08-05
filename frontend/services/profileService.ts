@@ -1,0 +1,2 @@
+import http from "@/lib/http";
+export const profileService = { me: () => http.get("/profile/me"), update: (data: unknown) => http.patch("/profile/me", data), addresses: () => http.get("/addresses"), createAddress: (data: unknown) => http.post("/addresses", data), updateAddress: (id: string, data: unknown) => http.put(`/addresses/${id}`, data), setDefaultAddress: (id: string) => http.patch(`/addresses/${id}/default`), deleteAddress: (id: string) => http.delete(`/addresses/${id}`) };

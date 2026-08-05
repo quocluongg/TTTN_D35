@@ -1,200 +1,246 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import http from "@/lib/http";
-import { notifySuccess, notifyError } from "@/components/Notify";
+import React, { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import ResourcePage from "@/components/admin/ResourcePage";
+import { adminUserService } from "@/services/admin/adminUserService";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { notifyError, notifySuccess } from "@/components/Notify";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
-type AdminUser = {
-  id: string;
-  email: string;
-  fullName: string;
-  phone?: string;
-  role: string;
-  active: boolean;
-  emailVerified: boolean;
-  lockReason?: string;
-  createdAt: string;
-};
-
-type UserPageResponse = {
-  content: AdminUser[];
-  totalPages: number;
-  totalElements: number;
-  page: number;
-};
+type UserRow = Record<string, any>;
 
 export default function AdminUsersPage() {
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(0);
-  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
-  const [lockReason, setLockReason] = useState("");
   const queryClient = useQueryClient();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [lockConfirmItem, setLockConfirmItem] = useState<UserRow | null>(null);
+  const [editingUser, setEditingUser] = useState<UserRow | null>(null);
 
-  const { data, isLoading } = useQuery<UserPageResponse>({
-    queryKey: ["admin-users", search, page],
-    queryFn: async () => {
-      const res = await http.get("/admin/users", {
-        params: { search: search || undefined, page, size: 10 },
-      });
-      return (res as any).data;
-    },
-  });
+  // Form states for creating/editing staff/admin accounts
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [password, setPassword] = useState("");
+  const [roleId, setRoleId] = useState("STAFF");
 
-  const toggleLockMutation = useMutation({
-    mutationFn: async ({ id, active, reason }: { id: string; active: boolean; reason?: string }) => {
-      return http.patch(`/admin/users/${id}`, {
-        active,
-        lockReason: reason,
-      });
-    },
+  const resetForm = () => {
+    setFullName("");
+    setEmail("");
+    setPhoneNumber("");
+    setPassword("");
+    setRoleId("STAFF");
+    setEditingUser(null);
+  };
+
+  const createMutation = useMutation({
+    mutationFn: (data: any) => adminUserService.create(data),
     onSuccess: () => {
-      notifySuccess("Cập nhật trạng thái người dùng thành công");
+      notifySuccess("Tạo tài khoản quản trị thành công!");
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
-      setSelectedUser(null);
+      setModalOpen(false);
+      resetForm();
     },
     onError: (err: any) => {
-      notifyError(err?.response?.data?.message || "Không thể thay đổi trạng thái tài khoản");
+      notifyError(err?.message || "Không thể tạo tài khoản.");
     },
   });
 
-  const usersList = data?.content || [
-    { id: "1", fullName: "Quản trị viên Hệ thống", email: "admin@shopwise.vn", role: "ADMIN", active: true, emailVerified: true, createdAt: "2024-01-01" },
-    { id: "2", fullName: "Nguyễn Văn Kỹ Thuật", email: "kythuat@shopwise.vn", role: "STAFF", active: true, emailVerified: true, createdAt: "2024-02-15" },
-    { id: "3", fullName: "Trần Văn Khách Hàng", email: "khachhang@gmail.com", role: "CUSTOMER", active: true, emailVerified: false, createdAt: "2024-03-20" },
-  ];
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      adminUserService.update(id, data),
+    onSuccess: () => {
+      notifySuccess("Cập nhật thông tin người dùng thành công!");
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      setModalOpen(false);
+      resetForm();
+    },
+    onError: (err: any) => {
+      notifyError(err?.message || "Không thể cập nhật người dùng.");
+    },
+  });
+
+  const lockMutation = useMutation({
+    mutationFn: (user: UserRow) =>
+      adminUserService.lock(user.id, { lock: user.isActive !== false }),
+    onSuccess: (_, user) => {
+      notifySuccess(`${user.isActive !== false ? "Khóa" : "Kích hoạt"} tài khoản thành công!`);
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      setLockConfirmItem(null);
+    },
+    onError: (err: any) => {
+      notifyError(err?.message || "Thao tác khóa thất bại.");
+    },
+  });
+
+  const handleOpenCreate = () => {
+    resetForm();
+    setModalOpen(true);
+  };
+
+  const handleOpenEdit = (row: UserRow) => {
+    setEditingUser(row);
+    setFullName(row.fullName || "");
+    setEmail(row.email || "");
+    setPhoneNumber(row.phoneNumber || "");
+    setPassword("");
+    setRoleId(row.roleName || "STAFF");
+    setModalOpen(true);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingUser) {
+      updateMutation.mutate({
+        id: editingUser.id,
+        data: { fullName, phoneNumber, roleName: roleId },
+      });
+    } else {
+      createMutation.mutate({ fullName, email, phoneNumber, password, roleName: roleId });
+    }
+  };
+
+  const customUserActions = (row: UserRow) => (
+    <button
+      onClick={() => setLockConfirmItem(row)}
+      className={`border px-2 py-1 text-xs font-semibold ${
+        row.isActive !== false
+          ? "border-red-600 text-red-600 hover:bg-red-50"
+          : "border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+      }`}
+    >
+      {row.isActive !== false ? "Khóa" : "Kích hoạt"}
+    </button>
+  );
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Quản lý Người dùng</h1>
-          <p className="text-sm text-slate-500">Xem danh sách, tìm kiếm, phân quyền và khóa/mở khóa tài khoản.</p>
-        </div>
-        <input
-          type="text"
-          placeholder="Tìm theo tên, email, sđt..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="px-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 w-64"
-        />
-      </div>
+      <ResourcePage
+        title="Quản lý Người dùng"
+        description="Quản lý thông tin tài khoản, vai trò và trạng thái khóa/mở khóa của toàn bộ người dùng trong hệ thống."
+        queryKey="admin-users"
+        fetcher={adminUserService.list}
+        fields={[
+          { key: "fullName", label: "Họ và tên" },
+          { key: "email", label: "Email" },
+          { key: "phoneNumber", label: "Số điện thoại" },
+          { key: "roleName", label: "Vai trò" },
+          { key: "authProvider", label: "Đăng nhập qua" },
+          { key: "isActive", label: "Trạng thái" },
+        ]}
+        onCreate={handleOpenCreate}
+        onEdit={handleOpenEdit}
+        customActions={customUserActions}
+      />
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
-        <table className="w-full text-left text-sm text-slate-700">
-          <thead className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-            <tr>
-              <th className="px-6 py-3">Họ và tên</th>
-              <th className="px-6 py-3">Email</th>
-              <th className="px-6 py-3">Vai trò</th>
-              <th className="px-6 py-3">Xác thực Email</th>
-              <th className="px-6 py-3">Trạng thái</th>
-              <th className="px-6 py-3 text-right">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200">
-            {isLoading ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-slate-400">Đang tải dữ liệu...</td>
-              </tr>
-            ) : usersList.length ? (
-              usersList.map((user) => (
-                <tr key={user.id} className="hover:bg-slate-50">
-                  <td className="px-6 py-4 font-medium text-slate-900">{user.fullName}</td>
-                  <td className="px-6 py-4">{user.email}</td>
-                  <td className="px-6 py-4">
-                    <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-800 border">
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    {user.emailVerified ? (
-                      <span className="text-emerald-600 font-semibold">✓ Đã xác thực</span>
-                    ) : (
-                      <span className="text-amber-600">Chưa xác thực</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    {user.active ? (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">
-                        Hoạt động
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                        Đã khóa
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => {
-                        setSelectedUser(user);
-                        setLockReason(user.lockReason || "");
-                      }}
-                      className="text-xs font-medium text-emerald-600 hover:text-emerald-800"
-                    >
-                      {user.active ? "Khóa tài khoản" : "Mở khóa"}
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-slate-400">Không tìm thấy người dùng phù hợp.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {/* Create/Edit Staff Modal */}
+      {modalOpen && (
+        <Dialog open={modalOpen} onOpenChange={(v) => !v && setModalOpen(false)}>
+          <DialogContent className="max-w-md border-2 border-black bg-white p-6">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-bold uppercase tracking-wider">
+                {editingUser ? "Chỉnh sửa người dùng" : "Tạo tài khoản mới"}
+              </DialogTitle>
+            </DialogHeader>
 
-      {/* Lock/Unlock Dialog */}
-      {selectedUser && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl border p-6 w-full max-w-md space-y-4">
-            <h3 className="text-lg font-bold text-slate-900">
-              {selectedUser.active ? "Khóa tài khoản người dùng" : "Mở khóa tài khoản"}
-            </h3>
-            <p className="text-sm text-slate-600">
-              Tài khoản: <strong>{selectedUser.email}</strong> ({selectedUser.fullName})
-            </p>
-
-            {selectedUser.active && (
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Lý do khóa tài khoản</label>
-                <textarea
-                  value={lockReason}
-                  onChange={(e) => setLockReason(e.target.value)}
-                  placeholder="Nhập lý do khóa..."
-                  className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                  rows={3}
+            <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+              <label className="block text-sm font-semibold">
+                Họ và tên <span className="text-red-500">*</span>
+                <input
+                  required
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="mt-1 block w-full border border-black px-3 py-2 text-sm bg-white"
+                  placeholder="Ví dụ: Nguyễn Văn A"
                 />
-              </div>
-            )}
+              </label>
 
-            <div className="flex justify-end gap-3 pt-2">
-              <button
-                onClick={() => setSelectedUser(null)}
-                className="px-4 py-2 rounded text-sm text-slate-600 hover:bg-slate-100"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={() =>
-                  toggleLockMutation.mutate({
-                    id: selectedUser.id,
-                    active: !selectedUser.active,
-                    reason: lockReason,
-                  })
-                }
-                className={`px-4 py-2 rounded text-sm text-white font-medium ${
-                  selectedUser.active ? "bg-red-600 hover:bg-red-700" : "bg-emerald-600 hover:bg-emerald-700"
-                }`}
-              >
-                Xác nhận
-              </button>
-            </div>
-          </div>
-        </div>
+              {!editingUser && (
+                <>
+                  <label className="block text-sm font-semibold">
+                    Email <span className="text-red-500">*</span>
+                    <input
+                      required
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="mt-1 block w-full border border-black px-3 py-2 text-sm bg-white"
+                      placeholder="email@shopwise.com"
+                    />
+                  </label>
+
+                  <label className="block text-sm font-semibold">
+                    Mật khẩu khởi tạo <span className="text-red-500">*</span>
+                    <input
+                      required
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="mt-1 block w-full border border-black px-3 py-2 text-sm bg-white"
+                      placeholder="Mật khẩu"
+                    />
+                  </label>
+                </>
+              )}
+
+              <label className="block text-sm font-semibold">
+                Số điện thoại
+                <input
+                  type="text"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  className="mt-1 block w-full border border-black px-3 py-2 text-sm bg-white"
+                  placeholder="09xxxxxxxx"
+                />
+              </label>
+
+              <label className="block text-sm font-semibold">
+                Vai trò hệ thống
+                <select
+                  value={roleId}
+                  onChange={(e) => setRoleId(e.target.value)}
+                  className="mt-1 block w-full border border-black px-3 py-2 text-sm bg-white"
+                >
+                  <option value="CUSTOMER">CUSTOMER (Khách hàng)</option>
+                  <option value="STAFF">STAFF (Nhân viên vận hành)</option>
+                  <option value="ADMIN">ADMIN (Quản trị viên tối cao)</option>
+                </select>
+              </label>
+
+              <div className="flex justify-end gap-2 pt-4 border-t border-black/10">
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="border border-black px-4 py-2 text-sm"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={createMutation.isPending || updateMutation.isPending}
+                  className="bg-black text-white px-5 py-2 text-sm hover:bg-zinc-800 disabled:opacity-50"
+                >
+                  {createMutation.isPending || updateMutation.isPending ? "Đang lưu..." : "Xác nhận"}
+                </button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       )}
+
+      {/* Lock Confirmation */}
+      <ConfirmDialog
+        open={!!lockConfirmItem}
+        onOpenChange={(v) => !v && setLockConfirmItem(null)}
+        title={lockConfirmItem?.isActive !== false ? "Khóa tài khoản người dùng?" : "Kích hoạt lại tài khoản?"}
+        description={`Hành động này sẽ ${
+          lockConfirmItem?.isActive !== false ? "chặn truy cập" : "mở khóa quyền truy cập"
+        } của người dùng "${lockConfirmItem?.fullName}" (${lockConfirmItem?.email}) trên hệ thống.`}
+        confirmText="Xác nhận"
+        onConfirm={() => {
+          if (lockConfirmItem) lockMutation.mutate(lockConfirmItem);
+        }}
+      />
     </div>
   );
 }

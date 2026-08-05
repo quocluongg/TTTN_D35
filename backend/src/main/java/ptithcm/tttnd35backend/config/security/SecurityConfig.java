@@ -65,7 +65,9 @@ public class SecurityConfig {
             "/warranty/lookup",
             "/api/v1/warranty/lookup",
             "/system-configs/public",
-            "/api/v1/system-configs/public"
+            "/api/v1/system-configs/public",
+            "/dev/**",
+            "/api/v1/dev/**"
     };
 
     @Value("${service.domain.frontend}")

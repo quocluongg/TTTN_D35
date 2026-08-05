@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronRight, FileText } from "lucide-react";
+import PublicLayout from "@/shared/layouts/PublicLayout";
 
 export default function PolicyLayout({ children }: { children: React.ReactNode }) {
   const policies = [
@@ -15,7 +16,8 @@ export default function PolicyLayout({ children }: { children: React.ReactNode }
   ];
 
   return (
-    <div className="min-h-screen bg-[#F2F2F2] dark:bg-zinc-900 text-black dark:text-white pt-[60px]">
+    <PublicLayout fullWidth>
+    <div className="min-h-screen bg-[#F2F2F2] dark:bg-zinc-900 text-black dark:text-white">
       {/* ===== HERO HEADER ===== */}
       <section className="border-b border-black dark:border-zinc-800 bg-[#C5C5C5] dark:bg-zinc-800 p-8 lg:p-16">
         <div className="max-w-[1920px] mx-auto">
@@ -63,5 +65,6 @@ export default function PolicyLayout({ children }: { children: React.ReactNode }
         </div>
       </section>
     </div>
+    </PublicLayout>
   );
 }

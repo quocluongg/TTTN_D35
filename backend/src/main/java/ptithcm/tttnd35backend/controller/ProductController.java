@@ -10,6 +10,7 @@ import ptithcm.tttnd35backend.service.IProductService;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /** Public - khách xem/lọc/tìm sản phẩm, không cần đăng nhập. */
 @RestController
@@ -40,11 +41,19 @@ public class ProductController {
                 .build();
     }
 
-    @GetMapping("/{slug}")
-    public ApiResponse<ProductDetailResponse> getDetail(@PathVariable String slug) {
+    @GetMapping("/{slugOrId}")
+    public ApiResponse<ProductDetailResponse> getDetail(@PathVariable String slugOrId) {
+        ProductDetailResponse detail;
+        try {
+            UUID id = UUID.fromString(slugOrId);
+            detail = productService.getDetailById(id);
+        } catch (IllegalArgumentException e) {
+            detail = productService.getDetailBySlug(slugOrId);
+        }
+
         return ApiResponse.<ProductDetailResponse>builder()
                 .success(true)
-                .data(productService.getDetailBySlug(slug))
+                .data(detail)
                 .timestamp(LocalDateTime.now())
                 .build();
     }

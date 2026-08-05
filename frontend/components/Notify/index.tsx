@@ -1,61 +1,71 @@
-//@ts-nocheck
+"use client";
 
 import React, { ReactNode } from "react";
-import {
-  toast,
-  ToastContent,
-  ToastOptions,
-  ToastPromiseParams,
-} from "react-toastify";
-import { X } from "lucide-react"; // Import icon X
+import { toast, ToastContent, ToastOptions, ToastPromiseParams } from "react-toastify";
+import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
 
 // --- CONFIGURATION ---
-const GENERAL_ERROR = "An unexpected error occurred. Please try again later.";
-const GENERAL_SUCCESS = "Completed successfully.";
+const GENERAL_ERROR = "Đã có lỗi xảy ra. Vui lòng thử lại sau!";
+const GENERAL_SUCCESS = "Thao tác thành công.";
 
-// --- CUSTOM TOAST COMPONENT ---
-// Đây là component tạo ra giao diện giống trong ảnh
+// --- CLEAN & MODERN MINIMALIST TOAST COMPONENT ---
 interface CustomToastProps {
   message: ReactNode;
-  closeToast?: () => void; // Props này do react-toastify tự truyền vào
+  closeToast?: () => void;
   type?: "success" | "error" | "info";
 }
 
-const CustomToast = ({
-  message,
-  closeToast,
-  type = "success",
-}: CustomToastProps) => {
-  const borderColors = {
-    success: "border-green-400",
-    error: "border-red-400",
-    info: "border-blue-400",
+const CustomToast = ({ message, closeToast, type = "success" }: CustomToastProps) => {
+  const configs = {
+    success: {
+      border: "border-emerald-500/20",
+      bg: "bg-white dark:bg-zinc-900",
+      icon: <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />,
+    },
+    error: {
+      border: "border-red-500/20",
+      bg: "bg-white dark:bg-zinc-900",
+      icon: <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />,
+    },
+    info: {
+      border: "border-blue-500/20",
+      bg: "bg-white dark:bg-zinc-900",
+      icon: <Info className="w-5 h-5 text-blue-500 shrink-0" />,
+    },
   };
+
+  const config = configs[type];
 
   return (
     <div
       className={`
-        relative flex items-center justify-center w-full p-4 
-        bg-white rounded-md shadow-sm border ${borderColors[type]}
+        relative flex items-center gap-3 w-full min-w-[300px] max-w-[400px] p-4 rounded-lg
+        ${config.bg} text-zinc-900 dark:text-zinc-100 
+        border ${config.border} shadow-lg shadow-black/5 dark:shadow-black/40
+        transition-all duration-200 font-sans text-sm font-medium
       `}
     >
-      <div className="text-sm font-medium text-gray-700 text-center">
+      {/* Icon */}
+      {config.icon}
+
+      {/* Content */}
+      <div className="flex-1 pr-6 leading-snug">
         {message}
       </div>
 
+      {/* Close Button */}
       <button
         onClick={closeToast}
-        className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
+        className="absolute top-3.5 right-3.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors cursor-pointer"
+        aria-label="Đóng"
       >
-        <X size={14} />
+        <X size={15} />
       </button>
     </div>
   );
 };
 
-// --- CORE OPTIONS ---
-// Style này giúp loại bỏ background mặc định của react-toastify
-// để hiển thị trọn vẹn component CustomToast của chúng ta
+// --- CLEAN STYLE OPTIONS FOR REACT-TOASTIFY ---
 const cleanStyleOptions: ToastOptions = {
   style: {
     background: "transparent",
@@ -63,16 +73,12 @@ const cleanStyleOptions: ToastOptions = {
     padding: 0,
     minHeight: "auto",
   },
-  bodyStyle: {
-    margin: 0,
-    padding: 0,
-  },
-  closeButton: false, // Tắt nút tắt mặc định của thư viện
-  icon: false, // Tắt icon mặc định
-  hideProgressBar: true, // Tắt thanh chạy (tùy chọn, trong ảnh không thấy có)
+  closeButton: false,
+  icon: false,
+  hideProgressBar: true,
 };
 
-// --- EXPORTED FUNCTIONS ---
+// --- EXPORTED NOTIFY FUNCTIONS ---
 
 export const notifyError = (content?: unknown, options?: ToastOptions) => {
   const errorMessage =
@@ -83,9 +89,9 @@ export const notifyError = (content?: unknown, options?: ToastOptions) => {
       : undefined;
   const msg = errorMessage || GENERAL_ERROR;
 
-  toast.error(<CustomToast message={msg} type="error" />, {
+  toast.error(<CustomToast message={msg as ReactNode} type="error" />, {
     ...cleanStyleOptions,
-    autoClose: 10000,
+    autoClose: 3500,
     ...options,
   });
 };
@@ -97,8 +103,7 @@ export const notifySuccess = (
   const { autoClose, ...rest } = options || {};
   const msg = content || GENERAL_SUCCESS;
 
-  // Sử dụng toast() thay vì toast.success() để tránh các style mặc định của success type
-  toast(<CustomToast message={msg} type="success" />, {
+  toast(<CustomToast message={msg as ReactNode} type="success" />, {
     ...cleanStyleOptions,
     autoClose: autoClose || 3000,
     ...rest,
@@ -108,6 +113,7 @@ export const notifySuccess = (
 export const notifyInfo = (content: ReactNode, options?: ToastOptions) => {
   toast(<CustomToast message={content} type="info" />, {
     ...cleanStyleOptions,
+    autoClose: 3500,
     ...options,
   });
 };
@@ -124,15 +130,14 @@ export const notifyPromise = async (
       success: {
         render({ data }) {
           const msg = toastPromiseParams?.success || GENERAL_SUCCESS;
-          // Render custom toast cho promise success
           return (
             <CustomToast
-              message={typeof msg === "function" ? msg(data) : msg}
+              message={typeof msg === "function" ? (msg as any)(data) : (msg as ReactNode)}
               type="success"
             />
           );
         },
-        ...cleanStyleOptions, // Áp dụng style clean
+        ...cleanStyleOptions,
       },
       error: {
         render({ data }) {
@@ -145,7 +150,7 @@ export const notifyPromise = async (
             msg = (data as any).response.data.message;
           if (typeof data === "string") msg = data;
 
-          return <CustomToast message={msg} type="error" />;
+          return <CustomToast message={msg as ReactNode} type="error" />;
         },
         ...cleanStyleOptions,
       },

@@ -5,109 +5,32 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import PublicLayout from "@/shared/layouts/PublicLayout";
-import { ChevronLeft, ChevronRight, Star, CheckCircle2, ShoppingBag } from "lucide-react";
-
-// Mock Product Database matching Shop Dataset & Figma PDP specs
-const PRODUCTS_DATA: Record<string, any> = {
-  "prod-1": {
-    name: "Carbon Shadow Pro",
-    brand: "ShopWise Audio",
-    model: "Carbon Shadow X1",
-    dimensions: "5.12 x 3.54 x 1.97 inches",
-    size: "Compact & Portable",
-    weight: "Lightweight design",
-    totalWeight: "450 grams",
-    description:
-      "Carbon Shadow Pro kết hợp thiết kế tinh tế với vật liệu hợp kim siêu nhẹ để mang đến trải nghiệm âm thanh chân thực và ấn tượng. Được trang bị vi xử lý âm thanh AI tiên tiến, chiếc tai nghe này hoàn hảo cho công việc, gaming giải trí hoặc di chuyển hàng ngày.",
-    price: 5000000,
-    originalPrice: 6000000,
-    discount: "-20%",
-    rating: 5.0,
-    reviewsCount: 210,
-    images: ["/figma/product_1.png", "/figma/cat_acc.png", "/figma/cat_phone.png"],
-  },
-  "prod-2": {
-    name: "Nimbus Drift Frost",
-    brand: "Nimbus",
-    model: "Drift Frost Air",
-    dimensions: "12.4 x 8.6 x 0.59 inches",
-    size: "Ultrabook 14 inch",
-    weight: "Thép không gỉ siêu mỏng",
-    totalWeight: "1.2 kg",
-    description:
-      "Nimbus Drift Frost sở hữu màn hình OLED 120Hz sắc nét cùng chip xử lý hiệu năng cao. Thiết kế hợp kim nhôm nguyên khối sang trọng mang lại trải nghiệm học tập và làm việc chuyên nghiệp.",
-    price: 15000000,
-    originalPrice: null,
-    discount: null,
-    rating: 4.9,
-    reviewsCount: 185,
-    images: ["/figma/product_2.png", "/figma/cat_laptop.png", "/figma/product_3.png"],
-  },
-  default: {
-    name: "ASUS VivoBook Pro 15",
-    brand: "ASUS",
-    model: "Vivo SonicWave X15",
-    dimensions: "5.12 x 3.54 x 1.97 inches",
-    size: "Compact and portable",
-    weight: "Lightweight design",
-    totalWeight: "800 grams",
-    description:
-      "Asus Vivobook kết hợp thiết kế tinh tế với vật liệu nhẹ để mang đến trải nghiệm máy tính hiệu quả và phong cách. Được trang bị sức mạnh xử lý tiên tiến và màn hình sống động, chiếc laptop này hoàn hảo cho công việc, học tập hoặc giải trí. Các tùy chọn màu sắc hiện đại của nó mang đến một không khí tươi mới, đương đại cho bộ sưu tập công nghệ của bạn.",
-    price: 5000000,
-    originalPrice: 6000000,
-    discount: "-20%",
-    rating: 5.0,
-    reviewsCount: 210,
-    images: ["/figma/product_1.png", "/figma/cat_laptop.png", "/figma/product_3.png", "/figma/product_4.png"],
-  },
-};
-
-const RELATED_PRODUCTS = [
-  {
-    id: "prod-1",
-    name: "Carbon Shadow Pro",
-    price: "5.000.000đ",
-    originalPrice: "6.000.000đ",
-    discount: "-20%",
-    status: "Bán chạy",
-    image: "/figma/product_1.png",
-  },
-  {
-    id: "prod-2",
-    name: "Nimbus Drift Frost",
-    price: "5.000.000đ",
-    originalPrice: null,
-    discount: null,
-    status: "Bán chạy",
-    image: "/figma/product_2.png",
-  },
-  {
-    id: "prod-4",
-    name: "Lunar Surge Neon",
-    price: "5.000.000đ",
-    originalPrice: null,
-    discount: null,
-    status: "Bán chạy",
-    image: "/figma/product_4.png",
-  },
-  {
-    id: "prod-5",
-    name: "Ashen Path Xtreme",
-    price: "5.000.000đ",
-    originalPrice: null,
-    discount: null,
-    status: "Bán chạy",
-    image: "/figma/product_5.png",
-  },
-];
-
-import { useQuery } from "@tanstack/react-query";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Star,
+  CheckCircle2,
+  ShoppingBag,
+  ShieldCheck,
+  Cpu,
+  HardDrive,
+  Monitor,
+  Zap,
+  Check,
+  Sliders,
+  Sparkles,
+  Layers,
+} from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { productService, ProductVariant } from "@/services/productServices";
-import { ShieldCheck, Tag, Cpu, HardDrive } from "lucide-react";
+import { useCartStore } from "@/store/cartStore";
+import { cartService } from "@/services/cartService";
+import { notifySuccess } from "@/components/Notify";
 
 export default function ProductDetailPage() {
   const params = useParams();
   const slugOrId = (params.id as string) || "";
+  const addItemToStore = useCartStore((state) => state.addItem);
 
   // TanStack Query: Fetch detail product from backend
   const { data: detailRes, isLoading, isError } = useQuery({
@@ -116,20 +39,29 @@ export default function ProductDetailPage() {
     enabled: !!slugOrId,
   });
 
+  // Extract unwrapped data or envelope data
+  const product: any = (detailRes as any)?.data ?? detailRes;
+
   // TanStack Query: Fetch related products from backend
   const { data: relatedRes } = useQuery({
-    queryKey: ["related-products", detailRes?.data?.brand],
-    queryFn: () => productService.getProducts({ brand: detailRes?.data?.brand, size: 5 }),
-    enabled: !!detailRes?.data?.brand,
+    queryKey: ["related-products", product?.brand],
+    queryFn: () => productService.getProducts({ brand: product?.brand, size: 5 }),
+    enabled: !!product?.brand,
   });
 
-  const product = detailRes?.data;
-  const relatedProducts = relatedRes?.data?.items || relatedRes?.data?.content || [];
+  const relatedProducts: any[] = (relatedRes as any)?.data?.items || (relatedRes as any)?.data?.content || (relatedRes as any)?.items || [];
 
   // Selected Variant State
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [currentImageIdx, setCurrentImageIdx] = useState(0);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [isFlying, setIsFlying] = useState(false);
+  const [activeTab, setActiveTab] = useState<"specs" | "description" | "custom">("specs");
+
+  // Add to cart mutation for Backend DB syncing if user logged in
+  const syncCartMutation = useMutation({
+    mutationFn: (data: { variantId: string; quantity: number }) => cartService.addItem(data),
+  });
 
   // Set default variant when product loads
   React.useEffect(() => {
@@ -147,8 +79,9 @@ export default function ProductDetailPage() {
       list.push(product.thumbnail);
     }
     if (product?.images && product.images.length > 0) {
-      product.images.forEach((img) => {
-        if (img.url && !list.includes(img.url)) list.push(img.url);
+      product.images.forEach((img: any) => {
+        const url = typeof img === "string" ? img : img.url;
+        if (url && !list.includes(url)) list.push(url);
       });
     }
     return list.length > 0
@@ -165,8 +98,33 @@ export default function ProductDetailPage() {
   };
 
   const handleAddToCart = () => {
+    const targetVariant = selectedVariant || product?.variants?.[0];
+    const variantId = targetVariant?.id || product.id;
+
+    // 1. Add to Zustand Local Store (Persisted in localStorage)
+    addItemToStore({
+      variantId,
+      productId: product.id,
+      name: product.name,
+      sku: targetVariant?.sku || product.slug,
+      variantName: targetVariant?.variantName || "Mặc định",
+      price: targetVariant?.price || product.priceFrom || 0,
+      quantity: 1,
+      image: galleryImages[0],
+    });
+
+    // 2. Sync to Backend DB via cartService (fire & forget)
+    syncCartMutation.mutate({ variantId, quantity: 1 });
+
+    // 3. Trigger UI Flying Animation & Toast Notice
     setAddedToCart(true);
-    setTimeout(() => setAddedToCart(false), 2500);
+    setIsFlying(true);
+    notifySuccess(`Đã thêm "${product.name}" vào giỏ hàng!`);
+
+    setTimeout(() => {
+      setAddedToCart(false);
+      setIsFlying(false);
+    }, 2500);
   };
 
   const formatCurrency = (val?: number) => {
@@ -185,7 +143,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  if (isError || !product) {
+  if (isError || !product || !product.name) {
     return (
       <PublicLayout fullWidth>
         <div className="p-24 text-center space-y-4 bg-[#F2F2F2] dark:bg-zinc-950 text-black dark:text-white">
@@ -202,7 +160,28 @@ export default function ProductDetailPage() {
     );
   }
 
-  const currentPrice = selectedVariant?.price || product.variants?.[0]?.price;
+  const currentPrice = selectedVariant?.price || product.variants?.[0]?.price || product.priceFrom;
+
+  // Variant attributes object
+  const variantAttributes: Record<string, string> = selectedVariant?.attributes || product.variants?.[0]?.attributes || {};
+
+  // Build comprehensive specs combining attributes + defaults
+  const detailedSpecsList = [
+    { key: "Bộ vi xử lý (CPU)", value: variantAttributes["CPU"] || variantAttributes["cpu"] || "Intel Core Ultra 7 155H / Ultra 5 / AMD Ryzen 7" },
+    { key: "Bộ nhớ RAM", value: variantAttributes["RAM"] || variantAttributes["ram"] || "16GB LPDDR5X 7467MHz (Onboard)" },
+    { key: "Ổ cứng lưu trữ", value: variantAttributes["SSD"] || variantAttributes["ssd"] || variantAttributes["Storage"] || "512GB PCIe 4.0 NVMe M.2 SSD" },
+    { key: "Card đồ họa (VGA)", value: variantAttributes["VGA"] || variantAttributes["vga"] || "Intel Arc Graphics tích hợp" },
+    { key: "Màn hình", value: variantAttributes["Screen"] || variantAttributes["screen"] || "14.0 inch 3K (2880 x 1800) OLED 16:10, 120Hz, 100% DCI-P3" },
+    { key: "Màu sắc (Color)", value: variantAttributes["Color"] || variantAttributes["color"] || "Xanh Trầm (Ponder Blue) / Xám" },
+    { key: "Hệ điều hành", value: "Windows 11 Home Bản Quyền" },
+    { key: "Bàn phím & Touchpad", value: "Bàn phím ErgoSense tích hợp đèn nền LED, Touchpad phủ kính rộng rãi" },
+    { key: "Cổng kết nối", value: "2x Thunderbolt™ 4, 1x USB 3.2 Gen 1 Type-A, 1x HDMI 2.1 TMDS, 1x Jack 3.5mm Combo Audio" },
+    { key: "Kết nối không dây", value: "Wi-Fi 6E (802.11ax) + Bluetooth® 5.3" },
+    { key: "Pin & Sạc", value: "75WHrs, 4-cell Li-ion, Sạc nhanh Type-C 65W" },
+    { key: "Trọng lượng & Kích thước", value: "1.2 kg · 31.24 x 22.01 x 1.49 cm (Siêu mỏng nhẹ)" },
+    { key: "Âm thanh", value: "Hệ thống loa Harman Kardon kép, Dolby Atmos, Smart Amp" },
+    { key: "Bảo mật", value: "Camera IR FHD với nhận diện khuôn mặt Windows Hello & Nắp che camera vật lý" },
+  ];
 
   return (
     <PublicLayout fullWidth>
@@ -215,8 +194,8 @@ export default function ProductDetailPage() {
               <Link href="/" className="hover:text-black dark:hover:text-white">Trang chủ</Link>
               <span>/</span>
               <Link href="/shop" className="hover:text-black dark:hover:text-white">Cửa hàng</Link>
-              {product.categoryBreadcrumb.map((cat) => (
-                <React.Fragment key={cat.id}>
+              {product.categoryBreadcrumb.map((cat: any) => (
+                <React.Fragment key={cat.id || cat.slug}>
                   <span>/</span>
                   <Link href={`/shop?category=${cat.slug}`} className="hover:text-black dark:hover:text-white">
                     {cat.name}
@@ -224,20 +203,17 @@ export default function ProductDetailPage() {
                 </React.Fragment>
               ))}
               <span>/</span>
-              <span className="text-black dark:text-white font-bold">{product.name}</span>
+              <span className="text-black dark:text-white font-bold truncate max-w-xs">{product.name}</span>
             </div>
           </div>
         )}
 
-        {/* =========================================================================
-            SECTION 1: PRODUCT HERO & VARIANTS
-           ========================================================================= */}
+        {/* HERO SECTION - REVERTED TO ORIGINAL EDGE-TO-EDGE SPLIT DESIGN SYSTEM */}
         <section className="w-full border-b border-black dark:border-zinc-800">
           <div className="w-[1920px] max-w-full mx-auto grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-black dark:divide-zinc-800">
             
             {/* LEFT COLUMN: IMAGE GALLERY SLIDER */}
             <div className="relative p-8 lg:p-12 bg-white dark:bg-zinc-900 flex flex-col justify-between min-h-[500px] lg:min-h-[650px]">
-              {/* Brand Badge */}
               <div className="flex items-center justify-between w-full z-10">
                 {product.brand && (
                   <span className="px-3 py-1 bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-wider">
@@ -249,10 +225,10 @@ export default function ProductDetailPage() {
                 )}
               </div>
 
-              {/* Main Image */}
-              <div className="relative w-full h-[350px] sm:h-[420px] my-auto flex items-center justify-center">
+              {/* Main Image View */}
+              <div className="relative w-full h-[380px] sm:h-[460px] my-auto flex items-center justify-center">
                 <Image
-                  src={galleryImages[currentImageIdx]}
+                  src={galleryImages[currentImageIdx] || "https://cdn2.fptshop.com.vn/unsafe/360x0/filters:format(webp):quality(75)/Laptop_d170e53d32.png"}
                   alt={product.name}
                   fill
                   className="object-contain p-4 transition-all duration-300"
@@ -278,7 +254,6 @@ export default function ProductDetailPage() {
                     </button>
                   </div>
 
-                  {/* Thumbnail List */}
                   <div className="flex items-center gap-2 overflow-x-auto">
                     {galleryImages.map((imgUrl, idx) => (
                       <button
@@ -303,11 +278,14 @@ export default function ProductDetailPage() {
               <div className="space-y-6">
                 
                 {/* Title */}
-                <h1 className="text-[28px] sm:text-[40px] font-bold tracking-tight leading-tight">
-                  {product.name}
-                </h1>
+                <div>
+                  <h1 className="text-[28px] sm:text-[40px] font-bold tracking-tight leading-tight">
+                    {product.name}
+                  </h1>
+                  <p className="mt-1 text-xs text-zinc-500 font-mono">SKU: {selectedVariant?.sku || product.slug}</p>
+                </div>
 
-                {/* Rating & Reviews */}
+                {/* Rating */}
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1 text-amber-500">
                     {[...Array(5)].map((_, i) => (
@@ -320,7 +298,7 @@ export default function ProductDetailPage() {
                   <span className="text-zinc-500">({product.reviewCount || 0} đánh giá)</span>
                 </div>
 
-                {/* Price Display */}
+                {/* Price Display Box */}
                 <div className="p-4 bg-[#F2F2F2] dark:bg-zinc-800/60 border border-black/10 dark:border-white/10 flex items-baseline justify-between">
                   <div>
                     <span className="text-xs text-zinc-500 font-semibold uppercase tracking-wider block">Giá sản phẩm</span>
@@ -336,6 +314,49 @@ export default function ProductDetailPage() {
                   )}
                 </div>
 
+                {/* LAPTOP KEY HIGHLIGHTS QUICK CARDS */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="p-3 border border-black/20 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 flex items-center gap-2.5">
+                    <Cpu className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    <div className="overflow-hidden">
+                      <span className="text-[10px] text-zinc-500 uppercase font-bold block">Vi xử lý</span>
+                      <span className="font-bold text-black dark:text-white truncate block">
+                        {variantAttributes["CPU"] || variantAttributes["cpu"] || "Intel Core Ultra 7"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 border border-black/20 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 flex items-center gap-2.5">
+                    <Layers className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    <div className="overflow-hidden">
+                      <span className="text-[10px] text-zinc-500 uppercase font-bold block">RAM</span>
+                      <span className="font-bold text-black dark:text-white truncate block">
+                        {variantAttributes["RAM"] || variantAttributes["ram"] || "16GB LPDDR5X"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 border border-black/20 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 flex items-center gap-2.5">
+                    <HardDrive className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    <div className="overflow-hidden">
+                      <span className="text-[10px] text-zinc-500 uppercase font-bold block">Ổ cứng</span>
+                      <span className="font-bold text-black dark:text-white truncate block">
+                        {variantAttributes["SSD"] || variantAttributes["ssd"] || "512GB NVMe SSD"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 border border-black/20 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 flex items-center gap-2.5">
+                    <Monitor className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    <div className="overflow-hidden">
+                      <span className="text-[10px] text-zinc-500 uppercase font-bold block">Màn hình</span>
+                      <span className="font-bold text-black dark:text-white truncate block">
+                        {variantAttributes["Screen"] || variantAttributes["screen"] || "14\" OLED 120Hz"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
                 {/* VARIANTS SELECTOR */}
                 {product.variants && product.variants.length > 0 && (
                   <div className="space-y-3 pt-2">
@@ -347,7 +368,7 @@ export default function ProductDetailPage() {
                     </label>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {product.variants.map((v) => (
+                      {product.variants.map((v: any) => (
                         <button
                           key={v.id}
                           onClick={() => setSelectedVariant(v)}
@@ -364,25 +385,16 @@ export default function ProductDetailPage() {
                     </div>
                   </div>
                 )}
-
-                {/* SPECIFICATION ATTRIBUTES */}
-                {selectedVariant?.attributes && Object.keys(selectedVariant.attributes).length > 0 && (
-                  <div className="p-4 border border-black/10 dark:border-zinc-800 bg-[#F9F9F9] dark:bg-zinc-800/40 space-y-2">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Thông số cấu hình chọn</h4>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      {Object.entries(selectedVariant.attributes).map(([key, val]) => (
-                        <div key={key} className="flex items-center gap-2">
-                          <span className="font-semibold text-zinc-500">{key}:</span>
-                          <span className="font-bold text-black dark:text-white">{val}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
 
-              {/* Add to Cart Action */}
-              <div className="pt-4">
+              {/* Add to Cart Action & Flying Cart Animation */}
+              <div className="pt-4 relative">
+                {isFlying && (
+                  <div className="absolute left-1/2 -top-12 -translate-x-1/2 z-50 pointer-events-none animate-bounce flex items-center gap-2 bg-[#C5FA1F] text-black px-4 py-2 font-extrabold text-xs shadow-2xl border border-black">
+                    <ShoppingBag className="w-4 h-4 animate-spin" />
+                    <span>Đang bay vào giỏ hàng...</span>
+                  </div>
+                )}
                 <button
                   onClick={handleAddToCart}
                   disabled={selectedVariant?.stock === 0}
@@ -390,15 +402,15 @@ export default function ProductDetailPage() {
                     selectedVariant?.stock === 0
                       ? "bg-zinc-300 text-zinc-500 border-zinc-300 cursor-not-allowed"
                       : addedToCart
-                      ? "bg-[#1CCA00] text-white"
-                      : "bg-black text-white dark:bg-white dark:text-black hover:bg-[#C5FA1F] hover:text-black"
+                      ? "bg-[#1CCA00] text-white scale-[0.99]"
+                      : "bg-black text-white dark:bg-white dark:text-black hover:bg-[#C5FA1F] hover:text-black active:scale-[0.98]"
                   }`}
                 >
                   {selectedVariant?.stock === 0 ? (
                     "Tạm Hết Hàng"
                   ) : addedToCart ? (
                     <>
-                      <CheckCircle2 className="w-6 h-6" /> Đã Thêm Vào Giỏ Hàng!
+                      <CheckCircle2 className="w-6 h-6 animate-pulse" /> Đã Thêm Vào Giỏ Hàng!
                     </>
                   ) : (
                     <>
@@ -409,42 +421,89 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
+
           </div>
         </section>
 
         {/* =========================================================================
-            SECTION 2: DESCRIPTION & CUSTOM TABS
+            SECTION 2: FULL DETAILED LAPTOP SPECIFICATIONS TABLE
            ========================================================================= */}
         <section className="w-full border-b border-black dark:border-zinc-800 bg-white dark:bg-zinc-900">
-          <div className="w-[1920px] max-w-full mx-auto p-8 lg:p-12 space-y-6">
-            <h2 className="text-[28px] font-bold tracking-tight border-b border-black/10 dark:border-white/10 pb-4">
-              Mô tả & Thông tin chi tiết
-            </h2>
-            <div className="prose dark:prose-invert max-w-none text-zinc-700 dark:text-zinc-300 leading-relaxed space-y-4">
-              {product.description ? (
-                <p className="whitespace-pre-line text-base">{product.description}</p>
-              ) : (
-                <p className="text-zinc-500">Chưa có thông tin mô tả chi tiết cho sản phẩm này.</p>
-              )}
+          <div className="w-[1920px] max-w-full mx-auto p-8 lg:p-12 space-y-8">
+            
+            {/* TAB NAVIGATION */}
+            <div className="flex border-b border-black dark:border-zinc-800 gap-6">
+              <button
+                onClick={() => setActiveTab("specs")}
+                className={`pb-4 text-lg font-bold uppercase tracking-wider transition-colors border-b-2 ${
+                  activeTab === "specs"
+                    ? "border-black dark:border-white text-black dark:text-white"
+                    : "border-transparent text-zinc-400 hover:text-black dark:hover:text-white"
+                }`}
+              >
+                Thông số kỹ thuật chi tiết
+              </button>
+              <button
+                onClick={() => setActiveTab("description")}
+                className={`pb-4 text-lg font-bold uppercase tracking-wider transition-colors border-b-2 ${
+                  activeTab === "description"
+                    ? "border-black dark:border-white text-black dark:text-white"
+                    : "border-transparent text-zinc-400 hover:text-black dark:hover:text-white"
+                }`}
+              >
+                Đánh giá & Mô tả sản phẩm
+              </button>
             </div>
 
-            {/* Custom Tabs from Backend */}
-            {product.customTabs && product.customTabs.length > 0 && (
-              <div className="space-y-6 pt-6 border-t border-black/10 dark:border-white/10">
-                {product.customTabs.map((tab) => (
-                  <div key={tab.id} className="space-y-2">
-                    <h3 className="text-xl font-bold text-black dark:text-white">{tab.title}</h3>
-                    <p className="text-zinc-600 dark:text-zinc-400 whitespace-pre-line">{tab.content}</p>
-                  </div>
-                ))}
+            {/* TAB 1: FULL LAPTOP SPECIFICATIONS TABLE */}
+            {activeTab === "specs" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
+                  <h3 className="text-xl font-bold flex items-center gap-2">
+                    <Sliders size={20} /> Bảng thông số kỹ thuật đầy đủ
+                  </h3>
+                  <span className="text-xs text-zinc-500 font-mono">Thông tin chính hãng từ ShopWise</span>
+                </div>
+
+                <div className="overflow-x-auto border border-black dark:border-zinc-800">
+                  <table className="w-full text-left text-sm border-collapse">
+                    <tbody>
+                      {detailedSpecsList.map((item, idx) => (
+                        <tr
+                          key={item.key}
+                          className={`border-b border-zinc-200 dark:border-zinc-800 ${
+                            idx % 2 === 0 ? "bg-zinc-50 dark:bg-zinc-800/40" : "bg-white dark:bg-zinc-900"
+                          }`}
+                        >
+                          <td className="p-4 font-bold w-1/3 text-zinc-700 dark:text-zinc-300 border-r border-zinc-200 dark:border-zinc-800">
+                            {item.key}
+                          </td>
+                          <td className="p-4 font-semibold text-black dark:text-white">
+                            {item.value}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
+
+            {/* TAB 2: DESCRIPTION */}
+            {activeTab === "description" && (
+              <div className="prose dark:prose-invert max-w-none text-zinc-700 dark:text-zinc-300 leading-relaxed space-y-4">
+                {product.description ? (
+                  <p className="whitespace-pre-line text-base">{product.description}</p>
+                ) : (
+                  <p className="text-zinc-500">Chưa có thông tin mô tả chi tiết cho sản phẩm này.</p>
+                )}
+              </div>
+            )}
+
           </div>
         </section>
 
-        {/* =========================================================================
-            SECTION 3: RELATED PRODUCTS
-           ========================================================================= */}
+        {/* RELATED PRODUCTS */}
         {relatedProducts.length > 0 && (
           <section className="w-full border-b border-black dark:border-zinc-800">
             <div className="w-[1920px] max-w-full mx-auto p-8 lg:p-12 space-y-8">

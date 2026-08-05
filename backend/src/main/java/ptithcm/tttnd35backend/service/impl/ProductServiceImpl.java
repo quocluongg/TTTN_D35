@@ -81,9 +81,6 @@ public class ProductServiceImpl implements IProductService {
             boolean onlyActive, String categorySlug, String brand, BigDecimal minPrice, BigDecimal maxPrice,
             String search, String specKey, String specValue, String sortBy, int page, int size) {
 
-        // Sort theo giá không diễn đạt được bằng Pageable Sort thường (giá nằm ở bảng ProductVariant,
-        // không phải cột trên Product) nên phải set trực tiếp query.orderBy() trong Specification -
-        // vì vậy 2 nhánh này tách Pageable riêng: có Sort.unsorted() khi order đã do Specification lo.
         boolean sortByPrice = "price-asc".equals(sortBy) || "price-desc".equals(sortBy);
 
         Specification<Product> spec = Specification.allOf(
@@ -99,7 +96,6 @@ public class ProductServiceImpl implements IProductService {
         Pageable pageable = PageRequest.of(page, size, sortByPrice ? Sort.unsorted() : resolveSort(sortBy));
         var pageResult = productRepository.findAll(spec, pageable);
 
-        // 1 query aggregate MIN(price) duy nhất cho cả trang, tránh N+1 khi build priceFrom từng dòng.
         List<UUID> productIds = pageResult.getContent().stream().map(Product::getId).toList();
         Map<UUID, BigDecimal> minPriceByProductId = new LinkedHashMap<>();
         if (!productIds.isEmpty()) {
@@ -125,34 +121,42 @@ public class ProductServiceImpl implements IProductService {
         if (!StringUtils.hasText(sortBy)) {
             return Sort.by(Sort.Direction.DESC, "createdAt");
         }
-        // "price-asc"/"price-desc" được xử lý riêng ở buildPageResponse() qua Specification, không tới đây.
         return switch (sortBy) {
             case "name-asc" -> Sort.by(Sort.Direction.ASC, "name");
             case "name-desc" -> Sort.by(Sort.Direction.DESC, "name");
-            default -> Sort.by(Sort.Direction.DESC, "createdAt"); // "newest" hoặc không truyền
+            default -> Sort.by(Sort.Direction.DESC, "createdAt");
         };
     }
 
     @Override
     public ProductDetailResponse getDetailBySlug(String slug) {
         Product product = productRepository.findBySlugAndIsActiveTrue(slug)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm"));
+                .orElseGet(() -> productRepository.findBySlug(slug)
+                        .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm với slug: " + slug)));
         return buildDetailResponse(product);
     }
 
     @Override
     public ProductDetailResponse getDetailById(UUID id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm với id: " + id));
         return buildDetailResponse(product);
     }
 
     private ProductDetailResponse buildDetailResponse(Product product) {
-        // 3 query cố định (product+category đã fetch join sẵn, +variants, +images) - không N+1 dù
-        // sản phẩm có bao nhiêu variant/ảnh.
         ProductDetailResponse response = productMapper.toDetailResponse(product);
         response.setCustomTabs(CustomTabJsonUtil.toResponseList(product.getCustomTabs()));
-        response.setCategoryBreadcrumb(categoryService.getBreadcrumb(product.getCategory().getSlug()));
+        
+        // Tránh N+1 hoặc crash do Category ngưng active trong Breadcrumb
+        try {
+            if (product.getCategory() != null) {
+                response.setCategoryBreadcrumb(categoryService.getBreadcrumb(product.getCategory().getSlug()));
+            }
+        } catch (Exception e) {
+            // Safe fallback if category breadcrumb fails
+            response.setCategoryBreadcrumb(List.of());
+        }
+
         response.setVariants(productVariantMapper.toResponseList(
                 productVariantRepository.findAllByProductId(product.getId())));
         response.setImages(productImageMapper.toResponseList(
@@ -189,7 +193,6 @@ public class ProductServiceImpl implements IProductService {
 
         Category category = loadLeafCategory(request.getCategoryId());
 
-        // Giữ nguyên slug cũ khi sửa (chuẩn SEO, giống Category) - không sinh lại slug ở update.
         productMapper.updateEntityFromRequest(request, product);
         product.setCategory(category);
         product.setCustomTabs(CustomTabJsonUtil.buildFromRequests(request.getCustomTabs()));
@@ -232,8 +235,6 @@ public class ProductServiceImpl implements IProductService {
     public void deleteImage(UUID productId, UUID imageId) {
         ProductImage image = productImageRepository.findByIdAndProductId(imageId, productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy ảnh"));
-        // Xóa DB record trước, Storage sau: nếu có crash/lỗi giữa chừng, tệ nhất là rác 1 file mồ côi
-        // trên bucket (âm thầm, dọn sau cũng được) - còn hơn để DB trỏ tới ảnh đã mất, hiển thị vỡ ra UI.
         productImageRepository.delete(image);
         storageService.delete(image.getUrl());
     }
@@ -267,7 +268,6 @@ public class ProductServiceImpl implements IProductService {
         ProductVariant variant = productVariantRepository.findByIdAndProductId(variantId, productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy biến thể"));
 
-        // Mỗi Product luôn phải có >= 1 variant vì Order/Cart/Campaign tham chiếu thẳng variant_id.
         if (productVariantRepository.countByProductId(productId) <= 1) {
             throw new BadRequestException("Sản phẩm phải có ít nhất 1 biến thể, không thể xóa biến thể cuối cùng");
         }
@@ -285,7 +285,6 @@ public class ProductServiceImpl implements IProductService {
     private Category loadLeafCategory(UUID categoryId) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new BadRequestException("Danh mục không tồn tại"));
-        // Chỉ cho gắn sản phẩm vào danh mục lá (không có danh mục con), giống các site bán lẻ thật.
         if (categoryRepository.existsByParentId(category.getId())) {
             throw new BadRequestException("Chỉ được gán sản phẩm vào danh mục lá (không có danh mục con)");
         }
@@ -300,8 +299,6 @@ public class ProductServiceImpl implements IProductService {
         return productVariantRepository.save(variant);
     }
 
-    // BE tự build variant_name từ attributes (vd {"color":"Đen","storage":"256GB"} -> "Đen - 256GB")
-    // để FE khỏi phải tự parse jsonb. Rỗng -> null (variant mặc định không có tùy chọn).
     private String buildVariantName(Map<String, String> attributes) {
         if (attributes == null || attributes.isEmpty()) {
             return null;
@@ -313,14 +310,11 @@ public class ProductServiceImpl implements IProductService {
         return StringUtils.hasText(joined) ? joined : null;
     }
 
-    // SKU dạng {3 ký tự đầu category slug viết hoa}-{sequence 6 số tăng dần toàn hệ thống},
-    // sequence lấy từ Postgres SEQUENCE (không phải COUNT(*)) để an toàn khi nhiều admin tạo cùng lúc.
     private String generateSku(Category category) {
         String prefix = SlugUtils.toShortPrefix(category.getSlug(), 3);
         long seq = productVariantRepository.nextSkuSequenceValue();
         String sku = prefix + "-" + String.format("%06d", seq);
 
-        // Cực hiếm khi trùng vì dùng sequence riêng, nhưng vẫn phòng hờ 1 lần retry.
         if (productVariantRepository.existsBySku(sku)) {
             long retrySeq = productVariantRepository.nextSkuSequenceValue();
             sku = prefix + "-" + String.format("%06d", retrySeq);
