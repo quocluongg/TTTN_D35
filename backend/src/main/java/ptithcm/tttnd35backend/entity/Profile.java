@@ -45,6 +45,10 @@ public class Profile extends BaseEntity {
     @Column(name = "phone_number", length = 20)
     private String phoneNumber;
 
+    // URL ảnh trên Supabase Storage - nullable, FE tự fallback chữ cái đầu tên khi null.
+    @Column(name = "avatar_url", length = 2000)
+    private String avatarUrl;
+
     @Builder.Default
     @Column(name = "email_notif")
     private boolean emailNotif = true;
