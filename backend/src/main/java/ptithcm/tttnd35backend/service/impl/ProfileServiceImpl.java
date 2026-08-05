@@ -31,6 +31,12 @@ public class ProfileServiceImpl implements IProfileService {
         Profile profile = getProfileOrThrow(profileId);
 
         profile.setFullName(request.getFullName());
+        if (request.getPhoneNumber() != null) {
+            profile.setPhoneNumber(request.getPhoneNumber());
+        }
+        if (request.getAvatarUrl() != null) {
+            profile.setAvatarUrl(request.getAvatarUrl());
+        }
         if (request.getEmailNotif() != null) {
             profile.setEmailNotif(request.getEmailNotif());
         }
