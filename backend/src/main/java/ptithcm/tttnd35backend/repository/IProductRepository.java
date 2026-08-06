@@ -5,7 +5,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.repository.query.Param;
 import ptithcm.tttnd35backend.entity.Product;
 
 import java.util.Optional;
@@ -30,4 +33,10 @@ public interface IProductRepository extends JpaRepository<Product, UUID>, JpaSpe
     // Dùng cho admin (xem/sửa theo id, kể cả sản phẩm đang ẩn), kèm fetch category luôn trong 1 query.
     @EntityGraph(attributePaths = "category")
     Optional<Product> findById(UUID id);
+
+    // 1 UPDATE atomic ngay ở DB khi đơn chuyển COMPLETED - tránh phải load cả entity Product chỉ để
+    // cộng dồn 1 cột, và tránh lost-update khi nhiều đơn cùng COMPLETED gần như đồng thời.
+    @Modifying(clearAutomatically = true)
+    @Query("update Product p set p.soldQuantity = p.soldQuantity + :qty where p.id = :id")
+    int incrementSoldQuantity(@Param("id") UUID id, @Param("qty") int qty);
 }

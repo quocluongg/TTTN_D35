@@ -5,6 +5,7 @@ import org.springframework.util.StringUtils;
 import ptithcm.tttnd35backend.entity.Product;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 /**
  * Build filter động cho GET /products (category/brand/price/search) trong 1 query duy nhất
@@ -31,6 +32,13 @@ public class ProductSpecifications {
             return null;
         }
         return (root, query, cb) -> cb.equal(cb.lower(root.get("brand")), brand.toLowerCase());
+    }
+
+    public static Specification<Product> hasUseCase(String useCase) {
+        if (!StringUtils.hasText(useCase)) {
+            return null;
+        }
+        return (root, query, cb) -> cb.equal(cb.lower(root.get("useCase")), useCase.trim().toLowerCase());
     }
 
     public static Specification<Product> nameContains(String search) {
@@ -65,8 +73,6 @@ public class ProductSpecifications {
         };
     }
 
-    // Sort theo giá thấp nhất của variant. Set trực tiếp query.orderBy() trong toPredicate() (thay vì
-    // qua Pageable Sort) vì Sort không biết cách diễn đạt "sort theo subquery" - đây là cách chuẩn để
     public static Specification<Product> hasCategoryIds(java.util.List<java.util.UUID> categoryIds) {
         if (categoryIds == null || categoryIds.isEmpty()) {
             return null;
@@ -74,6 +80,8 @@ public class ProductSpecifications {
         return (root, query, cb) -> root.get("category").get("id").in(categoryIds);
     }
 
+    // Sort theo giá thấp nhất của variant. Set trực tiếp query.orderBy() trong toPredicate() (thay vì
+    // qua Pageable Sort) vì Sort không biết cách diễn đạt "sort theo subquery" - đây là cách chuẩn để
     // làm ORDER BY theo 1 cột không nằm trên chính bảng Product. Trả về cb.conjunction() vì spec này
     // không lọc gì, chỉ có tác dụng phụ set order.
     public static Specification<Product> orderByMinPrice(boolean ascending) {
@@ -88,6 +96,7 @@ public class ProductSpecifications {
         };
     }
 
+    /** Giữ lại cho tương thích - lọc theo đúng 1 cặp spec (key/value chấp nhận match một phần). */
     public static Specification<Product> hasSpec(String key, String value) {
         if (!StringUtils.hasText(key) || !StringUtils.hasText(value)) {
             return null;
@@ -111,5 +120,26 @@ public class ProductSpecifications {
 
             return cb.exists(subquery);
         };
+    }
+
+    /**
+     * Lọc nhiều spec cùng lúc kiểu AND (vd RAM=16GB AND CPU=i5): mỗi cặp key/value là 1 EXISTS
+     * subquery riêng (không gộp chung 1 subquery) vì attributeKey/specValue nằm trên nhiều dòng
+     * ProductSpecification khác nhau của cùng 1 product - gộp chung sẽ ra sai kết quả (không dòng
+     * nào thỏa hết tất cả điều kiện cùng lúc).
+     */
+    public static Specification<Product> hasAllSpecs(Map<String, String> specs) {
+        if (specs == null || specs.isEmpty()) {
+            return null;
+        }
+        Specification<Product> combined = null;
+        for (Map.Entry<String, String> entry : specs.entrySet()) {
+            Specification<Product> single = hasSpec(entry.getKey(), entry.getValue());
+            if (single == null) {
+                continue;
+            }
+            combined = combined == null ? single : combined.and(single);
+        }
+        return combined;
     }
 }
