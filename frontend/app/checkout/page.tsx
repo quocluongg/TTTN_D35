@@ -1,6 +1,6 @@
 "use client";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cartService } from "@/services/cartService";
@@ -12,6 +12,9 @@ import { useRouter } from "next/navigation";
 import PublicLayout from "@/shared/layouts/PublicLayout";
 import { checkoutSchema, type CheckoutFormValues } from "@/schemas/checkoutSchema";
 import { notifyError } from "@/components/Notify";
+import AddressForm from "@/shared/components/AddressForm";
+import StripeCheckoutForm from "@/shared/components/StripeCheckoutForm";
+import type { AddressFormValues } from "@/schemas/addressSchema";
 
 type Any = Record<string, any>;
 const unwrap = (x: any) => x?.data ?? x;
@@ -24,9 +27,18 @@ const PAYMENT_METHODS: { value: CheckoutFormValues["paymentMethod"]; label: stri
 
 export default function CheckoutPage() {
   const router = useRouter();
-  // Chặn double-submit tuyệt đối (không chỉ dựa vào isPending, vì onClick có thể bắn 2 lần
+  const queryClient = useQueryClient();
+  // Chặn double-submit (không dựa vào isPending, vì onClick có thể bắn 2 lần
   // trong cùng 1 tick trước khi state re-render kịp).
   const submittingRef = useRef(false);
+
+  // Địa chỉ vừa tạo trong Checkout mà user KHÔNG tick "lưu cho lần sau" -> xoá sau khi đặt hàng xong
+  const [temporaryAddressId, setTemporaryAddressId] = useState<string | null>(null);
+  const [showAddressForm, setShowAddressForm] = useState(false);
+
+  // Stripe: sau khi order tạo xong + init payment xong, hiện form nhập thẻ (PaymentElement)
+  // thay vì redirect ngay như COD/VNPay.
+  const [stripeSession, setStripeSession] = useState<{ clientSecret: string; orderId: string } | null>(null);
 
   const {
     watch,
@@ -70,6 +82,27 @@ export default function CheckoutPage() {
     }
   }, [addressRows, addressId, setValue]);
 
+  const createAddress = useMutation({
+    mutationFn: (data: AddressFormValues) => profileService.createAddress(data),
+    onError: (error: any) => {
+      notifyError(error?.response?.data?.message || error?.message || "Không thể lưu địa chỉ.");
+    },
+  });
+
+  const handleSaveNewAddress = (address: AddressFormValues & { id?: string }, saveToBook: boolean) => {
+    // BE (OrderCreateRequest) chỉ nhận addressId, không có field địa chỉ rời rạc -> luôn phải
+    // POST /addresses để có id trước, dù có tick "lưu cho lần sau" hay không.
+    createAddress.mutate(address, {
+      onSuccess: (res: any) => {
+        const created = unwrap(res);
+        queryClient.invalidateQueries({ queryKey: ["addresses"] });
+        setValue("addressId", created.id, { shouldValidate: true });
+        setTemporaryAddressId(saveToBook ? null : created.id);
+        setShowAddressForm(false);
+      },
+    });
+  };
+
   const validate = useMutation({
     mutationFn: async () => {
       const ok = await trigger("voucherCode");
@@ -83,6 +116,17 @@ export default function CheckoutPage() {
 
   const discount: number = Number(unwrap(validate.data)?.discountAmount ?? 0);
 
+  // Dọn địa chỉ tạm (không lưu cho lần sau) sau khi order đã tạo thành công.
+  const cleanupTemporaryAddress = () => {
+    if (temporaryAddressId) {
+      profileService.deleteAddress(temporaryAddressId).catch(() => {
+        // Chỉ log, không ảnh hưởng luồng đặt hàng - đơn đã tạo thành công là quan trọng nhất.
+        console.error("Không thể xoá địa chỉ tạm", temporaryAddressId);
+      });
+      setTemporaryAddressId(null);
+    }
+  };
+
   const place = useMutation({
     mutationFn: (values: CheckoutFormValues) =>
       orderService.create({
@@ -93,13 +137,24 @@ export default function CheckoutPage() {
     onSuccess: async (data: any) => {
       const order = unwrap(data) || {};
       const orderId = order.id || order.orderId;
+      cleanupTemporaryAddress();
+
       if (paymentMethod === "COD") {
         router.push(`/payment?status=success&orderId=${orderId}`);
         return;
       }
+
       const payment: any = unwrap(await paymentService.init(String(orderId)));
-      if (payment.paymentUrl) window.location.assign(payment.paymentUrl);
-      else router.push(`/payment?status=success&orderId=${orderId}`);
+
+      if (paymentMethod === "STRIPE" && payment.clientSecret) {
+        setStripeSession({ clientSecret: payment.clientSecret, orderId: String(orderId) });
+        return;
+      }
+      if (payment.paymentUrl) {
+        window.location.assign(payment.paymentUrl);
+        return;
+      }
+      router.push(`/payment?status=success&orderId=${orderId}`);
     },
     onSettled: () => {
       submittingRef.current = false;
@@ -152,8 +207,15 @@ export default function CheckoutPage() {
                 ))
               )}
               {!addressRows.length && !addresses.isLoading && (
-                <p className="text-sm text-zinc-500">Chưa có địa chỉ. Vui lòng thêm địa chỉ trong Tài khoản.</p>
+                <p className="text-sm text-zinc-500">Bạn chưa có địa chỉ nào. Thêm địa chỉ mới để tiếp tục.</p>
               )}
+              <button
+                type="button"
+                onClick={() => setShowAddressForm(true)}
+                className="w-full border border-dashed border-black px-4 py-3 text-sm font-medium hover:bg-zinc-50"
+              >
+                + Thêm địa chỉ mới
+              </button>
               {errors.addressId && <p className="text-sm text-red-600">{errors.addressId.message}</p>}
             </div>
 
@@ -234,6 +296,24 @@ export default function CheckoutPage() {
           </aside>
         </form>
       </section>
+
+      {showAddressForm && (
+        <AddressForm
+          initial={{}}
+          saving={createAddress.isPending}
+          showSaveToBookOption
+          onClose={() => setShowAddressForm(false)}
+          onSave={handleSaveNewAddress}
+        />
+      )}
+
+      {stripeSession && (
+        <StripeCheckoutForm
+          clientSecret={stripeSession.clientSecret}
+          orderId={stripeSession.orderId}
+          onCancel={() => setStripeSession(null)}
+        />
+      )}
     </PublicLayout>
   );
 }
