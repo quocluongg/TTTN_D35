@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { decodeJwt } from "jose";
 
-const protectedPrefixes = ["/account", "/orders", "/checkout"];
+const protectedPrefixes = ["/account", "/orders", "/checkout", "/cart"];
 const authOnlyPaths = ["/login", "/signup", "/forgot-password", "/reset-password"];
 
 export const config = {
-  matcher: ["/admin/:path*", "/login", "/signup", "/forgot-password", "/reset-password", "/account/:path*", "/account", "/orders/:path*", "/checkout/:path*"],
+  matcher: ["/admin/:path*", "/login", "/signup", "/forgot-password", "/reset-password", "/account/:path*", "/account", "/orders/:path*", "/checkout/:path*", "/cart/:path*", "/cart"],
 };
 
 export function middleware(request: NextRequest) {
