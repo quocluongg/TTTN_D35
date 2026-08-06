@@ -23,14 +23,12 @@ import {
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { productService, ProductVariant } from "@/services/productServices";
-import { useCartStore } from "@/store/cartStore";
-import { cartService } from "@/services/cartService";
-import { notifySuccess } from "@/components/Notify";
+import { useCart } from "@/hooks/useCart";
 
 export default function ProductDetailPage() {
   const params = useParams();
   const slugOrId = (params.id as string) || "";
-  const addItemToStore = useCartStore((state) => state.addItem);
+  const { addToCart, isAddingToCart } = useCart();
 
   // TanStack Query: Fetch detail product from backend
   const { data: detailRes, isLoading, isError } = useQuery({
@@ -57,11 +55,6 @@ export default function ProductDetailPage() {
   const [addedToCart, setAddedToCart] = useState(false);
   const [isFlying, setIsFlying] = useState(false);
   const [activeTab, setActiveTab] = useState<"specs" | "description" | "custom">("specs");
-
-  // Add to cart mutation for Backend DB syncing if user logged in
-  const syncCartMutation = useMutation({
-    mutationFn: (data: { variantId: string; quantity: number }) => cartService.addItem(data),
-  });
 
   // Set default variant when product loads
   React.useEffect(() => {
@@ -99,32 +92,26 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     const targetVariant = selectedVariant || product?.variants?.[0];
-    const variantId = targetVariant?.id || product.id;
+    const variantId = targetVariant?.id;
 
-    // 1. Add to Zustand Local Store (Persisted in localStorage)
-    addItemToStore({
-      variantId,
-      productId: product.id,
-      name: product.name,
-      sku: targetVariant?.sku || product.slug,
-      variantName: targetVariant?.variantName || "Mặc định",
-      price: targetVariant?.price || product.priceFrom || 0,
-      quantity: 1,
-      image: galleryImages[0],
-    });
+    if (!variantId) {
+      return;
+    }
 
-    // 2. Sync to Backend DB via cartService (fire & forget)
-    syncCartMutation.mutate({ variantId, quantity: 1 });
-
-    // 3. Trigger UI Flying Animation & Toast Notice
-    setAddedToCart(true);
-    setIsFlying(true);
-    notifySuccess(`Đã thêm "${product.name}" vào giỏ hàng!`);
-
-    setTimeout(() => {
-      setAddedToCart(false);
-      setIsFlying(false);
-    }, 2500);
+    // Gọi API Backend qua hook React Query
+    addToCart(
+      { variantId, quantity: 1 },
+      {
+        onSuccess: () => {
+          setAddedToCart(true);
+          setIsFlying(true);
+          setTimeout(() => {
+            setAddedToCart(false);
+            setIsFlying(false);
+          }, 2500);
+        },
+      }
+    );
   };
 
   const formatCurrency = (val?: number) => {

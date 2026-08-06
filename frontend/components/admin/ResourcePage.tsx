@@ -40,7 +40,12 @@ const formatValue = (key: string, val: unknown): React.ReactNode => {
   }
 
   if (typeof val === "object") {
-    return JSON.stringify(val);
+    if (React.isValidElement(val)) return val;
+    try {
+      return <span className="max-w-xs truncate block font-mono text-xs">{JSON.stringify(val)}</span>;
+    } catch {
+      return "—";
+    }
   }
 
   return <span className="max-w-xs truncate block">{String(val)}</span>;

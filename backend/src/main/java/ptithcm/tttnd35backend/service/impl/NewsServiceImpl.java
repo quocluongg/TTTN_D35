@@ -54,6 +54,7 @@ public class NewsServiceImpl implements INewsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public NewsResponse getNewsBySlug(String slug) {
         var news = newsRepository.findBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bài viết với slug: " + slug));
@@ -62,8 +63,6 @@ public class NewsServiceImpl implements INewsService {
             throw new ResourceNotFoundException("Bài viết chưa được xuất bản");
         }
 
-        newsRepository.incrementViewCount(news.getId());
-        news.setViewCount(news.getViewCount() + 1);
         return newsMapper.toResponse(news);
     }
 

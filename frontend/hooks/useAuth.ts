@@ -134,8 +134,8 @@ export const useResetPassword = () => {
   const router = useRouter();
 
   return useMutation({
-    mutationFn: ({ token, newPassword }: { token: string; newPassword: string }) =>
-      authService.resetPassword(token, newPassword),
+    mutationFn: (data: { email: string; otp: string; newPassword: string }) =>
+      authService.resetPassword(data),
     onSuccess: () => {
       notifySuccess("Đặt lại mật khẩu thành công! Vui lòng đăng nhập.");
       router.push("/login");
@@ -144,7 +144,7 @@ export const useResetPassword = () => {
       const message =
         error?.message ||
         error?.response?.data?.message ||
-        "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.";
+        "Mã OTP không hợp lệ hoặc đã hết hạn.";
       notifyError(message);
     },
   });
