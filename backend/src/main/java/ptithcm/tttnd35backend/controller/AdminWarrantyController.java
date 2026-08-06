@@ -102,7 +102,7 @@ public class AdminWarrantyController {
             Authentication authentication,
             @PathVariable UUID cardId,
             @PathVariable UUID historyId,
-            @RequestBody WarrantyHistoryRequest request
+            @RequestBody @Valid WarrantyHistoryRequest request
     ) {
         UUID currentUserId = currentProfileId(authentication);
         return ApiResponse.<WarrantyHistoryResponse>builder()
