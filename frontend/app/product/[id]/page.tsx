@@ -21,16 +21,18 @@ import {
   Sparkles,
   Layers,
 } from "lucide-react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { productService, ProductVariant } from "@/services/productServices";
-import { useCartStore } from "@/store/cartStore";
-import { cartService } from "@/services/cartService";
+import { useAddToCart } from "@/hooks/useCart";
 import { notifySuccess } from "@/components/Notify";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 export default function ProductDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const slugOrId = (params.id as string) || "";
-  const addItemToStore = useCartStore((state) => state.addItem);
 
   // TanStack Query: Fetch detail product from backend
   const { data: detailRes, isLoading, isError } = useQuery({
@@ -57,11 +59,15 @@ export default function ProductDetailPage() {
   const [addedToCart, setAddedToCart] = useState(false);
   const [isFlying, setIsFlying] = useState(false);
   const [activeTab, setActiveTab] = useState<"specs" | "description" | "custom">("specs");
+  const [quantity, setQuantity] = useState(1);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
-  // Add to cart mutation for Backend DB syncing if user logged in
-  const syncCartMutation = useMutation({
-    mutationFn: (data: { variantId: string; quantity: number }) => cartService.addItem(data),
-  });
+  const addToCartMutation = useAddToCart();
+
+  // Reset số lượng chọn về 1 mỗi khi đổi biến thể (tránh giữ số lượng vượt tồn kho của biến thể mới).
+  React.useEffect(() => {
+    setQuantity(1);
+  }, [selectedVariant?.id]);
 
   // Set default variant when product loads
   React.useEffect(() => {
@@ -98,33 +104,30 @@ export default function ProductDetailPage() {
   };
 
   const handleAddToCart = () => {
+    // Backend Cart API bắt buộc đăng nhập, không có giỏ hàng khách vãng lai -> chặn sớm ở FE,
+    // không bắn API để nhận lỗi 401 vô nghĩa. Không redirect ngay để giữ user ở lại trang sản phẩm.
+    if (!Cookies.get("token")) {
+      setShowLoginPrompt(true);
+      return;
+    }
+
     const targetVariant = selectedVariant || product?.variants?.[0];
     const variantId = targetVariant?.id || product.id;
 
-    // 1. Add to Zustand Local Store (Persisted in localStorage)
-    addItemToStore({
-      variantId,
-      productId: product.id,
-      name: product.name,
-      sku: targetVariant?.sku || product.slug,
-      variantName: targetVariant?.variantName || "Mặc định",
-      price: targetVariant?.price || product.priceFrom || 0,
-      quantity: 1,
-      image: galleryImages[0],
-    });
-
-    // 2. Sync to Backend DB via cartService (fire & forget)
-    syncCartMutation.mutate({ variantId, quantity: 1 });
-
-    // 3. Trigger UI Flying Animation & Toast Notice
-    setAddedToCart(true);
-    setIsFlying(true);
-    notifySuccess(`Đã thêm "${product.name}" vào giỏ hàng!`);
-
-    setTimeout(() => {
-      setAddedToCart(false);
-      setIsFlying(false);
-    }, 2500);
+    addToCartMutation.mutate(
+      { variantId, quantity },
+      {
+        onSuccess: () => {
+          setAddedToCart(true);
+          setIsFlying(true);
+          notifySuccess(`Đã thêm "${product.name}" vào giỏ hàng!`);
+          setTimeout(() => {
+            setAddedToCart(false);
+            setIsFlying(false);
+          }, 2500);
+        },
+      }
+    );
   };
 
   const formatCurrency = (val?: number) => {
@@ -387,6 +390,34 @@ export default function ProductDetailPage() {
                 )}
               </div>
 
+              {/* Quantity Stepper */}
+              {selectedVariant?.stock !== 0 && (
+                <div className="pt-4 flex items-center gap-4">
+                  <span className="text-sm font-bold">Số lượng</span>
+                  <div className="flex items-center border border-black">
+                    <button
+                      type="button"
+                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                      disabled={quantity <= 1}
+                      className="w-10 h-10 flex items-center justify-center font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    >
+                      −
+                    </button>
+                    <span className="w-12 text-center font-bold">{quantity}</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setQuantity((q) => Math.min(selectedVariant?.stock ?? 1, q + 1))
+                      }
+                      disabled={quantity >= (selectedVariant?.stock ?? 1)}
+                      className="w-10 h-10 flex items-center justify-center font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Add to Cart Action & Flying Cart Animation */}
               <div className="pt-4 relative">
                 {isFlying && (
@@ -397,7 +428,7 @@ export default function ProductDetailPage() {
                 )}
                 <button
                   onClick={handleAddToCart}
-                  disabled={selectedVariant?.stock === 0}
+                  disabled={selectedVariant?.stock === 0 || addToCartMutation.isPending}
                   className={`w-full h-[58px] text-[18px] sm:text-[20px] font-bold border border-black flex items-center justify-center gap-3 transition-all cursor-pointer ${
                     selectedVariant?.stock === 0
                       ? "bg-zinc-300 text-zinc-500 border-zinc-300 cursor-not-allowed"
@@ -551,6 +582,16 @@ export default function ProductDetailPage() {
         )}
 
       </div>
+
+      <ConfirmDialog
+        open={showLoginPrompt}
+        onOpenChange={setShowLoginPrompt}
+        title="Vui lòng đăng nhập"
+        description="Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng."
+        confirmText="Đăng nhập ngay"
+        cancelText="Để sau"
+        onConfirm={() => router.push(`/login?redirect=${encodeURIComponent(`/product/${slugOrId}`)}`)}
+      />
     </PublicLayout>
   );
 }

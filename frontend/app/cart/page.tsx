@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import PublicLayout from "@/shared/layouts/PublicLayout";
-import { useCartStore } from "@/store/cartStore";
 import {
   Trash2,
   Plus,
@@ -12,51 +11,87 @@ import {
   ArrowRight,
   ShoppingBag,
   ShieldCheck,
-  Tag,
   ArrowLeft,
   Truck,
   RotateCcw,
-  CheckCircle2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { notifySuccess } from "@/components/Notify";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import {
+  useCartQuery,
+  useUpdateCartQuantity,
+  useRemoveCartItem,
+  useClearCart,
+  type CartItem,
+} from "@/hooks/useCart";
+
+const QUANTITY_DEBOUNCE_MS = 500;
+
+function formatCurrency(val: number) {
+  return new Intl.NumberFormat("vi-VN").format(val) + "đ";
+}
 
 export default function CartPage() {
   const router = useRouter();
-  const { items, removeItem, updateQuantity, clearCart, getTotalPrice, getTotalItems } = useCartStore();
+  const { data: cart, isLoading } = useCartQuery();
+  const updateQuantityMutation = useUpdateCartQuantity();
+  const removeItemMutation = useRemoveCartItem();
+  const clearCartMutation = useClearCart();
 
-  const [promoCode, setPromoCode] = useState("");
-  const [appliedDiscount, setAppliedDiscount] = useState(0);
-  const [promoSuccess, setPromoSuccess] = useState("");
+  const items: CartItem[] = cart?.items ?? [];
+  const totalItems = cart?.totalItems ?? 0;
+  const subtotal = cart?.subtotal ?? 0;
 
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat("vi-VN").format(val) + "đ";
+  // Optimistic quantity hiển thị ngay khi bấm +/-, không đợi API - key theo cart item id.
+  const [displayQty, setDisplayQty] = useState<Record<string, number>>({});
+  const debounceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const [confirmClearAll, setConfirmClearAll] = useState(false);
+
+  const getQty = (item: CartItem) => displayQty[item.id] ?? item.quantity;
+
+  const handleQuantityChange = (item: CartItem, nextQty: number) => {
+    if (nextQty < 1 || nextQty > item.availableStock) return;
+
+    setDisplayQty((prev) => ({ ...prev, [item.id]: nextQty }));
+
+    if (debounceTimers.current[item.id]) {
+      clearTimeout(debounceTimers.current[item.id]);
+    }
+    debounceTimers.current[item.id] = setTimeout(() => {
+      updateQuantityMutation.mutate(
+        { id: item.id, quantity: nextQty },
+        {
+          onSettled: () => {
+            setDisplayQty((prev) => {
+              const next = { ...prev };
+              delete next[item.id];
+              return next;
+            });
+          },
+        }
+      );
+    }, QUANTITY_DEBOUNCE_MS);
   };
 
-  const totalPrice = getTotalPrice();
-  const totalItems = getTotalItems();
-  const finalPrice = Math.max(0, totalPrice - appliedDiscount);
+  const confirmRemove = () => {
+    if (!removingId) return;
+    removeItemMutation.mutate(removingId, {
+      onSettled: () => setRemovingId(null),
+    });
+  };
 
-  const handleApplyPromo = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!promoCode.trim()) return;
-
-    if (promoCode.trim().toUpperCase() === "SHOPWISE10" || promoCode.trim().toUpperCase() === "WELCOME") {
-      const discountVal = Math.round(totalPrice * 0.1); // 10% discount
-      setAppliedDiscount(discountVal);
-      setPromoSuccess("Áp dụng mã giảm giá 10% thành công!");
-      notifySuccess("Đã áp dụng mã giảm giá 10%!");
-    } else {
-      setAppliedDiscount(0);
-      setPromoSuccess("");
-      notifySuccess("Mã giảm giá dùng thử: SHOPWISE10");
-    }
+  const handleClearAll = () => {
+    clearCartMutation.mutate(undefined, {
+      onSettled: () => setConfirmClearAll(false),
+    });
   };
 
   return (
     <PublicLayout fullWidth>
       <div className="w-full min-h-screen bg-[#F5F5F7] dark:bg-zinc-950 text-black dark:text-white transition-colors duration-300 font-sans">
-        
+
         {/* BREADCRUMB & HEADER SECTION */}
         <section className="w-full border-b border-black dark:border-zinc-800 bg-white dark:bg-zinc-900 px-6 py-6 lg:px-12">
           <div className="w-[1920px] max-w-full mx-auto flex flex-wrap items-center justify-between gap-4">
@@ -78,7 +113,7 @@ export default function CartPage() {
               </Link>
               {items.length > 0 && (
                 <button
-                  onClick={clearCart}
+                  onClick={() => setConfirmClearAll(true)}
                   className="text-xs font-semibold text-red-600 hover:text-red-700 underline flex items-center gap-1"
                 >
                   <Trash2 size={14} /> Xóa tất cả
@@ -91,10 +126,12 @@ export default function CartPage() {
         {/* MAIN CART CONTENT */}
         <section className="w-full border-b border-black dark:border-zinc-800">
           <div className="w-[1920px] max-w-full mx-auto grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-black dark:divide-zinc-800">
-            
+
             {/* LEFT COLUMN: CART ITEMS LIST (8 COLS) */}
             <div className="lg:col-span-8 p-6 lg:p-12 bg-white dark:bg-zinc-900 min-h-[550px] flex flex-col justify-between">
-              {items.length === 0 ? (
+              {isLoading ? (
+                <p className="text-sm text-zinc-500 py-20 text-center">Đang tải giỏ hàng…</p>
+              ) : items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center text-center py-20 my-auto space-y-5">
                   <div className="w-24 h-24 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center border border-black/10">
                     <ShoppingBag className="w-12 h-12 text-zinc-400" />
@@ -122,71 +159,92 @@ export default function CartPage() {
 
                   {/* Items list */}
                   <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
-                    {items.map((item) => (
-                      <div key={item.variantId} className="py-6 grid grid-cols-1 sm:grid-cols-12 gap-4 items-center group">
-                        
-                        {/* Product Info (6 cols) */}
-                        <div className="sm:col-span-6 flex items-start sm:items-center gap-4">
-                          <div className="relative w-24 h-24 bg-zinc-50 dark:bg-zinc-800 border border-black/10 shrink-0 p-2 overflow-hidden">
-                            <Image
-                              src={item.image || "https://cdn2.fptshop.com.vn/unsafe/360x0/filters:format(webp):quality(75)/Laptop_d170e53d32.png"}
-                              alt={item.name}
-                              fill
-                              className="object-contain p-1 group-hover:scale-105 transition-transform"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Link href={`/product/${item.productId}`} className="font-extrabold text-base hover:underline line-clamp-2 leading-snug">
-                              {item.name}
-                            </Link>
-                            <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500 font-mono">
-                              <span className="bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 border border-zinc-300 dark:border-zinc-700 text-black dark:text-white font-semibold">
-                                {item.variantName || item.sku || "Mặc định"}
-                              </span>
+                    {items.map((item) => {
+                      const qty = getQty(item);
+                      const effectivePrice = item.salePrice ?? item.price;
+                      const lineTotal = effectivePrice * qty;
+                      const overStock = qty > item.availableStock;
+
+                      return (
+                        <div key={item.id} className="py-6 grid grid-cols-1 sm:grid-cols-12 gap-4 items-center group">
+
+                          {/* Product Info (6 cols) */}
+                          <div className="sm:col-span-6 flex items-start sm:items-center gap-4">
+                            <div className="relative w-24 h-24 bg-zinc-50 dark:bg-zinc-800 border border-black/10 shrink-0 p-2 overflow-hidden">
+                              <Image
+                                src={item.image || "https://cdn2.fptshop.com.vn/unsafe/360x0/filters:format(webp):quality(75)/Laptop_d170e53d32.png"}
+                                alt={item.productName}
+                                fill
+                                className="object-contain p-1 group-hover:scale-105 transition-transform"
+                              />
                             </div>
-                            <button
-                              onClick={() => removeItem(item.variantId)}
-                              className="text-xs text-red-600 hover:text-red-700 font-bold flex items-center gap-1 pt-1 hover:underline"
-                            >
-                              <Trash2 size={13} /> Xóa khỏi giỏ
-                            </button>
+                            <div className="space-y-1">
+                              <Link href={`/product/${item.productSlug || item.productId}`} className="font-extrabold text-base hover:underline line-clamp-2 leading-snug">
+                                {item.productName}
+                              </Link>
+                              <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500 font-mono">
+                                <span className="bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 border border-zinc-300 dark:border-zinc-700 text-black dark:text-white font-semibold">
+                                  {item.variantName || "Mặc định"}
+                                </span>
+                              </div>
+                              {overStock && (
+                                <p className="text-xs text-red-600 font-semibold">
+                                  Chỉ còn {item.availableStock} sản phẩm trong kho
+                                </p>
+                              )}
+                              <button
+                                onClick={() => setRemovingId(item.id)}
+                                className="text-xs text-red-600 hover:text-red-700 font-bold flex items-center gap-1 pt-1 hover:underline"
+                              >
+                                <Trash2 size={13} /> Xóa khỏi giỏ
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Price (2 cols) */}
+                          <div className="sm:col-span-2 text-left sm:text-center font-bold text-sm">
+                            <span className="sm:hidden text-xs text-zinc-400 font-normal">Đơn giá: </span>
+                            {item.salePrice ? (
+                              <span className="flex flex-col sm:items-center">
+                                <span className="text-red-600">{formatCurrency(item.salePrice)}</span>
+                                <span className="text-xs text-zinc-400 line-through font-normal">{formatCurrency(item.price)}</span>
+                              </span>
+                            ) : (
+                              formatCurrency(item.price)
+                            )}
+                          </div>
+
+                          {/* Quantity Controls (2 cols) */}
+                          <div className="sm:col-span-2 flex items-center justify-start sm:justify-center">
+                            <div className="flex items-center border border-black dark:border-white bg-white dark:bg-zinc-800">
+                              <button
+                                onClick={() => handleQuantityChange(item, qty - 1)}
+                                disabled={qty <= 1}
+                                className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                title="Giảm số lượng"
+                              >
+                                <Minus size={14} />
+                              </button>
+                              <span className="px-4 py-1.5 text-xs font-bold font-mono">{qty}</span>
+                              <button
+                                onClick={() => handleQuantityChange(item, qty + 1)}
+                                disabled={qty >= item.availableStock}
+                                className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                title="Tăng số lượng"
+                              >
+                                <Plus size={14} />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Total Line (2 cols) */}
+                          <div className="sm:col-span-2 text-left sm:text-right font-black text-base text-indigo-700 dark:text-indigo-400">
+                            <span className="sm:hidden text-xs text-zinc-400 font-normal">Thành tiền: </span>
+                            {formatCurrency(lineTotal)}
                           </div>
                         </div>
-
-                        {/* Price (2 cols) */}
-                        <div className="sm:col-span-2 text-left sm:text-center font-bold text-sm">
-                          <span className="sm:hidden text-xs text-zinc-400 font-normal">Đơn giá: </span>
-                          {formatCurrency(item.price)}
-                        </div>
-
-                        {/* Quantity Controls (2 cols) */}
-                        <div className="sm:col-span-2 flex items-center justify-start sm:justify-center">
-                          <div className="flex items-center border border-black dark:border-white bg-white dark:bg-zinc-800">
-                            <button
-                              onClick={() => updateQuantity(item.variantId, item.quantity - 1)}
-                              className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
-                              title="Giảm số lượng"
-                            >
-                              <Minus size={14} />
-                            </button>
-                            <span className="px-4 py-1.5 text-xs font-bold font-mono">{item.quantity}</span>
-                            <button
-                              onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
-                              className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
-                              title="Tăng số lượng"
-                            >
-                              <Plus size={14} />
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Total Line (2 cols) */}
-                        <div className="sm:col-span-2 text-left sm:text-right font-black text-base text-indigo-700 dark:text-indigo-400">
-                          <span className="sm:hidden text-xs text-zinc-400 font-normal">Thành tiền: </span>
-                          {formatCurrency(item.price * item.quantity)}
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -219,41 +277,15 @@ export default function CartPage() {
               </div>
             </div>
 
-            {/* RIGHT COLUMN: ORDER SUMMARY & PROMO FORM (4 COLS) */}
+            {/* RIGHT COLUMN: ORDER SUMMARY (4 COLS) */}
             <div className="lg:col-span-4 p-6 lg:p-12 bg-zinc-50 dark:bg-zinc-900/50 flex flex-col justify-between space-y-8">
               <div className="space-y-6">
                 <h2 className="text-xl font-extrabold tracking-tight border-b border-black dark:border-zinc-800 pb-4">
                   Tóm tắt đơn hàng
                 </h2>
 
-                {/* Promo Code Form */}
-                <form onSubmit={handleApplyPromo} className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-1">
-                    <Tag size={13} /> Mã giảm giá / Voucher
-                  </label>
-                  <div className="flex">
-                    <input
-                      type="text"
-                      placeholder="Thử nhập: SHOPWISE10"
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value)}
-                      className="flex-1 border border-black dark:border-white px-3 py-2 text-xs font-mono uppercase bg-white dark:bg-zinc-800 focus:outline-none"
-                    />
-                    <button
-                      type="submit"
-                      className="bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase px-4 py-2 hover:bg-[#C5FA1F] hover:text-black transition-colors border border-black dark:border-white border-l-0"
-                    >
-                      Áp dụng
-                    </button>
-                  </div>
-                  {promoSuccess && (
-                    <p className="text-xs text-emerald-600 font-bold flex items-center gap-1">
-                      <CheckCircle2 size={12} /> {promoSuccess}
-                    </p>
-                  )}
-                </form>
-
-                {/* Summary Lines */}
+                {/* Ghi chú: mã giảm giá được áp dụng ở bước Thanh toán (voucher tính theo tổng
+                    tiền hàng không sale của toàn đơn), không áp ở trang Giỏ hàng. */}
                 <div className="space-y-3 text-sm pt-4 border-t border-black/10 dark:border-zinc-800">
                   <div className="flex justify-between text-zinc-600 dark:text-zinc-400">
                     <span>Tổng số lượng món:</span>
@@ -261,29 +293,17 @@ export default function CartPage() {
                   </div>
 
                   <div className="flex justify-between text-zinc-600 dark:text-zinc-400">
-                    <span>Tạm tính tiền hàng:</span>
-                    <strong className="text-black dark:text-white font-mono">{formatCurrency(totalPrice)}</strong>
-                  </div>
-
-                  {appliedDiscount > 0 && (
-                    <div className="flex justify-between text-emerald-600 font-semibold">
-                      <span>Mã giảm giá (10%):</span>
-                      <span className="font-mono">-{formatCurrency(appliedDiscount)}</span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between text-zinc-600 dark:text-zinc-400">
                     <span>Phí vận chuyển:</span>
                     <span className="text-emerald-600 dark:text-emerald-400 font-bold uppercase text-xs">Freeship toàn quốc</span>
                   </div>
-                  
+
                   <div className="pt-4 border-t border-black dark:border-zinc-800 flex items-baseline justify-between">
                     <div>
-                      <span className="text-base font-extrabold block">Tổng thanh toán:</span>
-                      <span className="text-[11px] text-zinc-500">(Đã bao gồm thuế VAT)</span>
+                      <span className="text-base font-extrabold block">Tạm tính:</span>
+                      <span className="text-[11px] text-zinc-500">Chưa gồm mã giảm giá</span>
                     </div>
                     <span className="text-2xl sm:text-3xl font-black text-indigo-700 dark:text-indigo-400">
-                      {formatCurrency(finalPrice)}
+                      {formatCurrency(subtotal)}
                     </span>
                   </div>
                 </div>
@@ -308,6 +328,26 @@ export default function CartPage() {
         </section>
 
       </div>
+
+      <ConfirmDialog
+        open={!!removingId}
+        onOpenChange={(open) => !open && setRemovingId(null)}
+        title="Xóa sản phẩm khỏi giỏ hàng?"
+        description="Sản phẩm sẽ được xóa khỏi giỏ hàng của bạn."
+        confirmText="Xóa"
+        danger
+        onConfirm={confirmRemove}
+      />
+
+      <ConfirmDialog
+        open={confirmClearAll}
+        onOpenChange={setConfirmClearAll}
+        title="Xóa toàn bộ giỏ hàng?"
+        description="Toàn bộ sản phẩm trong giỏ hàng sẽ bị xóa, không thể hoàn tác."
+        confirmText="Xóa tất cả"
+        danger
+        onConfirm={handleClearAll}
+      />
     </PublicLayout>
   );
 }
