@@ -1,170 +1,212 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import http from "@/lib/http";
-import { notifySuccess, notifyError } from "@/components/Notify";
+import React, { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import ResourcePage from "@/components/admin/ResourcePage";
+import { adminOrderService } from "@/services/admin/adminOrderService";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { notifyError, notifySuccess } from "@/components/Notify";
+import { ShoppingBag, Eye, CreditCard, Calendar, Truck, User } from "lucide-react";
 
-type OrderItem = {
-  id: string;
-  orderCode: string;
-  customerName: string;
-  status: string;
-  paymentStatus: string;
-  totalAmount: number;
-  createdAt: string;
-};
-
-const STATUS_FLOW = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPING", "DELIVERED", "CANCELLED", "REFUNDED"];
+type OrderRow = Record<string, any>;
+const unwrap = (x: any) => x?.data ?? x;
 
 export default function AdminOrdersPage() {
-  const [statusFilter, setStatusFilter] = useState("");
-  const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
-  const [newStatus, setNewStatus] = useState("");
-  const [note, setNote] = useState("");
   const queryClient = useQueryClient();
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
 
-  const { data: orders, isLoading } = useQuery<OrderItem[]>({
-    queryKey: ["admin-orders", statusFilter],
-    queryFn: async () => {
-      const res = await http.get("/admin/orders", {
-        params: { status: statusFilter || undefined },
-      });
-      return (res as any).data;
-    },
+  // Fetch single order details when modal opens
+  const orderDetailQuery = useQuery({
+    queryKey: ["admin-order-detail", selectedOrderId],
+    queryFn: () => adminOrderService.get(selectedOrderId!),
+    enabled: !!selectedOrderId,
   });
 
+  const orderDetail: any = unwrap(orderDetailQuery.data) || {};
+
+  // Status Change Mutation
   const updateStatusMutation = useMutation({
-    mutationFn: async () => {
-      if (!selectedOrder) return;
-      return http.patch(`/admin/orders/${selectedOrder.id}/status`, {
-        status: newStatus,
-        note,
-      });
-    },
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
+      adminOrderService.status(id, { status }),
     onSuccess: () => {
-      notifySuccess("Cập nhật trạng thái đơn hàng thành công");
+      notifySuccess("Cập nhật trạng thái đơn hàng thành công!");
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
-      setSelectedOrder(null);
-      setNote("");
+      if (selectedOrderId) {
+        queryClient.invalidateQueries({ queryKey: ["admin-order-detail", selectedOrderId] });
+      }
     },
     onError: (err: any) => {
-      notifyError(err?.response?.data?.message || "Không thể cập nhật trạng thái đơn hàng");
+      notifyError(err?.message || "Không thể cập nhật trạng thái đơn hàng.");
     },
   });
+
+  const handleOpenDetail = (row: OrderRow) => {
+    setSelectedOrderId(row.id);
+    setDetailModalOpen(true);
+  };
+
+  const customOrderActions = (row: OrderRow) => (
+    <button
+      onClick={() => handleOpenDetail(row)}
+      className="border border-black px-2 py-1 text-xs hover:bg-zinc-100 flex items-center gap-1 font-semibold"
+    >
+      <Eye size={12} /> Chi tiết
+    </button>
+  );
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Quản lý Đơn hàng</h1>
-          <p className="text-sm text-slate-500">Xử lý quy trình giao nhận đơn hàng, thay đổi trạng thái và hoàn tiền.</p>
-        </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-        >
-          <option value="">-- Tất cả trạng thái --</option>
-          {STATUS_FLOW.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-      </div>
+      <ResourcePage
+        title="Quản lý Đơn hàng"
+        description="Theo dõi danh sách đơn hàng toàn hệ thống, kiểm tra chi tiết thanh toán và cập nhật trạng thái vận chuyển."
+        queryKey="admin-orders"
+        fetcher={adminOrderService.list}
+        fields={[
+          { key: "id", label: "Mã đơn hàng (ID)" },
+          { key: "customerName", label: "Khách hàng" },
+          { key: "customerPhone", label: "Số điện thoại" },
+          { key: "totalAmount", label: "Tổng tiền" },
+          { key: "paymentMethod", label: "Thanh toán" },
+          { key: "status", label: "Trạng thái đơn" },
+        ]}
+        customActions={customOrderActions}
+      />
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
-        <table className="w-full text-left text-sm text-slate-700">
-          <thead className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-            <tr>
-              <th className="px-6 py-3">Mã đơn hàng</th>
-              <th className="px-6 py-3">Khách hàng</th>
-              <th className="px-6 py-3">Tổng giá trị</th>
-              <th className="px-6 py-3">Trạng thái Đơn</th>
-              <th className="px-6 py-3">Thanh toán</th>
-              <th className="px-6 py-3 text-right">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200">
-            {isLoading ? (
-              <tr><td colSpan={6} className="px-6 py-8 text-center text-slate-400">Đang tải danh sách đơn...</td></tr>
-            ) : orders?.length ? (
-              orders.map((o) => (
-                <tr key={o.id} className="hover:bg-slate-50">
-                  <td className="px-6 py-4 font-mono font-bold text-slate-900">{o.orderCode}</td>
-                  <td className="px-6 py-4">{o.customerName}</td>
-                  <td className="px-6 py-4 font-semibold">{new Intl.NumberFormat("vi-VN").format(o.totalAmount)} VNĐ</td>
-                  <td className="px-6 py-4">
-                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 border text-slate-800">
-                      {o.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-xs font-semibold text-slate-600">{o.paymentStatus}</td>
-                  <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => {
-                        setSelectedOrder(o);
-                        setNewStatus(o.status);
-                      }}
-                      className="text-xs font-semibold text-emerald-600 hover:text-emerald-800"
-                    >
-                      Đổi Trạng Thái
-                    </button>
-                  </td>
-                </tr>
-              ))
+      {/* Order Detail Modal */}
+      {detailModalOpen && selectedOrderId && (
+        <Dialog open={detailModalOpen} onOpenChange={setDetailModalOpen}>
+          <DialogContent className="max-w-3xl border-2 border-black bg-white p-6 max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-bold uppercase tracking-wider flex items-center gap-2">
+                <ShoppingBag className="w-5 h-5" />
+                <span>Chi tiết Đơn hàng</span>
+              </DialogTitle>
+            </DialogHeader>
+
+            {orderDetailQuery.isLoading ? (
+              <p className="text-sm text-zinc-500 py-10 text-center">Đang tải chi tiết đơn hàng...</p>
             ) : (
-              <tr><td colSpan={6} className="px-6 py-8 text-center text-slate-400">Không có đơn hàng nào.</td></tr>
+              <div className="mt-4 space-y-6 text-sm text-black">
+                {/* Order Meta */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-zinc-50 p-4 border border-black/10">
+                  <div>
+                    <span className="text-[10px] text-zinc-400 block font-mono">MÃ ĐƠN HÀNG</span>
+                    <strong className="font-mono text-xs">{orderDetail.id}</strong>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-zinc-400 block font-mono">TRẠNG THÁI HIỆN TẠI</span>
+                    <strong className="uppercase">{orderDetail.status || "—"}</strong>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-zinc-400 block font-mono">NGÀY ĐẶT HÀNG</span>
+                    <strong>
+                      {orderDetail.createdAt
+                        ? new Date(orderDetail.createdAt).toLocaleString("vi-VN")
+                        : "—"}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-zinc-400 block font-mono">TỔNG GIÁ TRỊ</span>
+                    <strong className="text-indigo-700 font-mono">
+                      {Number(orderDetail.totalAmount || 0).toLocaleString("vi-VN")} ₫
+                    </strong>
+                  </div>
+                </div>
+
+                {/* Customer & Shipping Info */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="border border-black/10 p-4 space-y-2">
+                    <h4 className="font-bold flex items-center gap-1.5 border-b border-black/10 pb-1.5 mb-2">
+                      <User className="w-4 h-4" /> Thông tin người đặt
+                    </h4>
+                    <p>Họ tên: <strong>{orderDetail.customerName || orderDetail.fullName}</strong></p>
+                    <p>Điện thoại: <strong>{orderDetail.customerPhone || orderDetail.phoneNumber}</strong></p>
+                    <p>Email: <strong>{orderDetail.email || "—"}</strong></p>
+                  </div>
+
+                  <div className="border border-black/10 p-4 space-y-2">
+                    <h4 className="font-bold flex items-center gap-1.5 border-b border-black/10 pb-1.5 mb-2">
+                      <Truck className="w-4 h-4" /> Địa chỉ giao hàng
+                    </h4>
+                    <p>Người nhận: <strong>{orderDetail.shippingName || orderDetail.customerName}</strong></p>
+                    <p>Điện thoại: <strong>{orderDetail.shippingPhone || orderDetail.customerPhone}</strong></p>
+                    <p>Địa chỉ: <strong>{orderDetail.shippingAddress || "Tại cửa hàng"}</strong></p>
+                  </div>
+                </div>
+
+                {/* Items List */}
+                <div>
+                  <h4 className="font-bold uppercase tracking-wider mb-2">Sản phẩm trong đơn</h4>
+                  <div className="border border-black overflow-x-auto">
+                    <table className="w-full text-xs text-left">
+                      <thead>
+                        <tr className="bg-zinc-100 border-b border-black font-mono">
+                          <th className="p-2.5">Sản phẩm / Biến thể</th>
+                          <th className="p-2.5 text-center">Số lượng</th>
+                          <th className="p-2.5 text-right">Đơn giá</th>
+                          <th className="p-2.5 text-right">Thành tiền</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-black/10">
+                        {orderDetail.items?.map((item: any, i: number) => (
+                          <tr key={item.id || i}>
+                            <td className="p-2.5">
+                              <p className="font-bold">{item.productName}</p>
+                              {item.variantName && (
+                                <span className="text-[10px] text-zinc-500 font-mono">
+                                  SKU: {item.sku} - {item.variantName}
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-2.5 text-center font-bold">{item.quantity}</td>
+                            <td className="p-2.5 text-right font-mono">
+                              {Number(item.price || 0).toLocaleString("vi-VN")} ₫
+                            </td>
+                            <td className="p-2.5 text-right font-bold font-mono">
+                              {Number((item.price || 0) * (item.quantity || 1)).toLocaleString("vi-VN")} ₫
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Status Update Control Section */}
+                <div className="border border-black p-4 space-y-3 bg-zinc-50">
+                  <h4 className="font-bold uppercase tracking-wider text-xs">Cập nhật trạng thái xử lý đơn</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {["PENDING", "PROCESSING", "SHIPPING", "DELIVERED", "CANCELLED"].map((st) => (
+                      <button
+                        key={st}
+                        onClick={() => updateStatusMutation.mutate({ id: selectedOrderId, status: st })}
+                        disabled={orderDetail.status === st || updateStatusMutation.isPending}
+                        className={`px-3 py-1.5 text-xs font-bold border transition-colors ${
+                          orderDetail.status === st
+                            ? "bg-black text-white border-black"
+                            : "border-black bg-white text-black hover:bg-zinc-200"
+                        }`}
+                      >
+                        {st}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-4 border-t border-black/10">
+                  <button
+                    type="button"
+                    onClick={() => setDetailModalOpen(false)}
+                    className="border border-black bg-black text-white px-5 py-2 text-xs font-bold uppercase tracking-wider hover:bg-zinc-800"
+                  >
+                    Đóng
+                  </button>
+                </div>
+              </div>
             )}
-          </tbody>
-        </table>
-      </div>
-
-      {selectedOrder && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl border p-6 w-full max-w-md space-y-4">
-            <h3 className="text-lg font-bold text-slate-900">Cập nhật Trạng Thái Đơn Hàng</h3>
-            <p className="text-sm text-slate-600">
-              Đơn hàng: <strong>{selectedOrder.orderCode}</strong><br/>
-              Khách hàng: {selectedOrder.customerName}
-            </p>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Trạng thái mới</label>
-              <select
-                value={newStatus}
-                onChange={(e) => setNewStatus(e.target.value)}
-                className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-              >
-                {STATUS_FLOW.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Ghi chú xử lý (optional)</label>
-              <textarea
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Ví dụ: Đã đóng gói xong và bàn giao cho đơn vị vận chuyển..."
-                className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                rows={3}
-              />
-            </div>
-
-            <div className="flex justify-end gap-3 pt-2">
-              <button onClick={() => setSelectedOrder(null)} className="px-4 py-2 rounded text-sm text-slate-600 hover:bg-slate-100">
-                Hủy
-              </button>
-              <button
-                onClick={() => updateStatusMutation.mutate()}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm font-medium"
-              >
-                Cập nhật
-              </button>
-            </div>
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

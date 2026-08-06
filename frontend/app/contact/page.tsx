@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { MapPin, Phone, Mail, Send, CheckCircle2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import PublicLayout from "@/shared/layouts/PublicLayout";
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
@@ -14,7 +15,8 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F2F2F2] dark:bg-zinc-900 text-black dark:text-white pt-[60px]">
+    <PublicLayout fullWidth>
+    <div className="min-h-screen bg-[#F2F2F2] dark:bg-zinc-900 text-black dark:text-white">
       {/* ===== HERO ARCHITECTURAL HEADER ===== */}
       <section className="border-b border-black dark:border-zinc-800 bg-[#C5C5C5] dark:bg-zinc-800 p-8 lg:p-16">
         <div className="max-w-[1920px] mx-auto">
@@ -180,5 +182,6 @@ export default function ContactPage() {
         </div>
       </section>
     </div>
+    </PublicLayout>
   );
 }

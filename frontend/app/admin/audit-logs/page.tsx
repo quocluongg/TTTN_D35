@@ -1,74 +1,181 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import http from "@/lib/http";
+import { adminApi } from "@/services/admin";
+import DataTable, { type Column } from "@/components/DataTable";
+import DateRangePicker, { type DateRange } from "@/components/DateRangePicker";
+import { FileText, Search, ShieldAlert } from "lucide-react";
 
-type AuditLog = {
-  id: number;
-  action: string;
-  entityType: string;
-  entityId: string;
-  summary: string;
+interface AuditLog {
+  id: string;
+  actorId?: string;
   actorEmail?: string;
+  actorName?: string;
+  action: string;
+  resourceType: string;
+  resourceId?: string;
+  detail?: string | Record<string, any>;
+  ipAddress?: string;
   createdAt: string;
-};
+}
 
-type AuditPageResponse = {
-  content: AuditLog[];
-  totalPages: number;
-  totalElements: number;
-};
+const RESOURCE_TYPES = [
+  "ALL",
+  "PRODUCT",
+  "CATEGORY",
+  "ORDER",
+  "USER",
+  "ROLE",
+  "CAMPAIGN",
+  "VOUCHER",
+  "INVENTORY",
+  "WARRANTY",
+  "SYSTEM_CONFIG",
+];
+
+const unwrap = (x: any) => x?.data ?? x;
 
 export default function AuditLogsPage() {
-  const { data, isLoading } = useQuery<AuditPageResponse>({
-    queryKey: ["admin-audit-logs"],
-    queryFn: async () => {
-      const res = await http.get("/admin/audit-logs?size=30");
-      return (res as any).data;
-    },
+  const [page, setPage] = useState(0);
+  const [searchAction, setSearchAction] = useState("");
+  const [resourceType, setResourceType] = useState("ALL");
+  const [range, setRange] = useState<DateRange>({ from: "", to: "" });
+
+  const handleSearchActionChange = (val: string) => {
+    setSearchAction(val);
+    setPage(0);
+  };
+
+  const handleResourceTypeChange = (val: string) => {
+    setResourceType(val);
+    setPage(0);
+  };
+
+  const handleRangeChange = (val: DateRange) => {
+    setRange(val);
+    setPage(0);
+  };
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-audit-logs", page, searchAction, resourceType, range],
+    queryFn: () =>
+      adminApi.auditLogs({
+        page,
+        size: 20,
+        ...(searchAction ? { action: searchAction } : {}),
+        ...(resourceType !== "ALL" ? { resourceType } : {}),
+        ...range,
+      }),
   });
 
+  const payload: any = unwrap(data) || {};
+  const rows: AuditLog[] = Array.isArray(payload) ? payload : payload.content || [];
+  const totalPages = payload.totalPages || 0;
+
+  const columns: Column<AuditLog>[] = [
+    {
+      key: "actor",
+      header: "Người thực hiện",
+      cell: (r) => (
+        <div>
+          <p className="font-medium text-black">{r.actorName || r.actorEmail || "Hệ thống"}</p>
+          {r.actorEmail && <span className="font-mono text-xs text-zinc-500">{r.actorEmail}</span>}
+        </div>
+      ),
+    },
+    {
+      key: "action",
+      header: "Hành động",
+      cell: (r) => <span className="font-mono text-xs font-bold text-black uppercase">{r.action}</span>,
+    },
+    {
+      key: "resource",
+      header: "Đối tượng",
+      cell: (r) => (
+        <div>
+          <span className="inline-flex border border-black bg-zinc-100 px-2 py-0.5 text-[11px] font-bold">
+            {r.resourceType}
+          </span>
+          {r.resourceId && <p className="font-mono text-xs text-zinc-500 mt-0.5">ID: {r.resourceId}</p>}
+        </div>
+      ),
+    },
+    {
+      key: "detail",
+      header: "Chi tiết",
+      cell: (r) => (
+        <span className="max-w-xs truncate block text-xs text-zinc-600 font-mono">
+          {typeof r.detail === "object" ? JSON.stringify(r.detail) : r.detail || "—"}
+        </span>
+      ),
+    },
+    {
+      key: "createdAt",
+      header: "Thời gian",
+      cell: (r) => (
+        <span className="text-xs font-mono text-zinc-500">
+          {r.createdAt ? new Date(r.createdAt).toLocaleString("vi-VN") : "—"}
+        </span>
+      ),
+    },
+  ];
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Nhật ký Hoạt động (Audit Trail)</h1>
-        <p className="text-sm text-slate-500">Truy vết chi tiết mọi thao tác quản trị, thay đổi tồn kho, đơn hàng và cấu hình.</p>
+    <section className="space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-black pb-5">
+        <div>
+          <h1 className="text-[28px] font-medium tracking-tight flex items-center gap-2">
+            <FileText size={26} /> Nhật ký hệ thống (Audit Logs)
+          </h1>
+          <p className="mt-1 text-sm text-zinc-600">
+            Truy xuất lịch sử thao tác, thay đổi dữ liệu và nhật ký truy cập (Chế độ chỉ đọc).
+          </p>
+        </div>
+
+        <DateRangePicker value={range} onChange={handleRangeChange} />
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
-        <table className="w-full text-left text-sm text-slate-700">
-          <thead className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-            <tr>
-              <th className="px-6 py-3">Tài khoản thực hiện</th>
-              <th className="px-6 py-3">Hành động</th>
-              <th className="px-6 py-3">Thực thể (Entity)</th>
-              <th className="px-6 py-3">Nội dung tóm tắt</th>
-              <th className="px-6 py-3">Thời gian</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200">
-            {isLoading ? (
-              <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-400">Đang tải nhật ký...</td></tr>
-            ) : data?.content?.length ? (
-              data.content.map((log) => (
-                <tr key={log.id} className="hover:bg-slate-50">
-                  <td className="px-6 py-4 font-semibold text-slate-900">{log.actorEmail || "SYSTEM"}</td>
-                  <td className="px-6 py-4">
-                    <span className="px-2 py-0.5 rounded text-xs font-bold font-mono bg-slate-100 border text-slate-800">
-                      {log.action}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-xs font-mono text-slate-600">{log.entityType} ({log.entityId})</td>
-                  <td className="px-6 py-4">{log.summary}</td>
-                  <td className="px-6 py-4 text-xs text-slate-500">{new Date(log.createdAt).toLocaleString("vi-VN")}</td>
-                </tr>
-              ))
-            ) : (
-              <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-400">Chưa có nhật ký hoạt động nào.</td></tr>
-            )}
-          </tbody>
-        </table>
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-4 bg-white border border-black p-4">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+          <input
+            type="text"
+            placeholder="Tìm theo hành động (VD: CREATE_PRODUCT)..."
+            value={searchAction}
+            onChange={(e) => handleSearchActionChange(e.target.value)}
+            className="w-full border border-black pl-9 pr-3 py-2 text-sm rounded-none"
+          />
+        </div>
+
+        <div className="flex items-center gap-2 text-sm">
+          <span className="font-medium">Loại tài nguyên:</span>
+          <select
+            value={resourceType}
+            onChange={(e) => handleResourceTypeChange(e.target.value)}
+            className="border border-black px-3 py-2 text-sm rounded-none bg-white"
+          >
+            {RESOURCE_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
-    </div>
+
+      {/* Audit Log Table */}
+      <DataTable
+        columns={columns}
+        rows={rows}
+        loading={isLoading}
+        page={page}
+        totalPages={totalPages}
+        onPageChange={(p) => setPage(p)}
+        rowKey={(r) => r.id || Math.random()}
+        empty="Chưa ghi nhận nhật ký thao tác nào."
+      />
+    </section>
   );
 }

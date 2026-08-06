@@ -2,70 +2,57 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { decodeJwt } from "jose";
 
+const protectedPrefixes = ["/account", "/orders", "/checkout", "/cart"];
+const authOnlyPaths = ["/login", "/signup", "/forgot-password", "/reset-password"];
+
 export const config = {
-  matcher: ["/admin/:path*", "/login", "/signup", "/account/:path*", "/account"],
+  matcher: ["/admin/:path*", "/login", "/signup", "/forgot-password", "/reset-password", "/account/:path*", "/account", "/orders/:path*", "/checkout/:path*", "/cart/:path*", "/cart"],
 };
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
   const token = request.cookies.get("token")?.value;
-  const userCookie = request.cookies.get("user")?.value;
+  const isAdmin = pathname.startsWith("/admin");
+  const needsAuth = protectedPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 
-  // Routes yêu cầu đăng nhập để xem
-  const protectedPaths = ["/account"];
-  const isProtectedPath = protectedPaths.some((p) => pathname === p || pathname.startsWith(p + "/"));
-
-  // Routes chỉ dành cho khách (đã đăng nhập sẽ redirect về /)
-  const authOnlyPaths = ["/login", "/signup"];
-  const isAuthOnlyPath = authOnlyPaths.includes(pathname);
-
-  const isAdminPath = pathname.startsWith("/admin");
-
-  if (token) {
-    let userRole = "";
-
-    try {
-      const payload = decodeJwt(token);
-      userRole = (payload.role as string) || "";
-    } catch {
-      // token malformed
+  if (!token) {
+    if (isAdmin || needsAuth) {
+      return NextResponse.redirect(new URL(`/login?redirect=${encodeURIComponent(pathname)}`, request.url));
     }
-
-    // Nếu không lấy được role từ JWT thì đọc từ cookie user
-    if (!userRole && userCookie) {
-      try {
-        const decodedCookie = decodeURIComponent(userCookie);
-        const parsedUser = JSON.parse(decodedCookie);
-        userRole = parsedUser.role || "";
-      } catch {
-        // cookie malformed
-      }
-    }
-
-    // Đã đăng nhập → không cho vào trang login/signup
-    if (isAuthOnlyPath) {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
-
-    // Đã đăng nhập nhưng không phải admin → không cho vào /admin
-    // (Bypass check để cho phép xem giao diện admin)
-    // if (isAdminPath && userRole !== "admin" && userRole !== "ADMIN") {
-    //   return NextResponse.redirect(new URL("/", request.url));
-    // }
-
     return NextResponse.next();
   }
 
-  // Chưa đăng nhập → cho phép xem giao diện /admin theo yêu cầu
-  // if (isAdminPath) {
-  //   return NextResponse.redirect(new URL("/login", request.url));
-  // }
+  if (authOnlyPaths.includes(pathname)) return NextResponse.redirect(new URL("/", request.url));
 
-  // Chưa đăng nhập → chặn /account
-  if (isProtectedPath) {
-    return NextResponse.redirect(new URL("/login?redirect=" + encodeURIComponent(pathname), request.url));
+  if (isAdmin) {
+    let roleStr = "";
+    try {
+      const payload: any = decodeJwt(token);
+      const rawRole = payload.role ?? payload.roles;
+      if (Array.isArray(rawRole)) {
+        roleStr = rawRole.join(",").toUpperCase();
+      } else {
+        roleStr = String(rawRole ?? "").toUpperCase();
+      }
+    } catch {
+      /* fallback parse */
+    }
+
+    if (!roleStr) {
+      try {
+        const userCookie = JSON.parse(decodeURIComponent(request.cookies.get("user")?.value ?? "{}"));
+        roleStr = String(userCookie.role ?? "").toUpperCase();
+      } catch {
+        /* no role */
+      }
+    }
+
+    const hasPermission = roleStr.includes("ADMIN") || roleStr.includes("EMPLOYEE");
+    if (!hasPermission) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
   }
 
   return NextResponse.next();
 }
+

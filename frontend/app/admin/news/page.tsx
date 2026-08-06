@@ -1,66 +1,295 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Search, Newspaper, Edit, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import ResourcePage from "@/components/admin/ResourcePage";
+import { adminNewsService } from "@/services/admin/adminNewsService";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { notifyError, notifySuccess } from "@/components/Notify";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import StatusBadge from "@/components/StatusBadge";
 
-const MOCK_NEWS = [
-  { id: "NEWS-01", title: "Huawei Pura 90s Pro và Pro Max ra mắt với camera tele 200MP", author: "BTV Kỹ Thuật", date: "18/07/2026", status: "published" },
-  { id: "NEWS-02", title: "Hướng dẫn chọn mua đồng hồ vạn năng số cho kỹ sư điện tử", author: "Chuyên Gia Kỹ Thuật", date: "15/07/2026", status: "published" },
-  { id: "NEWS-03", title: "ASUS ra mắt dải sản phẩm laptop đồ họa ProArt thế hệ mới", author: "Tin Công Nghệ", date: "10/07/2026", status: "published" },
-];
+type NewsRow = Record<string, any>;
 
 export default function AdminNewsPage() {
+  const queryClient = useQueryClient();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deleteConfirmItem, setDeleteConfirmItem] = useState<NewsRow | null>(null);
+  const [editingNews, setEditingNews] = useState<NewsRow | null>(null);
+
+  // Form states for creating/editing news article
+  const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
+  const [thumbnail, setThumbnail] = useState("");
+  const [summary, setSummary] = useState("");
+  const [content, setContent] = useState("");
+  const [tags, setTags] = useState("");
+  const [status, setStatus] = useState("DRAFT");
+
+  const resetForm = () => {
+    setTitle("");
+    setSlug("");
+    setThumbnail("");
+    setSummary("");
+    setContent("");
+    setTags("");
+    setStatus("DRAFT");
+    setEditingNews(null);
+  };
+
+  const createMutation = useMutation({
+    mutationFn: (data: any) => adminNewsService.create(data),
+    onSuccess: () => {
+      notifySuccess("Tạo bài viết tin tức thành công!");
+      queryClient.invalidateQueries({ queryKey: ["admin-news"] });
+      setModalOpen(false);
+      resetForm();
+    },
+    onError: (err: any) => {
+      notifyError(err?.message || "Không thể tạo bài viết.");
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      adminNewsService.update(id, data),
+    onSuccess: () => {
+      notifySuccess("Cập nhật bài viết thành công!");
+      queryClient.invalidateQueries({ queryKey: ["admin-news"] });
+      setModalOpen(false);
+      resetForm();
+    },
+    onError: (err: any) => {
+      notifyError(err?.message || "Không thể cập nhật bài viết.");
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => adminNewsService.delete(id),
+    onSuccess: () => {
+      notifySuccess("Xóa bài viết thành công!");
+      queryClient.invalidateQueries({ queryKey: ["admin-news"] });
+      setDeleteConfirmItem(null);
+    },
+    onError: (err: any) => {
+      notifyError(err?.message || "Không thể xóa bài viết.");
+    },
+  });
+
+  const toggleStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
+      adminNewsService.status(id, { status }),
+    onSuccess: () => {
+      notifySuccess("Cập nhật trạng thái xuất bản thành công!");
+      queryClient.invalidateQueries({ queryKey: ["admin-news"] });
+    },
+    onError: (err: any) => {
+      notifyError(err?.message || "Không thể thay đổi trạng thái.");
+    },
+  });
+
+  const handleOpenCreate = () => {
+    resetForm();
+    setModalOpen(true);
+  };
+
+  const handleOpenEdit = (row: NewsRow) => {
+    setEditingNews(row);
+    setTitle(row.title || "");
+    setSlug(row.slug || "");
+    setThumbnail(row.thumbnail || "");
+    setSummary(row.summary || "");
+    setContent(row.content || "");
+    setTags(row.tags || "");
+    setStatus(row.status || "DRAFT");
+    setModalOpen(true);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const payload = {
+      title,
+      slug: slug || undefined,
+      thumbnail,
+      summary,
+      content,
+      tags: tags ? tags.split(",").map((t) => t.trim()).filter(Boolean).join(",") : undefined,
+      status,
+    };
+
+    if (editingNews) {
+      updateMutation.mutate({ id: editingNews.id, data: payload });
+    } else {
+      createMutation.mutate(payload);
+    }
+  };
+
+  const customNewsActions = (row: NewsRow) => (
+    <button
+      onClick={() =>
+        toggleStatusMutation.mutate({
+          id: row.id,
+          status: row.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED",
+        })
+      }
+      className={`border px-2 py-1 text-xs font-semibold ${
+        row.status === "PUBLISHED"
+          ? "border-amber-600 text-amber-600 hover:bg-amber-50"
+          : "border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+      }`}
+    >
+      {row.status === "PUBLISHED" ? "Gỡ bài" : "Đăng bài"}
+    </button>
+  );
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-lg border border-slate-200 shadow-xs">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Quản Lý Tin Tức & Bài Viết Kỹ Thuật</h1>
-          <p className="text-sm text-slate-500 mt-1">Đăng tải bài viết đánh giá thiết bị, tin công nghệ và hướng dẫn</p>
-        </div>
-        <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          <span>Viết Bài Mới</span>
-        </Button>
-      </div>
+      <ResourcePage
+        title="Tin tức & Sự kiện"
+        description="Biên tập bài viết, xuất bản tin tức công nghệ và cập nhật sự kiện khuyến mãi cho trang chủ."
+        queryKey="admin-news"
+        fetcher={adminNewsService.list}
+        fields={[
+          { key: "title", label: "Tiêu đề bài viết" },
+          { key: "slug", label: "Slug" },
+          { key: "tags", label: "Tags" },
+          { key: "status", label: "Trạng thái" },
+          { key: "createdAt", label: "Ngày tạo" },
+        ]}
+        onCreate={handleOpenCreate}
+        onEdit={handleOpenEdit}
+        onDelete={(row) => setDeleteConfirmItem(row)}
+        customActions={customNewsActions}
+      />
 
-      <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-xs font-mono uppercase text-slate-500">
-              <th className="p-4">Mã Bài</th>
-              <th className="p-4">Tiêu Đề Bài Viết</th>
-              <th className="p-4">Tác Giả</th>
-              <th className="p-4">Ngày Đăng</th>
-              <th className="p-4">Trạng Thái</th>
-              <th className="p-4 text-right">Thao Tác</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200 text-sm">
-            {MOCK_NEWS.map((n) => (
-              <tr key={n.id} className="hover:bg-slate-50 transition-colors">
-                <td className="p-4 font-mono text-xs font-semibold text-slate-600">{n.id}</td>
-                <td className="p-4 font-medium text-slate-900 max-w-md truncate">{n.title}</td>
-                <td className="p-4 text-slate-600">{n.author}</td>
-                <td className="p-4 font-mono text-xs text-slate-500">{n.date}</td>
-                <td className="p-4">
-                  <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full">
-                    Đã xuất bản
-                  </span>
-                </td>
-                <td className="p-4 text-right space-x-2">
-                  <button className="p-1 text-blue-600 hover:text-blue-800 rounded">
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button className="p-1 text-red-600 hover:text-red-800 rounded">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* Create/Edit News Modal */}
+      {modalOpen && (
+        <Dialog open={modalOpen} onOpenChange={(v) => !v && setModalOpen(false)}>
+          <DialogContent className="max-w-2xl border-2 border-black bg-white p-6 max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-bold uppercase tracking-wider">
+                {editingNews ? "Chỉnh sửa bài viết" : "Viết bài mới"}
+              </DialogTitle>
+            </DialogHeader>
+
+            <form onSubmit={handleSubmit} className="mt-4 space-y-4 text-sm text-black">
+              <label className="block font-semibold">
+                Tiêu đề bài viết <span className="text-red-500">*</span>
+                <input
+                  required
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="mt-1 block w-full border border-black px-3 py-2 text-sm bg-white"
+                  placeholder="Ví dụ: Đánh giá chi tiết Laptop ASUS Zenbook 14 OLED"
+                />
+              </label>
+
+              <div className="grid grid-cols-2 gap-4">
+                <label className="block font-semibold">
+                  Đường dẫn tĩnh (Slug)
+                  <input
+                    type="text"
+                    value={slug}
+                    onChange={(e) => setSlug(e.target.value)}
+                    className="mt-1 block w-full border border-black px-3 py-2 text-sm bg-white"
+                    placeholder="Tự động sinh nếu để trống"
+                  />
+                </label>
+
+                <label className="block font-semibold">
+                  Ảnh đại diện (Thumbnail URL)
+                  <input
+                    type="text"
+                    value={thumbnail}
+                    onChange={(e) => setThumbnail(e.target.value)}
+                    className="mt-1 block w-full border border-black px-3 py-2 text-sm bg-white"
+                    placeholder="https://..."
+                  />
+                </label>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <label className="block font-semibold">
+                  Thẻ phân loại (Tags - cách nhau bởi dấu phẩy)
+                  <input
+                    type="text"
+                    value={tags}
+                    onChange={(e) => setTags(e.target.value)}
+                    className="mt-1 block w-full border border-black px-3 py-2 text-sm bg-white"
+                    placeholder="Zenbook, ASUS, Review"
+                  />
+                </label>
+
+                <label className="block font-semibold">
+                  Trạng thái hiển thị
+                  <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    className="mt-1 block w-full border border-black px-3 py-2 text-sm bg-white"
+                  >
+                    <option value="DRAFT">DRAFT (Nháp)</option>
+                    <option value="PUBLISHED">PUBLISHED (Công khai)</option>
+                  </select>
+                </label>
+              </div>
+
+              <label className="block font-semibold">
+                Tóm tắt ngắn (Summary) <span className="text-red-500">*</span>
+                <textarea
+                  required
+                  rows={2}
+                  value={summary}
+                  onChange={(e) => setSummary(e.target.value)}
+                  className="mt-1 block w-full border border-black px-3 py-2 text-sm bg-white"
+                  placeholder="Viết tóm tắt hiển thị ở danh sách tin tức..."
+                />
+              </label>
+
+              <label className="block font-semibold">
+                Nội dung chi tiết (Markdown / HTML) <span className="text-red-500">*</span>
+                <textarea
+                  required
+                  rows={8}
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="mt-1 block w-full border border-black px-3 py-2 text-xs font-mono bg-white"
+                  placeholder="Viết nội dung bài viết..."
+                />
+              </label>
+
+              <div className="flex justify-end gap-2 pt-4 border-t border-black/10">
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="border border-black px-4 py-2 text-sm"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={createMutation.isPending || updateMutation.isPending}
+                  className="bg-black text-white px-5 py-2 text-sm hover:bg-zinc-800 disabled:opacity-50"
+                >
+                  {createMutation.isPending || updateMutation.isPending ? "Đang lưu..." : "Xác nhận"}
+                </button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={!!deleteConfirmItem}
+        onOpenChange={(v) => !v && setDeleteConfirmItem(null)}
+        title="Xác nhận xóa bài viết?"
+        description={`Hành động này sẽ xóa vĩnh viễn tin tức "${deleteConfirmItem?.title}". Bạn không thể khôi phục lại dữ liệu này sau khi xóa.`}
+        confirmText="Xóa vĩnh viễn"
+        onConfirm={() => {
+          if (deleteConfirmItem) deleteMutation.mutate(deleteConfirmItem.id);
+        }}
+      />
     </div>
   );
 }
