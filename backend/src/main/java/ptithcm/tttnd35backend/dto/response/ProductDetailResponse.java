@@ -47,4 +47,7 @@ public class ProductDetailResponse {
 
     @Builder.Default
     private List<ProductImageResponse> images = new ArrayList<>();
+
+    @Builder.Default
+    private List<ProductSpecificationResponse> specifications = new ArrayList<>();
 }
