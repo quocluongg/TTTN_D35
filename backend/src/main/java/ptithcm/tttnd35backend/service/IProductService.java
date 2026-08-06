@@ -11,19 +11,20 @@ import ptithcm.tttnd35backend.dto.response.pagination.PageResponse;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface IProductService {
 
-    // Public - chỉ trả sản phẩm đang active.
+    // Public - chỉ trả sản phẩm đang active. specs: map specKey/specValue lọc AND (vd RAM=16GB & CPU=i5).
     PageResponse<ProductListItemResponse> getList(
-            String categorySlug, String brand, BigDecimal minPrice, BigDecimal maxPrice,
-            String search, String specKey, String specValue, String sortBy, int page, int size);
+            String categorySlug, String brand, String useCase, BigDecimal minPrice, BigDecimal maxPrice,
+            String search, Map<String, String> specs, String sortBy, int page, int size);
 
     // Admin - trả cả sản phẩm đang bị ẩn, để còn thấy mà bật lại/sửa. Cùng bộ filter với getList().
     PageResponse<ProductListItemResponse> getListForAdmin(
-            String categorySlug, String brand, BigDecimal minPrice, BigDecimal maxPrice,
-            String search, String specKey, String specValue, String sortBy, int page, int size);
+            String categorySlug, String brand, String useCase, BigDecimal minPrice, BigDecimal maxPrice,
+            String search, Map<String, String> specs, String sortBy, int page, int size);
 
     // Public - chỉ trả sản phẩm đang active.
     ProductDetailResponse getDetailBySlug(String slug);
@@ -45,5 +46,9 @@ public interface IProductService {
 
     ProductVariantResponse updateVariant(UUID productId, UUID variantId, ProductVariantAdminRequest request);
 
+    // Soft-delete (khuyến nghị dùng thay deleteVariant khi variant đã từng bán, vd hết hàng dài hạn).
+    ProductVariantResponse setVariantActive(UUID productId, UUID variantId, boolean active);
+
+    // Xóa cứng - chỉ cho phép khi variant chưa từng phát sinh đơn hàng nào (xem ProductServiceImpl).
     void deleteVariant(UUID productId, UUID variantId);
 }

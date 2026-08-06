@@ -166,9 +166,25 @@ public class OrderServiceImpl implements IOrderService {
             orderRepository.save(order);
             if (request.getStatus() == OrderStatus.COMPLETED) {
                 warrantyService.generateWarrantyCardsFromOrder(order);
+                // Chỉ cộng "đã bán" khi đơn thực sự hoàn tất (giao xong), không cộng lúc mới PAID,
+                // vì đơn PAID vẫn có thể bị hoàn/huỷ sau đó -> tránh sai lệch số liệu.
+                incrementSoldQuantity(orderId);
             }
         }
         return toResponse(order, orderItemRepository.findAllByOrderId(orderId));
+    }
+
+    // Cộng dồn Product.soldQuantity theo từng dòng OrderItem của đơn vừa COMPLETED (atomic UPDATE
+    // ở DB cho từng dòng, không load cả entity Product).
+    private void incrementSoldQuantity(UUID orderId) {
+        List<OrderItem> items = orderItemRepository.findAllByOrderId(orderId);
+        Map<UUID, Integer> qtyByProduct = new LinkedHashMap<>();
+        for (OrderItem item : items) {
+            qtyByProduct.merge(item.getProductId(), item.getQuantity(), Integer::sum);
+        }
+        for (Map.Entry<UUID, Integer> entry : qtyByProduct.entrySet()) {
+            productRepository.incrementSoldQuantity(entry.getKey(), entry.getValue());
+        }
     }
 
     // ===== Core: tạo đơn (dùng chung cho cả checkout từ Cart lẫn Guest) =====

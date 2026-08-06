@@ -1,6 +1,7 @@
 package ptithcm.tttnd35backend.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -26,6 +27,7 @@ import ptithcm.tttnd35backend.mapper.ProductImageMapper;
 import ptithcm.tttnd35backend.mapper.ProductMapper;
 import ptithcm.tttnd35backend.mapper.ProductVariantMapper;
 import ptithcm.tttnd35backend.repository.ICategoryRepository;
+import ptithcm.tttnd35backend.repository.IOrderItemRepository;
 import ptithcm.tttnd35backend.repository.IProductImageRepository;
 import ptithcm.tttnd35backend.repository.IProductRepository;
 import ptithcm.tttnd35backend.repository.IProductVariantRepository;
@@ -53,6 +55,7 @@ public class ProductServiceImpl implements IProductService {
     private final IProductImageRepository productImageRepository;
     private final IProductVariantRepository productVariantRepository;
     private final ICategoryRepository categoryRepository;
+    private final IOrderItemRepository orderItemRepository;
 
     private final ProductMapper productMapper;
     private final ProductImageMapper productImageMapper;
@@ -65,21 +68,21 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     public PageResponse<ProductListItemResponse> getList(
-            String categorySlug, String brand, BigDecimal minPrice, BigDecimal maxPrice,
-            String search, String specKey, String specValue, String sortBy, int page, int size) {
-        return buildPageResponse(true, categorySlug, brand, minPrice, maxPrice, search, specKey, specValue, sortBy, page, size);
+            String categorySlug, String brand, String useCase, BigDecimal minPrice, BigDecimal maxPrice,
+            String search, Map<String, String> specs, String sortBy, int page, int size) {
+        return buildPageResponse(true, categorySlug, brand, useCase, minPrice, maxPrice, search, specs, sortBy, page, size);
     }
 
     @Override
     public PageResponse<ProductListItemResponse> getListForAdmin(
-            String categorySlug, String brand, BigDecimal minPrice, BigDecimal maxPrice,
-            String search, String specKey, String specValue, String sortBy, int page, int size) {
-        return buildPageResponse(false, categorySlug, brand, minPrice, maxPrice, search, specKey, specValue, sortBy, page, size);
+            String categorySlug, String brand, String useCase, BigDecimal minPrice, BigDecimal maxPrice,
+            String search, Map<String, String> specs, String sortBy, int page, int size) {
+        return buildPageResponse(false, categorySlug, brand, useCase, minPrice, maxPrice, search, specs, sortBy, page, size);
     }
 
     private PageResponse<ProductListItemResponse> buildPageResponse(
-            boolean onlyActive, String categorySlug, String brand, BigDecimal minPrice, BigDecimal maxPrice,
-            String search, String specKey, String specValue, String sortBy, int page, int size) {
+            boolean onlyActive, String categorySlug, String brand, String useCase, BigDecimal minPrice, BigDecimal maxPrice,
+            String search, Map<String, String> specs, String sortBy, int page, int size) {
 
         boolean sortByPrice = "price-asc".equals(sortBy) || "price-desc".equals(sortBy);
 
@@ -87,8 +90,9 @@ public class ProductServiceImpl implements IProductService {
                 onlyActive ? ProductSpecifications.isActive() : Specification.allOf(),
                 nonNull(resolveCategorySpec(categorySlug)),
                 nonNull(ProductSpecifications.hasBrand(brand)),
+                nonNull(ProductSpecifications.hasUseCase(useCase)),
                 nonNull(ProductSpecifications.nameContains(search)),
-                nonNull(ProductSpecifications.hasSpec(specKey, specValue)),
+                nonNull(ProductSpecifications.hasAllSpecs(specs)),
                 nonNull(ProductSpecifications.priceFromBetween(minPrice, maxPrice)),
                 sortByPrice ? ProductSpecifications.orderByMinPrice("price-asc".equals(sortBy)) : Specification.allOf()
         );
@@ -146,7 +150,7 @@ public class ProductServiceImpl implements IProductService {
     private ProductDetailResponse buildDetailResponse(Product product) {
         ProductDetailResponse response = productMapper.toDetailResponse(product);
         response.setCustomTabs(CustomTabJsonUtil.toResponseList(product.getCustomTabs()));
-        
+
         // Tránh N+1 hoặc crash do Category ngưng active trong Breadcrumb
         try {
             if (product.getCategory() != null) {
@@ -258,7 +262,30 @@ public class ProductServiceImpl implements IProductService {
         productVariantMapper.updateEntityFromRequest(request, variant);
         variant.setVariantName(buildVariantName(request.getAttributes()));
 
-        return productVariantMapper.toResponse(productVariantRepository.save(variant));
+        try {
+            return productVariantMapper.toResponse(productVariantRepository.save(variant));
+        } catch (DataIntegrityViolationException e) {
+            throw new BadRequestException("Đã tồn tại biến thể khác đang active với cùng thuộc tính này");
+        }
+    }
+
+    @Override
+    @Transactional
+    public ProductVariantResponse setVariantActive(UUID productId, UUID variantId, boolean active) {
+        getOwnedProduct(productId);
+        ProductVariant variant = productVariantRepository.findByIdAndProductId(variantId, productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy biến thể"));
+
+        if (!active && productVariantRepository.countByProductId(productId) <= 1) {
+            throw new BadRequestException("Sản phẩm phải có ít nhất 1 biến thể đang active");
+        }
+
+        variant.setActive(active);
+        try {
+            return productVariantMapper.toResponse(productVariantRepository.save(variant));
+        } catch (DataIntegrityViolationException e) {
+            throw new BadRequestException("Đã có biến thể khác đang active với cùng thuộc tính này, không thể bật lại");
+        }
     }
 
     @Override
@@ -270,6 +297,13 @@ public class ProductServiceImpl implements IProductService {
 
         if (productVariantRepository.countByProductId(productId) <= 1) {
             throw new BadRequestException("Sản phẩm phải có ít nhất 1 biến thể, không thể xóa biến thể cuối cùng");
+        }
+
+        // order_items.variant_id không có ON DELETE CASCADE -> xóa cứng biến thể đã từng bán sẽ vỡ FK.
+        // Bắt trước ở đây để trả message rõ ràng thay vì để 500 mù mờ; hướng admin dùng setVariantActive.
+        if (orderItemRepository.existsByVariantId(variantId)) {
+            throw new BadRequestException(
+                    "Biến thể đã phát sinh đơn hàng, không thể xóa cứng. Vui lòng dùng chức năng ẩn (tắt active) thay thế");
         }
 
         productVariantRepository.delete(variant);
@@ -296,7 +330,11 @@ public class ProductServiceImpl implements IProductService {
         variant.setProductId(product.getId());
         variant.setVariantName(buildVariantName(request.getAttributes()));
         variant.setSku(generateSku(category));
-        return productVariantRepository.save(variant);
+        try {
+            return productVariantRepository.save(variant);
+        } catch (DataIntegrityViolationException e) {
+            throw new BadRequestException("Đã tồn tại biến thể khác đang active với cùng thuộc tính này");
+        }
     }
 
     private String buildVariantName(Map<String, String> attributes) {
