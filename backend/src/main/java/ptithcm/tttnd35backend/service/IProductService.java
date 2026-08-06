@@ -2,10 +2,12 @@ package ptithcm.tttnd35backend.service;
 
 import org.springframework.web.multipart.MultipartFile;
 import ptithcm.tttnd35backend.dto.request.ProductAdminRequest;
+import ptithcm.tttnd35backend.dto.request.ProductSpecificationAdminRequest;
 import ptithcm.tttnd35backend.dto.request.ProductVariantAdminRequest;
 import ptithcm.tttnd35backend.dto.response.ProductDetailResponse;
 import ptithcm.tttnd35backend.dto.response.ProductImageResponse;
 import ptithcm.tttnd35backend.dto.response.ProductListItemResponse;
+import ptithcm.tttnd35backend.dto.response.ProductSpecificationResponse;
 import ptithcm.tttnd35backend.dto.response.ProductVariantResponse;
 import ptithcm.tttnd35backend.dto.response.pagination.PageResponse;
 
@@ -51,4 +53,12 @@ public interface IProductService {
 
     // Xóa cứng - chỉ cho phép khi variant chưa từng phát sinh đơn hàng nào (xem ProductServiceImpl).
     void deleteVariant(UUID productId, UUID variantId);
+
+    // ===== Specification (EAV) =====
+
+    List<ProductSpecificationResponse> getSpecifications(UUID productId);
+
+    // Replace-all: xóa hết spec cũ rồi ghi lại toàn bộ danh sách mới trong 1 transaction.
+    // Mỗi dòng resolve key theo attributeKeyId (đã có) hoặc attributeName (tự tạo key mới nếu chưa có).
+    List<ProductSpecificationResponse> replaceSpecifications(UUID productId, List<ProductSpecificationAdminRequest> requests);
 }

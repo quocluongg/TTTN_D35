@@ -11,15 +11,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import ptithcm.tttnd35backend.dto.request.ProductAdminRequest;
+import ptithcm.tttnd35backend.dto.request.ProductSpecificationAdminRequest;
 import ptithcm.tttnd35backend.dto.request.ProductVariantAdminRequest;
 import ptithcm.tttnd35backend.dto.response.ProductDetailResponse;
 import ptithcm.tttnd35backend.dto.response.ProductImageResponse;
 import ptithcm.tttnd35backend.dto.response.ProductListItemResponse;
+import ptithcm.tttnd35backend.dto.response.ProductSpecificationResponse;
 import ptithcm.tttnd35backend.dto.response.ProductVariantResponse;
 import ptithcm.tttnd35backend.dto.response.pagination.PageResponse;
 import ptithcm.tttnd35backend.entity.Category;
 import ptithcm.tttnd35backend.entity.Product;
+import ptithcm.tttnd35backend.entity.ProductAttributeKey;
 import ptithcm.tttnd35backend.entity.ProductImage;
+import ptithcm.tttnd35backend.entity.ProductSpecification;
 import ptithcm.tttnd35backend.entity.ProductVariant;
 import ptithcm.tttnd35backend.exception.BadRequestException;
 import ptithcm.tttnd35backend.exception.ResourceNotFoundException;
@@ -28,8 +32,10 @@ import ptithcm.tttnd35backend.mapper.ProductMapper;
 import ptithcm.tttnd35backend.mapper.ProductVariantMapper;
 import ptithcm.tttnd35backend.repository.ICategoryRepository;
 import ptithcm.tttnd35backend.repository.IOrderItemRepository;
+import ptithcm.tttnd35backend.repository.IProductAttributeKeyRepository;
 import ptithcm.tttnd35backend.repository.IProductImageRepository;
 import ptithcm.tttnd35backend.repository.IProductRepository;
+import ptithcm.tttnd35backend.repository.IProductSpecificationRepository;
 import ptithcm.tttnd35backend.repository.IProductVariantRepository;
 import ptithcm.tttnd35backend.repository.projection.ProductMinPriceProjection;
 import ptithcm.tttnd35backend.repository.spec.ProductSpecifications;
@@ -56,6 +62,8 @@ public class ProductServiceImpl implements IProductService {
     private final IProductVariantRepository productVariantRepository;
     private final ICategoryRepository categoryRepository;
     private final IOrderItemRepository orderItemRepository;
+    private final IProductSpecificationRepository productSpecificationRepository;
+    private final IProductAttributeKeyRepository productAttributeKeyRepository;
 
     private final ProductMapper productMapper;
     private final ProductImageMapper productImageMapper;
@@ -165,6 +173,8 @@ public class ProductServiceImpl implements IProductService {
                 productVariantRepository.findAllByProductId(product.getId())));
         response.setImages(productImageMapper.toResponseList(
                 productImageRepository.findAllByProductIdOrderBySortOrderAsc(product.getId())));
+        response.setSpecifications(toSpecificationResponseList(
+                productSpecificationRepository.findAllByProductIdWithKey(product.getId())));
         return response;
     }
 
@@ -386,5 +396,73 @@ public class ProductServiceImpl implements IProductService {
             catIds.add(child.getId());
         }
         return ProductSpecifications.hasCategoryIds(catIds);
+    }
+
+    // ===== Specification (EAV) =====
+
+    @Override
+    public List<ProductSpecificationResponse> getSpecifications(UUID productId) {
+        getOwnedProduct(productId);
+        return toSpecificationResponseList(productSpecificationRepository.findAllByProductIdWithKey(productId));
+    }
+
+    @Override
+    @Transactional
+    public List<ProductSpecificationResponse> replaceSpecifications(
+            UUID productId, List<ProductSpecificationAdminRequest> requests) {
+        getOwnedProduct(productId);
+
+        productSpecificationRepository.deleteAllByProductId(productId);
+
+        List<ProductSpecification> toSave = new ArrayList<>();
+        for (ProductSpecificationAdminRequest request : requests) {
+            ProductAttributeKey attributeKey = resolveOrCreateAttributeKey(request);
+            toSave.add(ProductSpecification.builder()
+                    .productId(productId)
+                    .attributeKey(attributeKey)
+                    .specGroup(request.getSpecGroup())
+                    .specValue(request.getSpecValue())
+                    .specUnit(request.getSpecUnit())
+                    .build());
+        }
+        productSpecificationRepository.saveAll(toSave);
+
+        return toSpecificationResponseList(productSpecificationRepository.findAllByProductIdWithKey(productId));
+    }
+
+    // Resolve theo attributeKeyId nếu có; nếu chỉ có attributeName thì tìm theo tên, chưa có thì tự tạo
+    // mới (kèm newDisplayName/newUnit nếu request có gửi kèm) - đúng UX combobox "creatable" ở FE.
+    private ProductAttributeKey resolveOrCreateAttributeKey(ProductSpecificationAdminRequest request) {
+        if (request.getAttributeKeyId() != null) {
+            return productAttributeKeyRepository.findById(request.getAttributeKeyId())
+                    .orElseThrow(() -> new BadRequestException(
+                            "Không tìm thấy attribute key với id: " + request.getAttributeKeyId()));
+        }
+
+        if (!StringUtils.hasText(request.getAttributeName())) {
+            throw new BadRequestException("Mỗi dòng thông số phải có attributeKeyId hoặc attributeName");
+        }
+
+        return productAttributeKeyRepository.findByName(request.getAttributeName())
+                .orElseGet(() -> productAttributeKeyRepository.save(ProductAttributeKey.builder()
+                        .name(request.getAttributeName())
+                        .displayName(request.getNewDisplayName())
+                        .unit(request.getNewUnit())
+                        .sortOrder(0)
+                        .build()));
+    }
+
+    private List<ProductSpecificationResponse> toSpecificationResponseList(List<ProductSpecification> specifications) {
+        return specifications.stream()
+                .map(spec -> ProductSpecificationResponse.builder()
+                        .id(spec.getId())
+                        .attributeKeyId(spec.getAttributeKey().getId())
+                        .attributeName(spec.getAttributeKey().getName())
+                        .attributeDisplayName(spec.getAttributeKey().getDisplayName())
+                        .specGroup(spec.getSpecGroup())
+                        .specValue(spec.getSpecValue())
+                        .specUnit(spec.getSpecUnit())
+                        .build())
+                .toList();
     }
 }
