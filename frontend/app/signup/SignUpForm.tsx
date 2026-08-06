@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useMutation } from "@tanstack/react-query";
-import { authServiceV2 } from "@/services/authService";
+import { authService } from "@/services/authService";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
@@ -27,7 +27,7 @@ export default function SignUpForm() {
       if (form.password.length < 8) {
         throw new Error("Password must be at least 8 characters.");
       }
-      return authServiceV2.register({
+      return authService.register({
         email: form.email.trim(),
         password: form.password,
         fullName: form.fullName.trim(),
@@ -45,7 +45,7 @@ export default function SignUpForm() {
   // Verify OTP Mutation
   const verifyMutation = useMutation({
     mutationFn: () =>
-      authServiceV2.verifyOtp({
+      authService.verifyOtp({
         email: form.email.trim(),
         otp: otp.trim(),
       }),
@@ -59,7 +59,7 @@ export default function SignUpForm() {
 
   // Resend OTP Mutation
   const resendMutation = useMutation({
-    mutationFn: () => authServiceV2.resendOtp(form.email.trim()),
+    mutationFn: () => authService.resendOtp(form.email.trim()),
     onSuccess: () => {
       setErrorMsg("");
       alert("A new OTP code has been sent to your email!");
