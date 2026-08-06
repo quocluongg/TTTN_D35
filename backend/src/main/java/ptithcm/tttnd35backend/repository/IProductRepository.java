@@ -39,4 +39,10 @@ public interface IProductRepository extends JpaRepository<Product, UUID>, JpaSpe
     @Modifying(clearAutomatically = true)
     @Query("update Product p set p.soldQuantity = p.soldQuantity + :qty where p.id = :id")
     int incrementSoldQuantity(@Param("id") UUID id, @Param("qty") int qty);
+
+    // Recompute denormalized rating khi ProductReview đổi trạng thái (xem ProductReviewServiceImpl) -
+    // 1 UPDATE atomic, tránh phải load cả entity Product chỉ để ghi lại 2 cột.
+    @Modifying(clearAutomatically = true)
+    @Query("update Product p set p.ratingAvg = :avg, p.reviewCount = :reviewCount where p.id = :id")
+    int updateRatingAggregate(@Param("id") UUID id, @Param("avg") java.math.BigDecimal avg, @Param("reviewCount") int reviewCount);
 }
