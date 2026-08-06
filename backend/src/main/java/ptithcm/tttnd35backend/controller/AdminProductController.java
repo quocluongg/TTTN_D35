@@ -1,5 +1,6 @@
 package ptithcm.tttnd35backend.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -8,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import ptithcm.tttnd35backend.dto.request.ProductAdminRequest;
 import ptithcm.tttnd35backend.dto.request.ProductVariantAdminRequest;
 import ptithcm.tttnd35backend.dto.request.StatusRequest;
+import ptithcm.tttnd35backend.dto.request.VariantStatusRequest;
 import ptithcm.tttnd35backend.dto.response.ApiResponse;
 import ptithcm.tttnd35backend.dto.response.ProductDetailResponse;
 import ptithcm.tttnd35backend.dto.response.ProductImageResponse;
@@ -15,6 +17,7 @@ import ptithcm.tttnd35backend.dto.response.ProductListItemResponse;
 import ptithcm.tttnd35backend.dto.response.ProductVariantResponse;
 import ptithcm.tttnd35backend.dto.response.pagination.PageResponse;
 import ptithcm.tttnd35backend.service.IProductService;
+import ptithcm.tttnd35backend.util.helper.SpecFilterParamUtil;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -31,18 +34,19 @@ public class AdminProductController {
     @GetMapping("/admin/products")
     @PreAuthorize("hasAuthority('PRODUCT_UPDATE')")
     public ApiResponse<PageResponse<ProductListItemResponse>> getList(
+            HttpServletRequest request,
             @RequestParam(required = false) String categorySlug,
             @RequestParam(required = false) String brand,
+            @RequestParam(required = false) String useCase,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) String specKey,
-            @RequestParam(required = false) String specValue,
             @RequestParam(required = false) String sortBy,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
-        var data = productService.getListForAdmin(categorySlug, brand, minPrice, maxPrice, search, specKey, specValue, sortBy, page, size);
+        var specs = SpecFilterParamUtil.extract(request);
+        var data = productService.getListForAdmin(categorySlug, brand, useCase, minPrice, maxPrice, search, specs, sortBy, page, size);
         return ApiResponse.<PageResponse<ProductListItemResponse>>builder()
                 .success(true)
                 .data(data)
@@ -141,6 +145,20 @@ public class AdminProductController {
                 .success(true)
                 .message("Cập nhật biến thể thành công")
                 .data(productService.updateVariant(id, variantId, request))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    // Soft-delete - bật/tắt biến thể, dùng thay cho xóa cứng khi biến thể đã từng phát sinh đơn hàng.
+    @PatchMapping("/admin/products/{id}/variants/{variantId}/active")
+    @PreAuthorize("hasAuthority('PRODUCT_UPDATE')")
+    public ApiResponse<ProductVariantResponse> setVariantActive(
+            @PathVariable UUID id, @PathVariable UUID variantId, @RequestBody @Valid VariantStatusRequest request) {
+        ProductVariantResponse response = productService.setVariantActive(id, variantId, request.getActive());
+        return ApiResponse.<ProductVariantResponse>builder()
+                .success(true)
+                .message(request.getActive() ? "Đã bật lại biến thể" : "Đã tắt biến thể")
+                .data(response)
                 .timestamp(LocalDateTime.now())
                 .build();
     }

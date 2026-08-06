@@ -1,5 +1,6 @@
 package ptithcm.tttnd35backend.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ptithcm.tttnd35backend.dto.response.ApiResponse;
@@ -7,6 +8,7 @@ import ptithcm.tttnd35backend.dto.response.ProductDetailResponse;
 import ptithcm.tttnd35backend.dto.response.ProductListItemResponse;
 import ptithcm.tttnd35backend.dto.response.pagination.PageResponse;
 import ptithcm.tttnd35backend.service.IProductService;
+import ptithcm.tttnd35backend.util.helper.SpecFilterParamUtil;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,20 +22,23 @@ public class ProductController {
 
     private final IProductService productService;
 
+    // Lọc nhiều thông số kỹ thuật cùng lúc qua query param động "spec.<key>=<value>"
+    // (vd ?spec.RAM=16GB&spec.CPU=Intel), xem SpecFilterParamUtil.
     @GetMapping
     public ApiResponse<PageResponse<ProductListItemResponse>> getList(
+            HttpServletRequest request,
             @RequestParam(required = false) String categorySlug,
             @RequestParam(required = false) String brand,
+            @RequestParam(required = false) String useCase,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) String specKey,
-            @RequestParam(required = false) String specValue,
             @RequestParam(required = false) String sortBy,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
-        var data = productService.getList(categorySlug, brand, minPrice, maxPrice, search, specKey, specValue, sortBy, page, size);
+        var specs = SpecFilterParamUtil.extract(request);
+        var data = productService.getList(categorySlug, brand, useCase, minPrice, maxPrice, search, specs, sortBy, page, size);
         return ApiResponse.<PageResponse<ProductListItemResponse>>builder()
                 .success(true)
                 .data(data)
