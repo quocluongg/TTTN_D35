@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -36,6 +37,14 @@ public class ProductAdminRequest {
 
     @Min(value = 0, message = "Số tháng bảo hành phải >= 0")
     private Integer warrantyMonths;
+
+    // Nhãn nhu cầu sử dụng tự do (vd "Gaming", "Văn phòng") để lọc nhanh ở trang danh sách. Optional.
+    @Size(max = 100, message = "use_case tối đa 100 ký tự")
+    private String useCase;
+
+    // Link nguồn dữ liệu gốc (crawl), chỉ admin xem, optional.
+    @Size(max = 2000, message = "source_url tối đa 2000 ký tự")
+    private String sourceUrl;
 
     @Builder.Default
     private List<@Valid CustomTabRequest> customTabs = new ArrayList<>();

@@ -1,6 +1,7 @@
 package ptithcm.tttnd35backend.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -10,15 +11,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import ptithcm.tttnd35backend.dto.request.ProductAdminRequest;
+import ptithcm.tttnd35backend.dto.request.ProductSpecificationAdminRequest;
 import ptithcm.tttnd35backend.dto.request.ProductVariantAdminRequest;
 import ptithcm.tttnd35backend.dto.response.ProductDetailResponse;
 import ptithcm.tttnd35backend.dto.response.ProductImageResponse;
 import ptithcm.tttnd35backend.dto.response.ProductListItemResponse;
+import ptithcm.tttnd35backend.dto.response.ProductSpecificationResponse;
 import ptithcm.tttnd35backend.dto.response.ProductVariantResponse;
 import ptithcm.tttnd35backend.dto.response.pagination.PageResponse;
 import ptithcm.tttnd35backend.entity.Category;
 import ptithcm.tttnd35backend.entity.Product;
+import ptithcm.tttnd35backend.entity.ProductAttributeKey;
 import ptithcm.tttnd35backend.entity.ProductImage;
+import ptithcm.tttnd35backend.entity.ProductSpecification;
 import ptithcm.tttnd35backend.entity.ProductVariant;
 import ptithcm.tttnd35backend.exception.BadRequestException;
 import ptithcm.tttnd35backend.exception.ResourceNotFoundException;
@@ -26,8 +31,11 @@ import ptithcm.tttnd35backend.mapper.ProductImageMapper;
 import ptithcm.tttnd35backend.mapper.ProductMapper;
 import ptithcm.tttnd35backend.mapper.ProductVariantMapper;
 import ptithcm.tttnd35backend.repository.ICategoryRepository;
+import ptithcm.tttnd35backend.repository.IOrderItemRepository;
+import ptithcm.tttnd35backend.repository.IProductAttributeKeyRepository;
 import ptithcm.tttnd35backend.repository.IProductImageRepository;
 import ptithcm.tttnd35backend.repository.IProductRepository;
+import ptithcm.tttnd35backend.repository.IProductSpecificationRepository;
 import ptithcm.tttnd35backend.repository.IProductVariantRepository;
 import ptithcm.tttnd35backend.repository.projection.ProductMinPriceProjection;
 import ptithcm.tttnd35backend.repository.spec.ProductSpecifications;
@@ -53,6 +61,9 @@ public class ProductServiceImpl implements IProductService {
     private final IProductImageRepository productImageRepository;
     private final IProductVariantRepository productVariantRepository;
     private final ICategoryRepository categoryRepository;
+    private final IOrderItemRepository orderItemRepository;
+    private final IProductSpecificationRepository productSpecificationRepository;
+    private final IProductAttributeKeyRepository productAttributeKeyRepository;
 
     private final ProductMapper productMapper;
     private final ProductImageMapper productImageMapper;
@@ -65,21 +76,21 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     public PageResponse<ProductListItemResponse> getList(
-            String categorySlug, String brand, BigDecimal minPrice, BigDecimal maxPrice,
-            String search, String specKey, String specValue, String sortBy, int page, int size) {
-        return buildPageResponse(true, categorySlug, brand, minPrice, maxPrice, search, specKey, specValue, sortBy, page, size);
+            String categorySlug, String brand, String useCase, BigDecimal minPrice, BigDecimal maxPrice,
+            String search, Map<String, String> specs, String sortBy, int page, int size) {
+        return buildPageResponse(true, categorySlug, brand, useCase, minPrice, maxPrice, search, specs, sortBy, page, size);
     }
 
     @Override
     public PageResponse<ProductListItemResponse> getListForAdmin(
-            String categorySlug, String brand, BigDecimal minPrice, BigDecimal maxPrice,
-            String search, String specKey, String specValue, String sortBy, int page, int size) {
-        return buildPageResponse(false, categorySlug, brand, minPrice, maxPrice, search, specKey, specValue, sortBy, page, size);
+            String categorySlug, String brand, String useCase, BigDecimal minPrice, BigDecimal maxPrice,
+            String search, Map<String, String> specs, String sortBy, int page, int size) {
+        return buildPageResponse(false, categorySlug, brand, useCase, minPrice, maxPrice, search, specs, sortBy, page, size);
     }
 
     private PageResponse<ProductListItemResponse> buildPageResponse(
-            boolean onlyActive, String categorySlug, String brand, BigDecimal minPrice, BigDecimal maxPrice,
-            String search, String specKey, String specValue, String sortBy, int page, int size) {
+            boolean onlyActive, String categorySlug, String brand, String useCase, BigDecimal minPrice, BigDecimal maxPrice,
+            String search, Map<String, String> specs, String sortBy, int page, int size) {
 
         boolean sortByPrice = "price-asc".equals(sortBy) || "price-desc".equals(sortBy);
 
@@ -87,8 +98,9 @@ public class ProductServiceImpl implements IProductService {
                 onlyActive ? ProductSpecifications.isActive() : Specification.allOf(),
                 nonNull(resolveCategorySpec(categorySlug)),
                 nonNull(ProductSpecifications.hasBrand(brand)),
+                nonNull(ProductSpecifications.hasUseCase(useCase)),
                 nonNull(ProductSpecifications.nameContains(search)),
-                nonNull(ProductSpecifications.hasSpec(specKey, specValue)),
+                nonNull(ProductSpecifications.hasAllSpecs(specs)),
                 nonNull(ProductSpecifications.priceFromBetween(minPrice, maxPrice)),
                 sortByPrice ? ProductSpecifications.orderByMinPrice("price-asc".equals(sortBy)) : Specification.allOf()
         );
@@ -146,7 +158,7 @@ public class ProductServiceImpl implements IProductService {
     private ProductDetailResponse buildDetailResponse(Product product) {
         ProductDetailResponse response = productMapper.toDetailResponse(product);
         response.setCustomTabs(CustomTabJsonUtil.toResponseList(product.getCustomTabs()));
-        
+
         // Tránh N+1 hoặc crash do Category ngưng active trong Breadcrumb
         try {
             if (product.getCategory() != null) {
@@ -161,6 +173,8 @@ public class ProductServiceImpl implements IProductService {
                 productVariantRepository.findAllByProductId(product.getId())));
         response.setImages(productImageMapper.toResponseList(
                 productImageRepository.findAllByProductIdOrderBySortOrderAsc(product.getId())));
+        response.setSpecifications(toSpecificationResponseList(
+                productSpecificationRepository.findAllByProductIdWithKey(product.getId())));
         return response;
     }
 
@@ -258,7 +272,30 @@ public class ProductServiceImpl implements IProductService {
         productVariantMapper.updateEntityFromRequest(request, variant);
         variant.setVariantName(buildVariantName(request.getAttributes()));
 
-        return productVariantMapper.toResponse(productVariantRepository.save(variant));
+        try {
+            return productVariantMapper.toResponse(productVariantRepository.save(variant));
+        } catch (DataIntegrityViolationException e) {
+            throw new BadRequestException("Đã tồn tại biến thể khác đang active với cùng thuộc tính này");
+        }
+    }
+
+    @Override
+    @Transactional
+    public ProductVariantResponse setVariantActive(UUID productId, UUID variantId, boolean active) {
+        getOwnedProduct(productId);
+        ProductVariant variant = productVariantRepository.findByIdAndProductId(variantId, productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy biến thể"));
+
+        if (!active && productVariantRepository.countByProductId(productId) <= 1) {
+            throw new BadRequestException("Sản phẩm phải có ít nhất 1 biến thể đang active");
+        }
+
+        variant.setActive(active);
+        try {
+            return productVariantMapper.toResponse(productVariantRepository.save(variant));
+        } catch (DataIntegrityViolationException e) {
+            throw new BadRequestException("Đã có biến thể khác đang active với cùng thuộc tính này, không thể bật lại");
+        }
     }
 
     @Override
@@ -270,6 +307,13 @@ public class ProductServiceImpl implements IProductService {
 
         if (productVariantRepository.countByProductId(productId) <= 1) {
             throw new BadRequestException("Sản phẩm phải có ít nhất 1 biến thể, không thể xóa biến thể cuối cùng");
+        }
+
+        // order_items.variant_id không có ON DELETE CASCADE -> xóa cứng biến thể đã từng bán sẽ vỡ FK.
+        // Bắt trước ở đây để trả message rõ ràng thay vì để 500 mù mờ; hướng admin dùng setVariantActive.
+        if (orderItemRepository.existsByVariantId(variantId)) {
+            throw new BadRequestException(
+                    "Biến thể đã phát sinh đơn hàng, không thể xóa cứng. Vui lòng dùng chức năng ẩn (tắt active) thay thế");
         }
 
         productVariantRepository.delete(variant);
@@ -296,7 +340,11 @@ public class ProductServiceImpl implements IProductService {
         variant.setProductId(product.getId());
         variant.setVariantName(buildVariantName(request.getAttributes()));
         variant.setSku(generateSku(category));
-        return productVariantRepository.save(variant);
+        try {
+            return productVariantRepository.save(variant);
+        } catch (DataIntegrityViolationException e) {
+            throw new BadRequestException("Đã tồn tại biến thể khác đang active với cùng thuộc tính này");
+        }
     }
 
     private String buildVariantName(Map<String, String> attributes) {
@@ -348,5 +396,73 @@ public class ProductServiceImpl implements IProductService {
             catIds.add(child.getId());
         }
         return ProductSpecifications.hasCategoryIds(catIds);
+    }
+
+    // ===== Specification (EAV) =====
+
+    @Override
+    public List<ProductSpecificationResponse> getSpecifications(UUID productId) {
+        getOwnedProduct(productId);
+        return toSpecificationResponseList(productSpecificationRepository.findAllByProductIdWithKey(productId));
+    }
+
+    @Override
+    @Transactional
+    public List<ProductSpecificationResponse> replaceSpecifications(
+            UUID productId, List<ProductSpecificationAdminRequest> requests) {
+        getOwnedProduct(productId);
+
+        productSpecificationRepository.deleteAllByProductId(productId);
+
+        List<ProductSpecification> toSave = new ArrayList<>();
+        for (ProductSpecificationAdminRequest request : requests) {
+            ProductAttributeKey attributeKey = resolveOrCreateAttributeKey(request);
+            toSave.add(ProductSpecification.builder()
+                    .productId(productId)
+                    .attributeKey(attributeKey)
+                    .specGroup(request.getSpecGroup())
+                    .specValue(request.getSpecValue())
+                    .specUnit(request.getSpecUnit())
+                    .build());
+        }
+        productSpecificationRepository.saveAll(toSave);
+
+        return toSpecificationResponseList(productSpecificationRepository.findAllByProductIdWithKey(productId));
+    }
+
+    // Resolve theo attributeKeyId nếu có; nếu chỉ có attributeName thì tìm theo tên, chưa có thì tự tạo
+    // mới (kèm newDisplayName/newUnit nếu request có gửi kèm) - đúng UX combobox "creatable" ở FE.
+    private ProductAttributeKey resolveOrCreateAttributeKey(ProductSpecificationAdminRequest request) {
+        if (request.getAttributeKeyId() != null) {
+            return productAttributeKeyRepository.findById(request.getAttributeKeyId())
+                    .orElseThrow(() -> new BadRequestException(
+                            "Không tìm thấy attribute key với id: " + request.getAttributeKeyId()));
+        }
+
+        if (!StringUtils.hasText(request.getAttributeName())) {
+            throw new BadRequestException("Mỗi dòng thông số phải có attributeKeyId hoặc attributeName");
+        }
+
+        return productAttributeKeyRepository.findByName(request.getAttributeName())
+                .orElseGet(() -> productAttributeKeyRepository.save(ProductAttributeKey.builder()
+                        .name(request.getAttributeName())
+                        .displayName(request.getNewDisplayName())
+                        .unit(request.getNewUnit())
+                        .sortOrder(0)
+                        .build()));
+    }
+
+    private List<ProductSpecificationResponse> toSpecificationResponseList(List<ProductSpecification> specifications) {
+        return specifications.stream()
+                .map(spec -> ProductSpecificationResponse.builder()
+                        .id(spec.getId())
+                        .attributeKeyId(spec.getAttributeKey().getId())
+                        .attributeName(spec.getAttributeKey().getName())
+                        .attributeDisplayName(spec.getAttributeKey().getDisplayName())
+                        .specGroup(spec.getSpecGroup())
+                        .specValue(spec.getSpecValue())
+                        .specUnit(spec.getSpecUnit())
+                        .build())
+                .toList();
     }
 }

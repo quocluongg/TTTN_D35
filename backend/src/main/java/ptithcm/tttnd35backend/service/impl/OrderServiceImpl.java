@@ -166,9 +166,25 @@ public class OrderServiceImpl implements IOrderService {
             orderRepository.save(order);
             if (request.getStatus() == OrderStatus.COMPLETED) {
                 warrantyService.generateWarrantyCardsFromOrder(order);
+                // Chỉ cộng "đã bán" khi đơn thực sự hoàn tất (giao xong), không cộng lúc mới PAID,
+                // vì đơn PAID vẫn có thể bị hoàn/huỷ sau đó -> tránh sai lệch số liệu.
+                incrementSoldQuantity(orderId);
             }
         }
         return toResponse(order, orderItemRepository.findAllByOrderId(orderId));
+    }
+
+    // Cộng dồn Product.soldQuantity theo từng dòng OrderItem của đơn vừa COMPLETED (atomic UPDATE
+    // ở DB cho từng dòng, không load cả entity Product).
+    private void incrementSoldQuantity(UUID orderId) {
+        List<OrderItem> items = orderItemRepository.findAllByOrderId(orderId);
+        Map<UUID, Integer> qtyByProduct = new LinkedHashMap<>();
+        for (OrderItem item : items) {
+            qtyByProduct.merge(item.getProductId(), item.getQuantity(), Integer::sum);
+        }
+        for (Map.Entry<UUID, Integer> entry : qtyByProduct.entrySet()) {
+            productRepository.incrementSoldQuantity(entry.getKey(), entry.getValue());
+        }
     }
 
     // ===== Core: tạo đơn (dùng chung cho cả checkout từ Cart lẫn Guest) =====
@@ -336,11 +352,27 @@ public class OrderServiceImpl implements IOrderService {
                 : orderItemRepository.findAllByOrderIdIn(orderIds).stream()
                         .collect(Collectors.groupingBy(OrderItem::getOrderId));
 
+        Set<UUID> voucherIds = orders.getContent().stream()
+                .map(Order::getVoucherId).filter(Objects::nonNull).collect(Collectors.toSet());
+        Map<UUID, String> voucherCodeById = voucherIds.isEmpty() ? Map.of()
+                : voucherRepository.findAllById(voucherIds).stream()
+                        .collect(Collectors.toMap(Voucher::getId, Voucher::getCode));
+
         return PageResponseHelper.toPageResponse(
-                orders.map(o -> toResponse(o, itemsByOrder.getOrDefault(o.getId(), List.of()))));
+                orders.map(o -> toResponse(o, itemsByOrder.getOrDefault(o.getId(), List.of()), voucherCodeById)));
     }
 
     private OrderResponse toResponse(Order order, List<OrderItem> items) {
+        // Dùng cho các chỗ chỉ trả 1 order đơn lẻ (không phải list) - N=1 nên load thẳng, không cần batch map.
+        Map<UUID, String> voucherCodeById = new HashMap<>();
+        if (order.getVoucherId() != null) {
+            voucherRepository.findById(order.getVoucherId())
+                    .ifPresent(v -> voucherCodeById.put(v.getId(), v.getCode()));
+        }
+        return toResponse(order, items, voucherCodeById);
+    }
+
+    private OrderResponse toResponse(Order order, List<OrderItem> items, Map<UUID, String> voucherCodeById) {
         Set<UUID> productIds = items.stream().map(OrderItem::getProductId).collect(Collectors.toSet());
         Set<UUID> variantIds = items.stream().map(OrderItem::getVariantId).collect(Collectors.toSet());
         Map<UUID, Product> productById = productIds.isEmpty() ? Map.of()
@@ -366,9 +398,7 @@ public class OrderServiceImpl implements IOrderService {
                     .build();
         }).toList();
 
-        String voucherCode = order.getVoucherId() != null
-                ? voucherRepository.findById(order.getVoucherId()).map(Voucher::getCode).orElse(null)
-                : null;
+        String voucherCode = order.getVoucherId() != null ? voucherCodeById.get(order.getVoucherId()) : null;
 
         return OrderResponse.builder()
                 .id(order.getId())

@@ -56,4 +56,10 @@ public class ProductVariant extends BaseEntity {
 
     // Ảnh riêng theo màu, override Product.thumbnail khi khách chọn variant này. Nullable.
     private String image;
+
+    // Soft-delete: DB có unique index (product_id, attributes) WHERE is_active = true nên tắt biến thể
+    // (thay vì xóa cứng) vẫn cho phép tạo lại đúng attributes đó sau này. Xem ProductServiceImpl#setVariantActive.
+    @Builder.Default
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
 }

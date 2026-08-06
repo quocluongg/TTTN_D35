@@ -20,4 +20,5 @@ public class ProductVariantResponse {
     private Map<String, String> attributes;
     private BigDecimal vatPercent;
     private String image;
+    private boolean isActive;
 }

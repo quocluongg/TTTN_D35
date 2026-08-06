@@ -3,6 +3,7 @@ package ptithcm.tttnd35backend.config.jwt;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
  */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     private final JsonMapper jsonMapper;
@@ -31,17 +33,26 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
         String exceptionDetail = (String) request.getAttribute("exception");
         String message;
+
+        // <-- THÊM LOG TỪNG TRƯỜNG HỢP
         if ("EXPIRED_TOKEN".equals(exceptionDetail)) {
+            log.warn("Authentication failed: EXPIRED_TOKEN");
             message = "Token đã hết hạn, vui lòng đăng nhập lại";
         } else if ("TOKEN_REVOKED".equals(exceptionDetail)) {
+            log.warn("Authentication failed: TOKEN_REVOKED");
             message = "Token đã bị thu hồi (đã đăng xuất), vui lòng đăng nhập lại";
         } else if ("MALFORMED_TOKEN".equals(exceptionDetail) || "UNSUPPORTED_TOKEN".equals(exceptionDetail)) {
+            log.warn("Authentication failed: MALFORMED_TOKEN or UNSUPPORTED_TOKEN");
             message = "Token không đúng định dạng hoặc chữ ký sai";
         } else if ("ILLEGAL_ARGUMENT_TOKEN".equals(exceptionDetail)) {
+            log.warn("Authentication failed: ILLEGAL_ARGUMENT_TOKEN");
             message = "Token không hợp lệ";
         } else {
+            log.warn("Authentication failed: Missing or no token - Exception: {}", authException.getMessage());
             message = "Bạn cần đăng nhập để truy cập tài nguyên này";
         }
+
+        log.debug("Request path: {}, Method: {}", request.getRequestURI(), request.getMethod());
 
         ApiResponse<?> apiResponse = ApiResponse.builder()
                 .success(false)

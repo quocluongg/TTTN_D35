@@ -82,4 +82,19 @@ public class Product extends BaseEntity {
     @Builder.Default
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
+
+    // Denormalized, cộng dồn atomic (IProductRepository#incrementSoldQuantity) khi đơn
+    // chuyển sang COMPLETED - dùng hiển thị "Đã bán x" và sort sản phẩm bán chạy.
+    @Builder.Default
+    @Column(name = "sold_quantity", nullable = false)
+    private int soldQuantity = 0;
+
+    // Nhãn nhu cầu sử dụng tự do do admin nhập (vd "Gaming", "Văn phòng", "Đồ họa"),
+    // dùng để filter nhanh ở trang danh sách - không phải bảng tag riêng vì chỉ cần lọc exact-match.
+    @Column(name = "use_case", length = 100)
+    private String useCase;
+
+    // Link nguồn dữ liệu gốc (crawl) - chỉ phục vụ admin đối chiếu, không hiển thị cho khách.
+    @Column(name = "source_url", length = 2000)
+    private String sourceUrl;
 }

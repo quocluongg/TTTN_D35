@@ -23,4 +23,8 @@ public interface IProductSpecificationRepository extends JpaRepository<ProductSp
     List<ProductSpecification> findAllByProductIdWithKey(@Param("productId") UUID productId);
 
     void deleteAllByProductId(UUID productId);
+
+    // Guard trước khi cho xóa 1 attribute key (AdminProductAttributeKeyController) - không cho xóa
+    // nếu đang có sản phẩm dùng, tránh vỡ FK / mất dữ liệu spec đang hiển thị.
+    boolean existsByAttributeKeyId(Integer attributeKeyId);
 }

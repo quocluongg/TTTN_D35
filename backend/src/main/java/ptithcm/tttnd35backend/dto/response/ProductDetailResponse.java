@@ -29,6 +29,11 @@ public class ProductDetailResponse {
     private BigDecimal ratingAvg;
     private int reviewCount;
     private boolean isActive;
+    private int soldQuantity;
+    private String useCase;
+
+    // Chỉ phục vụ admin đối chiếu nguồn crawl, FE trang khách không hiển thị field này.
+    private String sourceUrl;
 
     @Builder.Default
     private List<CustomTabResponse> customTabs = new ArrayList<>();
@@ -42,4 +47,7 @@ public class ProductDetailResponse {
 
     @Builder.Default
     private List<ProductImageResponse> images = new ArrayList<>();
+
+    @Builder.Default
+    private List<ProductSpecificationResponse> specifications = new ArrayList<>();
 }

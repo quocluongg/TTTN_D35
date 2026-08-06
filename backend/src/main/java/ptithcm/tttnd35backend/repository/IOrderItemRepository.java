@@ -12,6 +12,11 @@ public interface IOrderItemRepository extends JpaRepository<OrderItem, UUID> {
 
     List<OrderItem> findAllByOrderIdIn(List<UUID> orderIds);
 
+    // Guard trước khi cho xóa cứng 1 variant (ProductServiceImpl#deleteVariant): variant đã phát sinh
+    // đơn hàng thì không được xóa cứng (order_items.variant_id không có ON DELETE CASCADE), chỉ được
+    // tắt active qua setVariantActive.
+    boolean existsByVariantId(UUID variantId);
+
     @org.springframework.data.jpa.repository.Query("""
             SELECT new ptithcm.tttnd35backend.dto.response.TopProductResponse(
                 p.id, p.name, p.thumbnail, SUM(oi.quantity), SUM(oi.priceAtPurchase * oi.quantity)

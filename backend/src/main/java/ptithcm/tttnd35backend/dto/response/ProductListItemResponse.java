@@ -25,4 +25,6 @@ public class ProductListItemResponse {
     private BigDecimal ratingAvg;
     private int reviewCount;
     private boolean isActive;
+    private int soldQuantity;
+    private String useCase;
 }
