@@ -7,6 +7,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ptithcm.tttnd35backend.dto.request.ProductAdminRequest;
+import ptithcm.tttnd35backend.dto.request.ProductSpecificationAdminRequest;
 import ptithcm.tttnd35backend.dto.request.ProductVariantAdminRequest;
 import ptithcm.tttnd35backend.dto.request.StatusRequest;
 import ptithcm.tttnd35backend.dto.request.VariantStatusRequest;
@@ -14,6 +15,7 @@ import ptithcm.tttnd35backend.dto.response.ApiResponse;
 import ptithcm.tttnd35backend.dto.response.ProductDetailResponse;
 import ptithcm.tttnd35backend.dto.response.ProductImageResponse;
 import ptithcm.tttnd35backend.dto.response.ProductListItemResponse;
+import ptithcm.tttnd35backend.dto.response.ProductSpecificationResponse;
 import ptithcm.tttnd35backend.dto.response.ProductVariantResponse;
 import ptithcm.tttnd35backend.dto.response.pagination.PageResponse;
 import ptithcm.tttnd35backend.service.IProductService;
@@ -170,6 +172,31 @@ public class AdminProductController {
         return ApiResponse.builder()
                 .success(true)
                 .message("Xóa biến thể thành công")
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    // ===== Specification (EAV) - màn hình riêng "Thông số kỹ thuật" ở trang sửa sản phẩm =====
+
+    @GetMapping("/admin/products/{id}/specifications")
+    @PreAuthorize("hasAuthority('PRODUCT_UPDATE')")
+    public ApiResponse<List<ProductSpecificationResponse>> getSpecifications(@PathVariable UUID id) {
+        return ApiResponse.<List<ProductSpecificationResponse>>builder()
+                .success(true)
+                .data(productService.getSpecifications(id))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    // Replace-all: FE gửi cả danh sách, BE xóa hết dòng cũ rồi ghi lại toàn bộ trong 1 transaction.
+    @PutMapping("/admin/products/{id}/specifications")
+    @PreAuthorize("hasAuthority('PRODUCT_UPDATE')")
+    public ApiResponse<List<ProductSpecificationResponse>> replaceSpecifications(
+            @PathVariable UUID id, @RequestBody @Valid List<ProductSpecificationAdminRequest> requests) {
+        return ApiResponse.<List<ProductSpecificationResponse>>builder()
+                .success(true)
+                .message("Cập nhật thông số kỹ thuật thành công")
+                .data(productService.replaceSpecifications(id, requests))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
