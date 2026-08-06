@@ -40,7 +40,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String jti = jwtProvider.extractJti(token);
 
                 if (jti != null && tokenBlacklistService.isBlacklisted(jti)) {
-                    // Access token nằm trong blacklist Redis -> coi như không hợp lệ,
                     log.warn("Token bị từ chối vì đã nằm trong blacklist (jti={})", jti);
                     request.setAttribute("exception", "TOKEN_REVOKED");
                     filterChain.doFilter(request, response);
@@ -49,15 +48,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 String username = jwtProvider.extractUserName(token);
 
-                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UserDetails userDetails = userDetailServiceCustom.loadUserByUsername(username);
+                //  Log khi username null
+                if (username == null) {
+                    log.warn("Không thể extract username từ token");
+                    filterChain.doFilter(request, response);
+                    return;
+                }
 
-                    if (jwtProvider.validateToken(token, userDetails)) {
-                        UsernamePasswordAuthenticationToken authToken =
-                                new UsernamePasswordAuthenticationToken(
-                                        userDetails, null, userDetails.getAuthorities());
-                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                    try {
+                        UserDetails userDetails = userDetailServiceCustom.loadUserByUsername(username);
+
+                        if (jwtProvider.validateToken(token, userDetails)) {
+                            UsernamePasswordAuthenticationToken authToken =
+                                    new UsernamePasswordAuthenticationToken(
+                                            userDetails, null, userDetails.getAuthorities());
+                            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                            SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                            // Log khi authentication thành công
+                            log.debug("Token validated successfully for user: {}", username);
+                        } else {
+                            //  Log khi validateToken() trả false
+                            log.warn("Token validation failed for user: {}", username);
+                        }
+                    } catch (Exception e) {
+                        // Log khi loadUserByUsername() hoặc các exception khác trong try
+                        log.error("Lỗi khi tải thông tin user [{}]: {}", username, e.getMessage(), e);
                     }
                 }
             } catch (MalformedJwtException e) {
@@ -77,8 +94,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 request.setAttribute("exception", "UNKNOWN_ERROR");
             }
         }
-        // Không set "MISSING_TOKEN" khi token null -> nhiều endpoint public không có token
-        // EntryPoint chỉ được gọi khi endpoint yêu cầu authentication mà request không có/không hợp lệ.
 
         filterChain.doFilter(request, response);
     }
