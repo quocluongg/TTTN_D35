@@ -15,7 +15,7 @@ import {
   Star,
   ArrowUpRight,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import PublicLayout from "@/shared/layouts/PublicLayout";
 
 const BRANDS_LIST = [
   { name: "Kyoritsu", logo: "KYORITSU", count: "120+ sản phẩm", description: "Thương hiệu thiết bị đo hàng đầu Nhật Bản" },
@@ -28,7 +28,8 @@ const BRANDS_LIST = [
 
 export default function BrandsPage() {
   return (
-    <div className="min-h-screen bg-[#F2F2F2] dark:bg-zinc-900 text-black dark:text-white pt-[60px]">
+    <PublicLayout fullWidth>
+    <div className="min-h-screen bg-[#F2F2F2] dark:bg-zinc-900 text-black dark:text-white">
       {/* ===== HERO ARCHITECTURAL GRID SECTION ===== */}
       <section className="border-b border-black dark:border-zinc-800 bg-[#C5C5C5] dark:bg-zinc-800 p-8 lg:p-16">
         <div className="max-w-[1920px] mx-auto text-left">
@@ -163,5 +164,6 @@ export default function BrandsPage() {
         </div>
       </section>
     </div>
+    </PublicLayout>
   );
 }

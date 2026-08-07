@@ -80,6 +80,6 @@ public class JwtProvider {
 
     public boolean validateToken(String token, UserDetails userDetails) {
         final String userName = extractUserName(token);
-        return userName.equals(userDetails.getUsername());
+        return userName.equals(userDetails.getUsername()) && userDetails.isEnabled();
     }
 }

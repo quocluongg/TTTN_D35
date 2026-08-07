@@ -1,588 +1,608 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { profileService } from "@/services/profileService";
+import { orderService } from "@/services/orderService";
+import { authService } from "@/services/authServices";
+import { useLogout } from "@/hooks/useAuth";
+import StatusBadge from "@/components/StatusBadge";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import AddressForm from "@/components/AddressForm";
 import PublicLayout from "@/shared/layouts/PublicLayout";
-import { useLogout, useCurrentUser } from "@/hooks/useAuth";
-import {
-  User,
-  Mail,
-  MapPin,
-  Phone,
-  Lock,
-  Edit2,
-  X,
-  Package,
-  CheckCircle2,
-  Clock,
-  Eye,
-  EyeOff,
-  LogOut,
-  Loader2,
-} from "lucide-react";
+import { notifySuccess, notifyError } from "@/components/Notify";
+import { profileSchema, ProfileFormValues } from "@/schemas/profileSchema";
+import { Check, Eye, EyeOff, Loader2 } from "lucide-react";
+
+import { Suspense, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+
+type Any = Record<string, any>;
+const unwrap = (x: any) => x?.data ?? x;
 
 export default function AccountPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen grid place-items-center bg-white text-black text-sm">Đang tải tài khoản…</div>}>
+      <AccountContent />
+    </Suspense>
+  );
+}
+
+function AccountContent() {
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [tab, setTab] = useState<"profile" | "addresses" | "orders">("profile");
+
+  useEffect(() => {
+    if (tabParam === "orders" || tabParam === "addresses" || tabParam === "profile") {
+      setTab(tabParam);
+    }
+  }, [tabParam]);
+
+  const queryClient = useQueryClient();
   const logout = useLogout();
-  const { data: user, isLoading: isUserLoading } = useCurrentUser();
 
-  // Active Main Tab: 'profile' | 'orders'
-  const [activeTab, setActiveTab] = useState<"profile" | "orders">("profile");
-
-  // Editable Profile State
-  const [profile, setProfile] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: "johndoe@example.com",
-    address: "206 Batran's Street, 39, 2044 Ontario, Ottawa",
-    phone: "+1 222 333 4444",
+  // Queries
+  const profileQuery = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => profileService.me(),
+  });
+  const addressesQuery = useQuery({
+    queryKey: ["addresses"],
+    queryFn: () => profileService.addresses(),
+  });
+  const ordersQuery = useQuery({
+    queryKey: ["orders"],
+    queryFn: () => orderService.list({ page: 0, size: 10 }),
   });
 
-  // Modal Control State: null | 'name' | 'email' | 'address' | 'phone' | 'password' | 'forgot'
-  const [activeModal, setActiveModal] = useState<
-    null | "name" | "email" | "address" | "phone" | "password" | "forgot"
-  >(null);
+  const user: Any = unwrap(profileQuery.data) || {};
 
-  // Form Fields inside Modals
-  const [tempFirstName, setTempFirstName] = useState(profile.firstName);
-  const [tempLastName, setTempLastName] = useState(profile.lastName);
-  const [tempEmail, setTempEmail] = useState(profile.email);
-  const [tempAddress, setTempAddress] = useState(profile.address);
-  const [tempPhone, setTempPhone] = useState(profile.phone);
+  const addressRows: Any[] = unwrap(addressesQuery.data) || [];
+  const orderPayload: any = unwrap(ordersQuery.data) || {};
+  const orderRows: Any[] = Array.isArray(orderPayload)
+    ? orderPayload
+    : orderPayload.content || orderPayload.items || [];
 
-  // Password Modal Fields
-  const [currentPass, setCurrentPass] = useState("");
-  const [newPass, setNewPass] = useState("");
-  const [rePass, setRePass] = useState("");
-  const [showCurrentPass, setShowCurrentPass] = useState(false);
-  const [showNewPass, setShowNewPass] = useState(false);
-  const [showRePass, setShowRePass] = useState(false);
-  const [passMismatchError, setPassMismatchError] = useState(false);
+  // State local
+  const [editingAddress, setEditingAddress] = useState<Any | null>(null);
+  const [cancelOrderId, setCancelOrderId] = useState<string | null>(null);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveSuccessMsg, setSaveSuccessMsg] = useState("");
-
-  const handleOpenModal = (modalType: "name" | "email" | "address" | "phone" | "password") => {
-    setActiveModal(modalType);
-    setSaveSuccessMsg("");
-    setPassMismatchError(false);
-    if (modalType === "name") {
-      setTempFirstName(profile.firstName);
-      setTempLastName(profile.lastName);
-    } else if (modalType === "email") {
-      setTempEmail(profile.email);
-    } else if (modalType === "address") {
-      setTempAddress(profile.address);
-    } else if (modalType === "phone") {
-      setTempPhone(profile.phone);
-    } else if (modalType === "password") {
-      setCurrentPass("");
-      setNewPass("");
-      setRePass("");
-    }
-  };
-
-  const handleCloseModal = () => {
-    setActiveModal(null);
-  };
-
-  const handleSaveModal = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-
-    if (activeModal === "password") {
-      if (newPass !== rePass) {
-        setPassMismatchError(true);
-        setIsSaving(false);
-        return;
-      }
-    }
-
-    setTimeout(() => {
-      setIsSaving(false);
-      if (activeModal === "name") {
-        setProfile((prev) => ({ ...prev, firstName: tempFirstName, lastName: tempLastName }));
-      } else if (activeModal === "email") {
-        setProfile((prev) => ({ ...prev, email: tempEmail }));
-      } else if (activeModal === "address") {
-        setProfile((prev) => ({ ...prev, address: tempAddress }));
-      } else if (activeModal === "phone") {
-        setProfile((prev) => ({ ...prev, phone: tempPhone }));
-      }
-
-      setSaveSuccessMsg("Đã cập nhật thông tin thành công!");
-      setTimeout(() => {
-        handleCloseModal();
-        setSaveSuccessMsg("");
-      }, 1200);
-    }, 800);
-  };
-
-  // Mock Orders Data
-  const MOCK_ORDERS = [
-    {
-      id: "ORD-9021",
-      date: "20 Tháng 7, 2026",
-      status: "Đang giao hàng",
-      total: "5.000.000đ",
-      items: ["Carbon Shadow Pro"],
-      badgeColor: "bg-amber-100 text-amber-800 border-amber-300",
+  // Profile Form with react-hook-form & zod
+  const {
+    register: registerProfile,
+    handleSubmit: handleSubmitProfile,
+    formState: { errors: profileErrors, isValid: isProfileValid },
+  } = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
+    values: {
+      fullName: user.fullName || "",
+      phoneNumber: user.phoneNumber || "",
+      avatarUrl: user.avatarUrl || "",
     },
-    {
-      id: "ORD-8812",
-      date: "12 Tháng 6, 2026",
-      status: "Giao hàng thành công",
-      total: "15.000.000đ",
-      items: ["Nimbus Drift Frost"],
-      badgeColor: "bg-green-100 text-green-800 border-green-300",
+    mode: "onChange",
+  });
+
+  const updateProfileMutation = useMutation({
+    mutationFn: (data: ProfileFormValues) => profileService.update(data),
+    onSuccess: () => {
+      notifySuccess("Cập nhật thông tin cá nhân thành công!");
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
-    {
-      id: "ORD-7640",
-      date: "04 Tháng 5, 2026",
-      status: "Giao hàng thành công",
-      total: "1.200.000đ",
-      items: ["Ashen Path Xtreme"],
-      badgeColor: "bg-green-100 text-green-800 border-green-300",
+    onError: (err: any) => {
+      notifyError(err?.message || err?.response?.data?.message || "Cập nhật thất bại!");
     },
-  ];
+  });
+
+  // Address Mutations
+  const saveAddressMutation = useMutation({
+    mutationFn: (data: Any) =>
+      data.id
+        ? profileService.updateAddress(data.id, data)
+        : profileService.createAddress(data),
+    onSuccess: () => {
+      notifySuccess("Đã lưu địa chỉ!");
+      queryClient.invalidateQueries({ queryKey: ["addresses"] });
+      setEditingAddress(null);
+    },
+    onError: (err: any) => {
+      notifyError(err?.message || err?.response?.data?.message || "Lỗi lưu địa chỉ!");
+    },
+  });
+
+  const removeAddressMutation = useMutation({
+    mutationFn: (id: string) => profileService.deleteAddress(id),
+    onSuccess: () => {
+      notifySuccess("Đã xóa địa chỉ thành công!");
+      queryClient.invalidateQueries({ queryKey: ["addresses"] });
+    },
+    onError: (err: any) => {
+      notifyError(err?.message || err?.response?.data?.message || "Không thể xóa địa chỉ!");
+    },
+  });
+
+  // Order Mutations
+  const cancelOrderMutation = useMutation({
+    mutationFn: (id: string) => orderService.cancel(id),
+    onSuccess: () => {
+      notifySuccess("Hủy đơn hàng thành công!");
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
+    onError: (err: any) => {
+      notifyError(err?.message || err?.response?.data?.message || "Không thể hủy đơn hàng!");
+    },
+  });
 
   return (
     <PublicLayout fullWidth>
-      <div className="w-full bg-[#F2F2F2] dark:bg-zinc-950 text-black dark:text-white transition-colors duration-300 min-h-[calc(100vh-60px)]">
-        
-        {/* =========================================================================
-            HEADER TITLE: My Account
-           ========================================================================= */}
-        <section className="w-full border-b border-black dark:border-zinc-800">
-          <div className="w-[1920px] max-w-full mx-auto p-8 lg:p-12">
-            <h1 className="text-[36px] sm:text-[60px] lg:text-[96px] font-bold tracking-tight leading-none">
-              My Account
-            </h1>
-          </div>
-        </section>
+      <section className="min-h-screen bg-white text-black">
+        <div className="border-b border-black px-6 py-10 lg:px-12">
+          <h1 className="text-4xl font-medium tracking-tight">Tài khoản của tôi</h1>
+        </div>
 
-        {/* =========================================================================
-            MAIN BODY: 2 COLUMN LAYOUT (LEFT TABS + RIGHT CONTENT)
-           ========================================================================= */}
-        <section className="w-full border-b border-black dark:border-zinc-800">
-          <div className="w-[1920px] max-w-full mx-auto flex flex-col lg:flex-row">
-            
-            {/* LEFT NAVIGATION SIDEBAR */}
-            <aside className="w-full lg:w-[360px] shrink-0 border-b lg:border-b-0 lg:border-r border-black dark:border-zinc-800 bg-white dark:bg-zinc-900 divide-y divide-black dark:divide-zinc-800">
+        <div className="grid lg:grid-cols-[240px_1fr] border-b border-black">
+          {/* Sidebar */}
+          <aside className="border-r border-black p-4">
+            {[
+              ["profile", "Thông tin cá nhân"],
+              ["addresses", "Sổ địa chỉ"],
+              ["orders", "Đơn hàng của tôi"],
+            ].map(([id, label]) => (
               <button
-                onClick={() => setActiveTab("orders")}
-                className={`w-full p-6 text-left text-[20px] font-bold flex items-center gap-3 transition-colors cursor-pointer ${
-                  activeTab === "orders"
-                    ? "bg-black text-white dark:bg-white dark:text-black"
-                    : "hover:bg-[#C5FA1F] hover:text-black"
-                }`}
+                key={id}
+                onClick={() => setTab(id as any)}
+                className={`block w-full px-4 py-3 text-left text-sm font-medium transition-colors ${tab === id ? "bg-black text-white" : "hover:bg-zinc-100"
+                  }`}
               >
-                <Package className="w-5 h-5" />
-                <span>Order History</span>
+                {label}
               </button>
+            ))}
+            <button
+              onClick={logout}
+              className="mt-6 w-full border border-black px-4 py-3 text-left text-sm hover:bg-zinc-100 font-medium"
+            >
+              Đăng xuất
+            </button>
+          </aside>
 
-              <button
-                onClick={() => setActiveTab("profile")}
-                className={`w-full p-6 text-left text-[20px] font-bold flex items-center gap-3 transition-colors cursor-pointer ${
-                  activeTab === "profile"
-                    ? "bg-black text-white dark:bg-white dark:text-black"
-                    : "hover:bg-[#C5FA1F] hover:text-black"
-                }`}
-              >
-                <User className="w-5 h-5" />
-                <span>Profile Settings</span>
-              </button>
-
-              <button
-                onClick={logout}
-                className="w-full p-6 text-left text-[20px] font-bold text-red-600 dark:text-red-400 flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
-              >
-                <LogOut className="w-5 h-5" />
-                <span>Log Out</span>
-              </button>
-            </aside>
-
-            {/* RIGHT CONTENT AREA */}
-            <main className="flex-1 p-8 lg:p-12 bg-white dark:bg-zinc-900">
-              
-              {/* TAB 1: PROFILE SETTINGS */}
-              {activeTab === "profile" && (
-                <div className="space-y-8 max-w-[900px]">
-                  <div className="pb-4 border-b border-black/10 dark:border-white/10">
-                    <h2 className="text-[28px] sm:text-[36px] font-bold">Thông tin cá nhân</h2>
-                    <p className="text-zinc-600 dark:text-zinc-400 text-sm">
-                      Quản lý chi tiết hồ sơ tài khoản và địa chỉ giao hàng của bạn.
-                    </p>
+          {/* Main Content */}
+          <main className="min-h-[600px] p-6 lg:p-10">
+            {/* Tab Profile */}
+            {tab === "profile" && (
+              <div className="max-w-xl">
+                <h2 className="text-2xl font-medium">Thông tin cá nhân</h2>
+                <form
+                  className="mt-6 space-y-4"
+                  onSubmit={handleSubmitProfile((data) => updateProfileMutation.mutate(data))}
+                >
+                  <div>
+                    <label className="block text-sm font-medium">Họ và tên *</label>
+                    <input
+                      {...registerProfile("fullName")}
+                      className="mt-1 block w-full border border-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                    />
+                    {profileErrors.fullName && (
+                      <p className="mt-1 text-xs text-red-600">{profileErrors.fullName.message}</p>
+                    )}
                   </div>
 
-                  {/* SETTINGS TILES GRID */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
-                    {/* Tile 1: Full Name */}
-                    <div className="p-6 bg-[#F9F9F9] dark:bg-zinc-800/50 border border-black dark:border-zinc-700 flex items-start justify-between">
-                      <div className="space-y-1">
-                        <span className="text-xs uppercase font-bold text-zinc-500 tracking-wider">
-                          Full Name
-                        </span>
-                        <p className="text-[20px] font-bold">
-                          {profile.firstName} {profile.lastName}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleOpenModal("name")}
-                        className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase flex items-center gap-1.5 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors cursor-pointer"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" /> Edit
-                      </button>
-                    </div>
-
-                    {/* Tile 2: Email Address */}
-                    <div className="p-6 bg-[#F9F9F9] dark:bg-zinc-800/50 border border-black dark:border-zinc-700 flex items-start justify-between">
-                      <div className="space-y-1">
-                        <span className="text-xs uppercase font-bold text-zinc-500 tracking-wider">
-                          Email Address
-                        </span>
-                        <p className="text-[18px] font-bold truncate max-w-[200px] sm:max-w-none">
-                          {profile.email}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleOpenModal("email")}
-                        className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase flex items-center gap-1.5 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors cursor-pointer"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" /> Edit
-                      </button>
-                    </div>
-
-                    {/* Tile 3: Shipping Address */}
-                    <div className="p-6 bg-[#F9F9F9] dark:bg-zinc-800/50 border border-black dark:border-zinc-700 flex items-start justify-between md:col-span-2">
-                      <div className="space-y-1 pr-4">
-                        <span className="text-xs uppercase font-bold text-zinc-500 tracking-wider">
-                          Shipping Address
-                        </span>
-                        <p className="text-[18px] font-bold">{profile.address}</p>
-                      </div>
-                      <button
-                        onClick={() => handleOpenModal("address")}
-                        className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase flex items-center gap-1.5 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors shrink-0 cursor-pointer"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" /> Edit
-                      </button>
-                    </div>
-
-                    {/* Tile 4: Phone Number */}
-                    <div className="p-6 bg-[#F9F9F9] dark:bg-zinc-800/50 border border-black dark:border-zinc-700 flex items-start justify-between">
-                      <div className="space-y-1">
-                        <span className="text-xs uppercase font-bold text-zinc-500 tracking-wider">
-                          Phone Number
-                        </span>
-                        <p className="text-[18px] font-bold">{profile.phone}</p>
-                      </div>
-                      <button
-                        onClick={() => handleOpenModal("phone")}
-                        className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase flex items-center gap-1.5 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors cursor-pointer"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" /> Edit
-                      </button>
-                    </div>
-
-                    {/* Tile 5: Password */}
-                    <div className="p-6 bg-[#F9F9F9] dark:bg-zinc-800/50 border border-black dark:border-zinc-700 flex items-start justify-between">
-                      <div className="space-y-1">
-                        <span className="text-xs uppercase font-bold text-zinc-500 tracking-wider">
-                          Password
-                        </span>
-                        <p className="text-[18px] font-bold tracking-widest">••••••••••••••••</p>
-                      </div>
-                      <button
-                        onClick={() => handleOpenModal("password")}
-                        className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase flex items-center gap-1.5 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors cursor-pointer"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" /> Edit
-                      </button>
-                    </div>
-
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 2: ORDER HISTORY */}
-              {activeTab === "orders" && (
-                <div className="space-y-8 max-w-[900px]">
-                  <div className="pb-4 border-b border-black/10 dark:border-white/10">
-                    <h2 className="text-[28px] sm:text-[36px] font-bold">Lịch sử đơn hàng</h2>
-                    <p className="text-zinc-600 dark:text-zinc-400 text-sm">
-                      Theo dõi trạng thái và lịch sử các đơn hàng bạn đã mua tại ShopWise.
-                    </p>
+                  <div>
+                    <label className="block text-sm font-medium">Email (không thể sửa)</label>
+                    <input
+                      type="email"
+                      value={user.email || ""}
+                      disabled
+                      className="mt-1 block w-full border border-zinc-300 bg-zinc-100 px-3 py-2 text-sm text-zinc-600 cursor-not-allowed"
+                    />
                   </div>
 
-                  <div className="space-y-4">
-                    {MOCK_ORDERS.map((order) => (
-                      <div
-                        key={order.id}
-                        className="p-6 bg-[#F9F9F9] dark:bg-zinc-800/50 border border-black dark:border-zinc-700 flex flex-col md:flex-row md:items-center justify-between gap-4"
-                      >
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-3">
-                            <span className="text-[20px] font-bold">{order.id}</span>
-                            <span
-                              className={`px-3 py-0.5 text-xs font-bold border ${order.badgeColor}`}
-                            >
-                              {order.status}
-                            </span>
-                          </div>
-                          <p className="text-xs text-zinc-500 font-medium">{order.date}</p>
-                          <p className="text-sm font-semibold">
-                            Sản phẩm: <span className="font-normal">{order.items.join(", ")}</span>
-                          </p>
-                        </div>
-
-                        <div className="flex items-center justify-between md:flex-col md:items-end gap-2 pt-4 md:pt-0 border-t md:border-t-0 border-black/10 dark:border-white/10">
-                          <span className="text-[22px] font-extrabold">{order.total}</span>
-                          <button className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase hover:bg-zinc-800 transition-colors">
-                            Xem Chi Tiết
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                  <div>
+                    <label className="block text-sm font-medium">Số điện thoại</label>
+                    <input
+                      {...registerProfile("phoneNumber")}
+                      placeholder="Ví dụ: 0912345678"
+                      className="mt-1 block w-full border border-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                    />
+                    {profileErrors.phoneNumber && (
+                      <p className="mt-1 text-xs text-red-600">{profileErrors.phoneNumber.message}</p>
+                    )}
                   </div>
-                </div>
-              )}
 
-            </main>
-
-          </div>
-        </section>
-
-        {/* =========================================================================
-            INTERACTIVE MODAL OVERLAYS (EXACT FIGMA 9:4554 SPEC)
-           ========================================================================= */}
-        {activeModal && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="w-full max-w-[480px] bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 shadow-2xl p-8 space-y-6 relative animate-in fade-in zoom-in-95 duration-200">
-              
-              {/* Close Icon Button */}
-              <button
-                onClick={handleCloseModal}
-                className="absolute top-6 right-6 text-zinc-400 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
-              >
-                <X className="w-6 h-6" />
-              </button>
-
-              {/* Success Message Banner */}
-              {saveSuccessMsg ? (
-                <div className="py-8 text-center space-y-4">
-                  <CheckCircle2 className="w-12 h-12 text-[#1CCA00] mx-auto" />
-                  <h3 className="text-2xl font-bold">{saveSuccessMsg}</h3>
-                </div>
-              ) : (
-                <form onSubmit={handleSaveModal} className="space-y-6">
-                  
-                  {/* MODAL 1: EDIT NAME */}
-                  {activeModal === "name" && (
-                    <>
-                      <div className="space-y-1">
-                        <h3 className="text-[28px] font-bold">First & Last Name</h3>
-                        <p className="text-sm text-zinc-500">Cập nhật họ và tên tài khoản của bạn.</p>
-                      </div>
-
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <label className="block text-sm font-bold uppercase">First name</label>
-                          <input
-                            type="text"
-                            value={tempFirstName}
-                            onChange={(e) => setTempFirstName(e.target.value)}
-                            required
-                            className="w-full h-[50px] px-4 border border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 text-[16px] focus:outline-none focus:ring-2 focus:ring-black"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="block text-sm font-bold uppercase">Last name</label>
-                          <input
-                            type="text"
-                            value={tempLastName}
-                            onChange={(e) => setTempLastName(e.target.value)}
-                            required
-                            className="w-full h-[50px] px-4 border border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 text-[16px] focus:outline-none focus:ring-2 focus:ring-black"
-                          />
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {/* MODAL 2: EDIT EMAIL */}
-                  {activeModal === "email" && (
-                    <>
-                      <div className="space-y-1">
-                        <h3 className="text-[28px] font-bold">Email Address</h3>
-                        <p className="text-sm text-zinc-500">Thay đổi địa chỉ email chính liên kết với tài khoản.</p>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="block text-sm font-bold uppercase">Email address</label>
-                        <input
-                          type="email"
-                          value={tempEmail}
-                          onChange={(e) => setTempEmail(e.target.value)}
-                          required
-                          className="w-full h-[50px] px-4 border border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 text-[16px] focus:outline-none focus:ring-2 focus:ring-black"
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  {/* MODAL 3: EDIT ADDRESS */}
-                  {activeModal === "address" && (
-                    <>
-                      <div className="space-y-1">
-                        <h3 className="text-[28px] font-bold">Shipping Address</h3>
-                        <p className="text-sm text-zinc-500">Cập nhật địa chỉ nhận hàng mặc định của bạn.</p>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="block text-sm font-bold uppercase">Street address</label>
-                        <textarea
-                          rows={3}
-                          value={tempAddress}
-                          onChange={(e) => setTempAddress(e.target.value)}
-                          required
-                          className="w-full p-4 border border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 text-[16px] focus:outline-none focus:ring-2 focus:ring-black resize-none"
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  {/* MODAL 4: EDIT PHONE */}
-                  {activeModal === "phone" && (
-                    <>
-                      <div className="space-y-1">
-                        <h3 className="text-[28px] font-bold">Phone Number</h3>
-                        <p className="text-sm text-zinc-500">Cập nhật số điện thoại liên hệ giao hàng.</p>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="block text-sm font-bold uppercase">Phone number</label>
-                        <input
-                          type="tel"
-                          value={tempPhone}
-                          onChange={(e) => setTempPhone(e.target.value)}
-                          required
-                          className="w-full h-[50px] px-4 border border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 text-[16px] focus:outline-none focus:ring-2 focus:ring-black"
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  {/* MODAL 5: EDIT PASSWORD */}
-                  {activeModal === "password" && (
-                    <>
-                      <div className="space-y-1">
-                        <h3 className="text-[28px] font-bold">Change Password</h3>
-                        <p className="text-sm text-zinc-500">Đổi mật khẩu mới để bảo mật tài khoản.</p>
-                      </div>
-
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <label className="block text-sm font-bold uppercase">Current password</label>
-                          <div className="relative flex items-center">
-                            <input
-                              type={showCurrentPass ? "text" : "password"}
-                              value={currentPass}
-                              onChange={(e) => setCurrentPass(e.target.value)}
-                              required
-                              className="w-full h-[50px] pl-4 pr-12 border border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 text-[16px] focus:outline-none focus:ring-2 focus:ring-black"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowCurrentPass(!showCurrentPass)}
-                              className="absolute right-4 text-zinc-400"
-                            >
-                              {showCurrentPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="block text-sm font-bold uppercase">New password</label>
-                          <div className="relative flex items-center">
-                            <input
-                              type={showNewPass ? "text" : "password"}
-                              value={newPass}
-                              onChange={(e) => {
-                                setNewPass(e.target.value);
-                                if (passMismatchError) setPassMismatchError(false);
-                              }}
-                              required
-                              className="w-full h-[50px] pl-4 pr-12 border border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 text-[16px] focus:outline-none focus:ring-2 focus:ring-black"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowNewPass(!showNewPass)}
-                              className="absolute right-4 text-zinc-400"
-                            >
-                              {showNewPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="block text-sm font-bold uppercase">Re-enter new password</label>
-                          <div className="relative flex items-center">
-                            <input
-                              type={showRePass ? "text" : "password"}
-                              value={rePass}
-                              onChange={(e) => {
-                                setRePass(e.target.value);
-                                if (passMismatchError) setPassMismatchError(false);
-                              }}
-                              required
-                              className={`w-full h-[50px] pl-4 pr-12 border ${
-                                passMismatchError ? "border-red-600" : "border-black dark:border-zinc-700"
-                              } bg-white dark:bg-zinc-800 text-[16px] focus:outline-none focus:ring-2 focus:ring-black`}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowRePass(!showRePass)}
-                              className="absolute right-4 text-zinc-400"
-                            >
-                              {showRePass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                            </button>
-                          </div>
-
-                          {passMismatchError && (
-                            <p className="text-red-600 text-xs font-bold pt-1">
-                              Mật khẩu không trùng khớp. Vui lòng kiểm tra lại.
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {/* Save Action Button */}
-                  <div className="pt-2">
+                  <div className="pt-2 flex items-center gap-4">
                     <button
                       type="submit"
-                      disabled={isSaving}
-                      className="w-full h-[50px] bg-black text-white dark:bg-white dark:text-black text-[18px] font-bold flex items-center justify-center gap-2 hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors cursor-pointer disabled:opacity-50"
+                      className="bg-black px-5 py-3 text-sm text-white disabled:opacity-40"
+                      disabled={!isProfileValid || updateProfileMutation.isPending}
                     >
-                      {isSaving ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin" /> Lưu thay đổi...
-                        </>
-                      ) : (
-                        "Save Changes"
-                      )}
+                      {updateProfileMutation.isPending ? "Đang lưu…" : "Lưu thay đổi"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowChangePasswordModal(true)}
+                      className="border border-black px-4 py-3 text-sm hover:bg-zinc-100 font-medium"
+                    >
+                      Đổi mật khẩu
                     </button>
                   </div>
                 </form>
-              )}
+              </div>
+            )}
 
+            {/* Tab Addresses */}
+            {tab === "addresses" && (
+              <div>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-medium">Sổ địa chỉ</h2>
+                  <button
+                    onClick={() => setEditingAddress({})}
+                    className="border border-black px-4 py-2 text-sm hover:bg-zinc-100 font-medium"
+                  >
+                    + Thêm địa chỉ mới
+                  </button>
+                </div>
+
+                <div className="mt-6 grid gap-4 md:grid-cols-2">
+                  {addressesQuery.isLoading ? (
+                    <p className="text-sm">Đang tải địa chỉ…</p>
+                  ) : addressRows.length ? (
+                    addressRows.map((address) => (
+                      <article key={address.id} className="border border-black p-5 flex flex-col justify-between">
+                        <div>
+                          <div className="flex justify-between items-start">
+                            <strong>{address.recipientName || address.receiverName || address.fullName}</strong>
+                            {address.isDefault && <StatusBadge status="ACTIVE" />}
+                          </div>
+                          <p className="mt-3 text-sm text-zinc-700">
+                            {[
+                              address.phone,
+                              address.detailAddress || address.addressLine,
+                              address.ward,
+                              address.district,
+                              address.province,
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </p>
+                          {address.note && (
+                            <p className="mt-2 text-xs italic text-zinc-500">Ghi chú: {address.note}</p>
+                          )}
+                        </div>
+
+                        <div className="mt-5 flex gap-4 border-t border-zinc-200 pt-3">
+                          <button
+                            onClick={() => setEditingAddress(address)}
+                            className="underline text-sm font-medium"
+                          >
+                            Sửa
+                          </button>
+                          <button
+                            onClick={() => removeAddressMutation.mutate(address.id)}
+                            className="underline text-sm font-medium text-red-700"
+                          >
+                            Xóa
+                          </button>
+                          {!address.isDefault && (
+                            <button
+                              onClick={() =>
+                                profileService
+                                  .setDefaultAddress(address.id)
+                                  .then(() => queryClient.invalidateQueries({ queryKey: ["addresses"] }))
+                              }
+                              className="underline text-sm font-medium text-zinc-700"
+                            >
+                              Đặt mặc định
+                            </button>
+                          )}
+                        </div>
+                      </article>
+                    ))
+                  ) : (
+                    <p className="text-zinc-500 text-sm">Bạn chưa lưu địa chỉ nào.</p>
+                  )}
+                </div>
+
+                {editingAddress && (
+                  <AddressForm
+                    initial={editingAddress}
+                    onClose={() => setEditingAddress(null)}
+                    onSave={(data) => saveAddressMutation.mutate({ ...data, id: editingAddress.id })}
+                    isPending={saveAddressMutation.isPending}
+                  />
+                )}
+              </div>
+            )}
+
+            {/* Tab Orders */}
+            {tab === "orders" && (
+              <div>
+                <h2 className="text-2xl font-medium">Đơn hàng của tôi</h2>
+                <div className="mt-6 space-y-4">
+                  {ordersQuery.isLoading ? (
+                    <p className="text-sm">Đang tải đơn hàng…</p>
+                  ) : orderRows.length ? (
+                    orderRows.map((order) => (
+                      <article
+                        key={order.id}
+                        className="border border-black p-5 space-y-4"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-200 pb-3">
+                          <div>
+                            <span className="text-xs text-zinc-500 block font-mono">MÃ ĐƠN HÀNG</span>
+                            <strong className="text-base font-mono">{order.id}</strong>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <StatusBadge status={order.status} />
+                            {["PENDING", "CONFIRMED"].includes(order.status) && (
+                              <button
+                                onClick={() => setCancelOrderId(String(order.id))}
+                                className="border border-red-700 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-50 cursor-pointer"
+                              >
+                                Hủy đơn
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Order Items Preview */}
+                        <div className="space-y-2">
+                          {order.items?.map((item: any) => {
+                            const unitPrice = Number(item.priceAtPurchase ?? item.price ?? 0);
+                            const lineTotal = Number(item.lineTotal ?? (unitPrice * Number(item.quantity || 1)));
+
+                            return (
+                              <div key={item.id} className="flex justify-between items-center text-sm py-1.5 border-b border-dashed border-zinc-200 last:border-none">
+                                <div className="space-y-0.5">
+                                  <p className="font-bold">{item.productName}</p>
+                                  {item.variantName && (
+                                    <p className="text-xs text-zinc-500">Cấu hình: {item.variantName} × {item.quantity}</p>
+                                  )}
+                                </div>
+                                <div className="text-right font-mono">
+                                  <p className="font-bold">{lineTotal.toLocaleString("vi-VN")} ₫</p>
+                                  <p className="text-[11px] text-zinc-500">{unitPrice.toLocaleString("vi-VN")} ₫ / sp</p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Order Total & Info */}
+                        <div className="flex flex-wrap items-center justify-between pt-3 border-t border-black/10 text-xs text-zinc-600">
+                          <div>
+                            <span>Ngày đặt: <strong>{new Date(order.createdAt || Date.now()).toLocaleDateString("vi-VN")}</strong></span>
+                            {order.shippingAddress && (
+                              <span className="ml-4 block sm:inline">Giao tới: <strong>{order.shippingAddress}</strong></span>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <span>Tổng tiền đơn: </span>
+                            <strong className="text-base font-extrabold text-black font-mono">
+                              {Number(order.totalAmount || order.total || 0).toLocaleString("vi-VN")} ₫
+                            </strong>
+                          </div>
+                        </div>
+                      </article>
+                    ))
+                  ) : (
+                    <p className="text-zinc-500 text-sm">Bạn chưa có đơn hàng nào.</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </main>
+        </div>
+      </section>
+
+      {/* Confirm Dialog Hủy đơn hàng */}
+      <ConfirmDialog
+        open={!!cancelOrderId}
+        onOpenChange={(v) => !v && setCancelOrderId(null)}
+        title="Hủy đơn hàng?"
+        description="Thao tác này không thể hoàn tác. Bạn chắc chắn muốn hủy đơn hàng này?"
+        danger
+        confirmText="Hủy đơn"
+        onConfirm={() => {
+          if (cancelOrderId) cancelOrderMutation.mutate(cancelOrderId);
+          setCancelOrderId(null);
+        }}
+      />
+
+      {/* Modal Đổi Mật Khẩu qua OTP */}
+      {showChangePasswordModal && (
+        <ChangePasswordModal
+          userEmail={user.email}
+          onClose={() => setShowChangePasswordModal(false)}
+        />
+      )}
+    </PublicLayout>
+  );
+}
+
+/** Component Modal Đổi mật khẩu trong Account tab profile */
+function ChangePasswordModal({ userEmail, onClose }: { userEmail: string; onClose: () => void }) {
+  const [step, setStep] = useState<1 | 2>(1);
+  const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [rePassword, setRePassword] = useState("");
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showRePass, setShowRePass] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const sendOtpMutation = useMutation({
+    mutationFn: () => authService.forgotPassword(userEmail),
+    onSuccess: () => {
+      notifySuccess("Mã OTP đã được gửi đến email của bạn!");
+      setStep(2);
+    },
+    onError: (err: any) => {
+      setErrorMsg(err?.message || err?.response?.data?.message || "Không thể gửi OTP. Vui lòng thử lại.");
+    },
+  });
+
+  const resetPassMutation = useMutation({
+    mutationFn: () =>
+      authService.resetPassword({ email: userEmail, otp, newPassword }),
+    onSuccess: () => {
+      notifySuccess("Đổi mật khẩu thành công!");
+      onClose();
+    },
+    onError: (err: any) => {
+      setErrorMsg(err?.message || err?.response?.data?.message || "Mã OTP không đúng hoặc đã hết hạn.");
+    },
+  });
+
+  const hasLowercase = /[a-z]/.test(newPassword);
+  const hasNumber = /[0-9]/.test(newPassword);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
+  const isMinLength = newPassword.length >= 8;
+  const isPassValid = hasLowercase && hasNumber && hasSpecialChar && isMinLength;
+
+  const handleStep2Submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg("");
+    if (newPassword !== rePassword) {
+      setErrorMsg("Mật khẩu nhập lại không trùng khớp!");
+      return;
+    }
+    resetPassMutation.mutate();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4">
+      <div className="w-full max-w-md border border-black bg-white p-6 shadow-lg">
+        <h3 className="text-xl font-medium">Đổi mật khẩu</h3>
+
+        {errorMsg && (
+          <div className="mt-3 p-3 bg-red-50 border border-red-500 text-red-700 text-xs font-medium">
+            {errorMsg}
+          </div>
+        )}
+
+        {step === 1 && (
+          <div className="mt-4 space-y-4">
+            <p className="text-sm text-zinc-600">
+              Mã xác thực OTP sẽ được gửi về email của bạn: <strong>{userEmail}</strong>
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="border border-black px-4 py-2 text-sm hover:bg-zinc-100"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={() => sendOtpMutation.mutate()}
+                disabled={sendOtpMutation.isPending}
+                className="bg-black px-4 py-2 text-sm text-white disabled:opacity-40"
+              >
+                {sendOtpMutation.isPending ? "Đang gửi OTP..." : "Gửi mã OTP"}
+              </button>
             </div>
           </div>
         )}
 
+        {step === 2 && (
+          <form onSubmit={handleStep2Submit} className="mt-4 space-y-4">
+            <div>
+              <label className="block text-sm font-medium">Mã OTP (6 chữ số) *</label>
+              <input
+                required
+                maxLength={6}
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                placeholder="Nhập 6 chữ số OTP"
+                className="mt-1 w-full border border-black px-3 py-2 text-sm tracking-widest font-mono"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium">Mật khẩu mới *</label>
+              <div className="relative flex items-center mt-1">
+                <input
+                  required
+                  type={showNewPass ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Mật khẩu mới"
+                  className="w-full border border-black px-3 py-2 pr-10 text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPass(!showNewPass)}
+                  className="absolute right-3 text-zinc-500"
+                >
+                  {showNewPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {/* Password checklist */}
+              {newPassword.length > 0 && (
+                <div className="space-y-1 pt-2 text-xs">
+                  {[
+                    { ok: hasLowercase, label: "Ít nhất 1 chữ thường" },
+                    { ok: hasNumber, label: "Ít nhất 1 số" },
+                    { ok: hasSpecialChar, label: "Ít nhất 1 ký tự đặc biệt" },
+                    { ok: isMinLength, label: "Ít nhất 8 ký tự" },
+                  ].map(({ ok, label }) => (
+                    <div key={label} className="flex items-center gap-2">
+                      <span
+                        className={`w-3.5 h-3.5 flex items-center justify-center border text-[9px] ${ok ? "bg-green-600 border-green-600 text-white" : "border-zinc-400"
+                          }`}
+                      >
+                        {ok && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                      </span>
+                      <span className={ok ? "text-green-600" : "text-zinc-500"}>{label}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium">Nhập lại mật khẩu mới *</label>
+              <div className="relative flex items-center mt-1">
+                <input
+                  required
+                  type={showRePass ? "text" : "password"}
+                  value={rePassword}
+                  onChange={(e) => setRePassword(e.target.value)}
+                  placeholder="Xác nhận mật khẩu mới"
+                  className="w-full border border-black px-3 py-2 pr-10 text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowRePass(!showRePass)}
+                  className="absolute right-3 text-zinc-500"
+                >
+                  {showRePass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="border border-black px-4 py-2 text-sm hover:bg-zinc-100"
+              >
+                Hủy
+              </button>
+              <button
+                type="submit"
+                disabled={!otp || !isPassValid || resetPassMutation.isPending}
+                className="bg-black px-4 py-2 text-sm text-white disabled:opacity-40"
+              >
+                {resetPassMutation.isPending ? "Đang đổi mật khẩu..." : "Xác nhận đổi"}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
-    </PublicLayout>
+    </div>
   );
 }

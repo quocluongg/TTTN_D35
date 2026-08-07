@@ -1,102 +1,10 @@
 "use client";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCurrentUser, useLogout } from "@/hooks/useAuth";
-
-const menuItems = [
-  { label: "Tổng quan", href: "/admin" },
-  { label: "Người dùng", href: "/admin/users" },
-  { label: "Vai trò & Quyền", href: "/admin/roles" },
-  { label: "Sản phẩm", href: "/admin/products" },
-  { label: "Tồn kho", href: "/admin/inventory" },
-  { label: "Đơn hàng", href: "/admin/orders" },
-  { label: "Khuyến mãi", href: "/admin/promotions" },
-  { label: "Bảo hành", href: "/admin/warranties" },
-  { label: "Tin tức", href: "/admin/news" },
-  { label: "Trợ lý AI (RAG)", href: "/admin/rag" },
-  { label: "Báo cáo Người dùng", href: "/admin/reports/users" },
-  { label: "Báo cáo Kinh doanh", href: "/admin/reports/business" },
-  { label: "Cấu hình Hệ thống", href: "/admin/system-config" },
-  { label: "Nhật ký Hệ thống", href: "/admin/audit-logs" },
-];
-
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const { data: user } = useCurrentUser();
-  const logout = useLogout();
-
-  return (
-    <div className="min-h-screen flex bg-slate-100 text-slate-800 font-sans">
-      {/* Sidebar Navigation */}
-      <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col justify-between shrink-0 shadow-lg">
-        <div>
-          <div className="p-5 border-b border-slate-800 flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-slate-950">
-              SW
-            </div>
-            <div>
-              <h1 className="font-bold text-white tracking-wide">ShopWise</h1>
-              <p className="text-xs text-slate-400">Admin & Staff Portal</p>
-            </div>
-          </div>
-
-          <nav className="p-3 space-y-1">
-            {menuItems.map((item) => {
-              const active = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href));
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    active
-                      ? "bg-emerald-600 text-white shadow-sm"
-                      : "hover:bg-slate-800 hover:text-white"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
-
-        <div className="p-4 border-t border-slate-800 flex items-center justify-between">
-          <div className="overflow-hidden">
-            <p className="text-sm font-semibold text-white truncate">{user?.fullName || "Quản trị viên"}</p>
-            <p className="text-xs text-slate-400 truncate">{user?.email || "admin@shopwise.vn"}</p>
-          </div>
-          <button
-            onClick={logout}
-            className="text-xs font-semibold px-2 py-1 bg-slate-800 hover:bg-red-600 text-slate-200 rounded transition"
-          >
-            Thoát
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-        <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shadow-xs">
-          <h2 className="text-lg font-semibold text-slate-800">
-            Hệ thống Quản trị & Vận hành ShopWise
-          </h2>
-          <div className="flex items-center gap-4">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-              Role: {user?.role || "ADMIN"}
-            </span>
-            <Link
-              href="/"
-              target="_blank"
-              className="text-xs font-medium text-emerald-700 hover:underline"
-            >
-              Về Trang Khách Hàng ↗
-            </Link>
-          </div>
-        </header>
-
-        <main className="p-6 md:p-8 flex-1">{children}</main>
-      </div>
-    </div>
-  );
-}
+import { BarChart3, Boxes, FileText, FolderTree, Gauge, LayoutTemplate, Menu, PackageSearch, ReceiptText, Settings, ShieldCheck, Tags, Users, Warehouse, X } from "lucide-react";
+import { useState } from "react";
+const nav = [
+  ["/admin", "Tổng quan", Gauge], ["/admin/products", "Sản phẩm", PackageSearch], ["/admin/categories", "Danh mục", FolderTree], ["/admin/promotions", "Khuyến mãi", Tags], ["/admin/orders", "Đơn hàng", ReceiptText], ["/admin/users", "Người dùng", Users], ["/admin/roles", "Vai trò", ShieldCheck], ["/admin/inventory", "Kho hàng", Warehouse], ["/admin/news", "Tin tức", FileText], ["/admin/warranties", "Bảo hành", Boxes], ["/admin/cms", "Homepage CMS", LayoutTemplate], ["/admin/reports", "Báo cáo", BarChart3], ["/admin/settings", "Cấu hình", Settings], ["/admin/audit-logs", "Audit logs", FileText],
+] as const;
+export default function AdminLayout({children}:{children:React.ReactNode}) { const path = usePathname(); const [open,setOpen]=useState(false); const sidebar=<aside className="h-full w-64 border-r border-black bg-white p-4"><div className="mb-8 flex items-center justify-between border-b border-black pb-4"><Link href="/admin" className="text-xl font-medium tracking-tight">SHOPWISE / ADMIN</Link><button className="lg:hidden" onClick={()=>setOpen(false)}><X/></button></div><nav className="space-y-1">{nav.map(([href,label,Icon])=><Link key={href} href={href} onClick={()=>setOpen(false)} className={`flex items-center gap-3 px-3 py-2 text-sm transition-colors ${path===href ? "bg-black text-white" : "hover:bg-zinc-100"}`}><Icon size={17}/>{label}</Link>)}</nav></aside>;
+ return <div className="min-h-screen bg-zinc-50 text-black"><div className="hidden fixed inset-y-0 left-0 z-30 lg:block">{sidebar}</div>{open&&<div className="fixed inset-0 z-40 lg:hidden"><button aria-label="Close menu" className="absolute inset-0 bg-black/40" onClick={()=>setOpen(false)}/><div className="relative h-full w-72">{sidebar}</div></div>}<main className="lg:ml-64"><header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-black bg-white px-5"><button className="lg:hidden" onClick={()=>setOpen(true)}><Menu/></button><p className="text-sm font-medium uppercase tracking-wider">{path.split("/").filter(Boolean).join(" / ")}</p><Link className="ml-auto text-sm underline" href="/">Xem cửa hàng</Link></header><div className="p-5 lg:p-8">{children}</div></main></div>; }

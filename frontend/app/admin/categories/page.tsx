@@ -1,87 +1,198 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Search, Edit, Trash2, FolderTree } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import ResourcePage from "@/components/admin/ResourcePage";
+import { adminCategoryService } from "@/services/admin/adminCategoryService";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { notifyError, notifySuccess } from "@/components/Notify";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
-const MOCK_CATEGORIES = [
-  { id: "CAT-01", name: "Đồng hồ vạn năng", slug: "dong-ho-van-nang", itemCount: 142, status: "active" },
-  { id: "CAT-02", name: "Ampe kìm", slug: "ampe-kim", itemCount: 88, status: "active" },
-  { id: "CAT-03", name: "Máy đo điện trở cách điện", slug: "may-do-cach-dien", itemCount: 35, status: "active" },
-  { id: "CAT-04", name: "Thiết bị đo nhiệt độ", slug: "thieth-bi-do-nhiet-do", itemCount: 54, status: "active" },
-  { id: "CAT-05", name: "Máy đo sóng Oscillosope", slug: "may-do-song", itemCount: 19, status: "active" },
-];
+type CategoryRow = Record<string, any>;
 
-export default function AdminCategoriesPage() {
-  const [categories, setCategories] = useState(MOCK_CATEGORIES);
-  const [search, setSearch] = useState("");
+export default function CategoriesPage() {
+  const queryClient = useQueryClient();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deleteConfirmItem, setDeleteConfirmItem] = useState<CategoryRow | null>(null);
+  const [editingCategory, setEditingCategory] = useState<CategoryRow | null>(null);
 
-  const filtered = categories.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()));
+  // Form State
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [displayOrder, setDisplayOrder] = useState(0);
+  const [parentId, setParentId] = useState("");
+
+  const resetForm = () => {
+    setName("");
+    setSlug("");
+    setDisplayOrder(0);
+    setParentId("");
+    setEditingCategory(null);
+  };
+
+  const createMutation = useMutation({
+    mutationFn: (data: any) => adminCategoryService.create(data),
+    onSuccess: () => {
+      notifySuccess("Thêm danh mục thành công!");
+      queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
+      setModalOpen(false);
+      resetForm();
+    },
+    onError: (err: any) => {
+      notifyError(err?.message || "Không thể thêm danh mục.");
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      adminCategoryService.update(id, data),
+    onSuccess: () => {
+      notifySuccess("Cập nhật danh mục thành công!");
+      queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
+      setModalOpen(false);
+      resetForm();
+    },
+    onError: (err: any) => {
+      notifyError(err?.message || "Không thể cập nhật danh mục.");
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => adminCategoryService.delete(id),
+    onSuccess: () => {
+      notifySuccess("Xóa danh mục thành công!");
+      queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
+      setDeleteConfirmItem(null);
+    },
+    onError: (err: any) => {
+      notifyError(err?.message || "Không thể xóa danh mục.");
+    },
+  });
+
+  const handleOpenCreate = () => {
+    resetForm();
+    setModalOpen(true);
+  };
+
+  const handleOpenEdit = (row: CategoryRow) => {
+    setEditingCategory(row);
+    setName(row.name || "");
+    setSlug(row.slug || "");
+    setDisplayOrder(row.displayOrder || 0);
+    setParentId(row.parentId || "");
+    setModalOpen(true);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const payload = {
+      name,
+      slug: slug || undefined,
+      displayOrder,
+      parentId: parentId || undefined,
+    };
+
+    if (editingCategory) {
+      updateMutation.mutate({ id: editingCategory.id, data: payload });
+    } else {
+      createMutation.mutate(payload);
+    }
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-lg border border-slate-200 shadow-xs">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Quản Lý Danh Mục</h1>
-          <p className="text-sm text-slate-500 mt-1">Phân loại và danh mục sản phẩm trên hệ thống</p>
-        </div>
-        <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          <span>Thêm Danh Mục Mới</span>
-        </Button>
-      </div>
+      <ResourcePage
+        title="Quản lý Danh mục"
+        description="Quản lý cây danh mục sản phẩm, hiển thị thứ tự và slug đường dẫn."
+        queryKey="admin-categories"
+        fetcher={adminCategoryService.list}
+        fields={[
+          { key: "name", label: "Tên danh mục" },
+          { key: "slug", label: "Slug" },
+          { key: "parentName", label: "Danh mục cha" },
+          { key: "displayOrder", label: "Thứ tự hiển thị" },
+        ]}
+        onCreate={handleOpenCreate}
+        onEdit={handleOpenEdit}
+        onDelete={(row) => setDeleteConfirmItem(row)}
+      />
 
-      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-xs flex justify-between items-center">
-        <div className="relative w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm kiếm danh mục..."
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-md text-sm outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-        </div>
-        <span className="text-xs font-mono text-slate-500">Tổng số: {filtered.length} danh mục</span>
-      </div>
+      {/* CRUD Modal */}
+      {modalOpen && (
+        <Dialog open={modalOpen} onOpenChange={(v) => !v && setModalOpen(false)}>
+          <DialogContent className="max-w-md border-2 border-black bg-white p-6">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-bold uppercase tracking-wider">
+                {editingCategory ? "Chỉnh sửa danh mục" : "Thêm danh mục mới"}
+              </DialogTitle>
+            </DialogHeader>
 
-      <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-xs font-mono uppercase text-slate-500">
-              <th className="p-4">Mã DM</th>
-              <th className="p-4">Tên Danh Mục</th>
-              <th className="p-4">Slug Đường Dẫn</th>
-              <th className="p-4">Số Sản Phẩm</th>
-              <th className="p-4">Trạng Thái</th>
-              <th className="p-4 text-right">Thao Tác</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200 text-sm">
-            {filtered.map((c) => (
-              <tr key={c.id} className="hover:bg-slate-50 transition-colors">
-                <td className="p-4 font-mono text-xs font-semibold text-slate-600">{c.id}</td>
-                <td className="p-4 font-bold text-slate-900">{c.name}</td>
-                <td className="p-4 font-mono text-xs text-slate-500">/{c.slug}</td>
-                <td className="p-4 font-mono font-semibold">{c.itemCount} SP</td>
-                <td className="p-4">
-                  <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full">
-                    Hiển thị
-                  </span>
-                </td>
-                <td className="p-4 text-right space-x-2">
-                  <button className="p-1 text-blue-600 hover:text-blue-800 rounded">
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button className="p-1 text-red-600 hover:text-red-800 rounded">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+              <label className="block text-sm font-semibold">
+                Tên danh mục <span className="text-red-500">*</span>
+                <input
+                  required
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="mt-1 block w-full border border-black px-3 py-2 text-sm bg-white"
+                  placeholder="Ví dụ: Laptop Gaming"
+                />
+              </label>
+
+              <label className="block text-sm font-semibold">
+                Đường dẫn tĩnh (Slug)
+                <input
+                  type="text"
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
+                  className="mt-1 block w-full border border-black px-3 py-2 text-sm bg-white"
+                  placeholder="Tự động sinh nếu để trống"
+                />
+              </label>
+
+              <label className="block text-sm font-semibold">
+                Thứ tự hiển thị
+                <input
+                  type="number"
+                  value={displayOrder}
+                  onChange={(e) => setDisplayOrder(Number(e.target.value))}
+                  className="mt-1 block w-full border border-black px-3 py-2 text-sm bg-white"
+                />
+              </label>
+
+              <div className="flex justify-end gap-2 pt-4 border-t border-black/10">
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="border border-black px-4 py-2 text-sm"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={createMutation.isPending || updateMutation.isPending}
+                  className="bg-black text-white px-5 py-2 text-sm hover:bg-zinc-800 disabled:opacity-50"
+                >
+                  {createMutation.isPending || updateMutation.isPending ? "Đang lưu..." : "Xác nhận"}
+                </button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Confirm Delete */}
+      <ConfirmDialog
+        open={!!deleteConfirmItem}
+        onOpenChange={(v) => !v && setDeleteConfirmItem(null)}
+        title="Xác nhận xóa danh mục?"
+        description={`Hành động này sẽ xóa vĩnh viễn danh mục "${deleteConfirmItem?.name}". Điều này có thể ảnh hưởng đến liên kết danh mục của một số sản phẩm.`}
+        confirmText="Xóa vĩnh viễn"
+        onConfirm={() => {
+          if (deleteConfirmItem) deleteMutation.mutate(deleteConfirmItem.id);
+        }}
+      />
     </div>
   );
 }

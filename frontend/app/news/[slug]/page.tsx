@@ -4,64 +4,102 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import PublicLayout from "@/shared/layouts/PublicLayout";
-import { FALLBACK_ARTICLES } from "@/services/strapiNewsService";
-import { ArrowLeft, Calendar, Tag, Share2, Bookmark } from "lucide-react";
+import { newsService } from "@/services/newsService";
+import { ArrowLeft, Calendar, Eye, User, Share2, Tag, ArrowUpRight } from "lucide-react";
+
+type Any = Record<string, any>;
+const unwrap = (x: any) => x?.data ?? x;
 
 export default function NewsDetailPage() {
   const params = useParams();
-  const slug = (params.slug as string) || "huawei-pura-90s-pro";
+  const slug = (params.slug as string) || "";
 
-  const article =
-    FALLBACK_ARTICLES.find((a) => a.slug === slug || a.link.includes(slug)) ||
-    FALLBACK_ARTICLES[0];
+  // Query bài viết theo slug
+  const articleQuery = useQuery({
+    queryKey: ["news-detail", slug],
+    queryFn: () => newsService.get(slug),
+    enabled: !!slug,
+  });
+
+  // Query các bài viết liên quan / mới nhất
+  const recentQuery = useQuery({
+    queryKey: ["news-recent"],
+    queryFn: () => newsService.recent(3),
+  });
+
+  const article: Any = unwrap(articleQuery.data) || {};
+  const recentArticles: Any[] = unwrap(recentQuery.data) || [];
+
+  if (articleQuery.isLoading) {
+    return (
+      <PublicLayout fullWidth>
+        <div className="min-h-screen grid place-items-center bg-[#F5F5F7]">
+          <p className="text-zinc-500 font-medium">Đang tải nội dung bài viết…</p>
+        </div>
+      </PublicLayout>
+    );
+  }
+
+  if (articleQuery.isError || !article || !article.title) {
+    return (
+      <PublicLayout fullWidth>
+        <div className="min-h-screen bg-[#F5F5F7] p-12 text-center space-y-4">
+          <h2 className="text-3xl font-bold">Không tìm thấy bài viết</h2>
+          <p className="text-zinc-500 text-sm">Bài viết này không tồn tại hoặc đã bị gỡ bỏ.</p>
+          <Link
+            href="/news"
+            className="inline-block border border-black bg-black px-6 py-3 text-sm text-white font-bold"
+          >
+            Quay lại Tin tức
+          </Link>
+        </div>
+      </PublicLayout>
+    );
+  }
 
   return (
     <PublicLayout fullWidth>
-      <div className="w-full bg-[#F2F2F2] dark:bg-zinc-950 text-black dark:text-white transition-colors duration-300 min-h-[calc(100vh-60px)]">
+      <div className="w-full bg-[#F5F5F7] text-black font-sans min-h-screen">
         
         {/* ARTICLE HERO BANNER */}
-        <section className="w-full border-b border-black dark:border-zinc-800 bg-white dark:bg-zinc-900">
-          <div className="w-[1200px] max-w-full mx-auto p-8 lg:p-16 space-y-8">
+        <section className="w-full border-b border-black bg-white">
+          <div className="w-[1200px] max-w-full mx-auto p-6 sm:p-12 lg:p-16 space-y-6">
             <Link
               href="/news"
-              className="inline-flex items-center gap-2 text-sm font-bold text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white transition-colors"
+              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-600 hover:text-black transition-colors"
             >
-              <ArrowLeft className="w-4 h-4" /> Quay lại danh sách tin tức
+              <ArrowLeft size={14} /> Quay lại danh sách tin tức
             </Link>
 
             <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <span className="px-3 py-1 bg-[#623CEA] text-white text-xs font-bold uppercase tracking-wider">
-                  Strapi CMS Article
-                </span>
-                {article.category && (
-                  <span className="px-3 py-1 bg-[#C5FA1F] text-black text-xs font-bold uppercase tracking-wider">
-                    {article.category}
-                  </span>
-                )}
-              </div>
+              <span className="px-3 py-1 bg-black text-white text-xs font-bold uppercase tracking-wider inline-block">
+                {article.category || "Tin tức"}
+              </span>
 
-              <h1 className="text-[32px] sm:text-[48px] lg:text-[64px] font-bold tracking-tight leading-tight">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight">
                 {article.title}
               </h1>
 
-              <div className="flex items-center gap-6 text-sm text-zinc-500 font-medium border-y border-black/10 dark:border-white/10 py-4">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  <span>{article.date}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Tag className="w-4 h-4" />
-                  <span>Tác giả: Ban Biên Tập ShopWise</span>
-                </div>
+              <div className="flex flex-wrap items-center gap-6 text-xs text-zinc-500 font-mono border-y border-zinc-200 py-3">
+                <span className="flex items-center gap-1">
+                  <Calendar size={14} />
+                  {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString("vi-VN") : "Hôm nay"}
+                </span>
+                <span className="flex items-center gap-1">
+                  <User size={14} /> Tác giả: {article.authorName || "Ban Biên Tập ShopWise"}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Eye size={14} /> {article.viewCount || 0} lượt xem
+                </span>
               </div>
             </div>
 
-            {/* Main Article Image */}
-            <div className="relative w-full aspect-[16/9] overflow-hidden border border-black dark:border-zinc-700">
+            {/* Main Image */}
+            <div className="relative w-full aspect-[16/9] border border-black overflow-hidden bg-zinc-100">
               <Image
-                src={article.image}
+                src={article.thumbnail || "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800&auto=format&fit=crop&q=80"}
                 alt={article.title}
                 fill
                 className="object-cover"
@@ -72,41 +110,78 @@ export default function NewsDetailPage() {
         </section>
 
         {/* ARTICLE CONTENT BODY */}
-        <section className="w-full py-12 lg:py-16">
-          <div className="w-[900px] max-w-full mx-auto p-6 sm:p-8 bg-white dark:bg-zinc-900 border border-black dark:border-zinc-800 space-y-8">
-            <p className="text-[20px] sm:text-[22px] font-bold text-zinc-800 dark:text-zinc-200 leading-relaxed italic border-l-4 border-[#C5FA1F] pl-4">
-              {article.description}
-            </p>
-
-            <div className="prose prose-lg dark:prose-invert max-w-none space-y-6 text-[18px] leading-relaxed">
-              <p>
-                Thị trường thiết bị thông minh vừa đón nhận một bước tiến vượt bậc với việc ra mắt các dòng sản phẩm mới. Những nâng cấp về vi xử lý AI, màn hình sắc nét và khả năng tối ưu hóa pin vượt trội hứa hẹn mang đến trải nghiệm làm việc và giải trí liền mạch.
+        <section className="w-full py-12">
+          <div className="w-[900px] max-w-full mx-auto p-6 sm:p-10 bg-white border border-black space-y-8">
+            {article.excerpt && (
+              <p className="text-lg sm:text-xl font-bold text-zinc-800 leading-relaxed italic border-l-4 border-black pl-4">
+                {article.excerpt}
               </p>
+            )}
 
-              <h3 className="text-2xl font-bold pt-4">Thiết kế đột phá và chất lượng hoàn thiện</h3>
-              <p>
-                Sở hữu khung kim loại nguyên khối chống va đập cùng các đường nét hoàn thiện tinh xảo, thiết bị đáp ứng các tiêu chuẩn khắt khe nhất của người dùng công nghệ hiện đại. Màn hình thế hệ mới mang lại dải màu trung thực, giảm ánh sáng xanh bảo vệ mắt trong quá trình sử dụng lâu dài.
-              </p>
+            {/* Render HTML content từ Backend */}
+            <div
+              className="prose prose-lg max-w-none text-base sm:text-lg leading-relaxed text-zinc-800 space-y-4"
+              dangerouslySetInnerHTML={{ __html: article.content || "<p>Nội dung đang được cập nhật...</p>" }}
+            />
 
-              <h3 className="text-2xl font-bold pt-4">Hiệu năng ấn tượng và Thời lượng Pin</h3>
-              <p>
-                Nhờ vào thuật toán quản lý năng lượng thông minh từ Strapi CMS backend, thiết bị giúp kéo dài thời gian hoạt động liên tục hơn 20% so với các thế hệ tiền nhiệm.
-              </p>
-            </div>
-
-            {/* Article Footer & Action Share */}
-            <div className="pt-8 border-t border-black/10 dark:border-white/10 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm font-bold">
-                <Bookmark className="w-4 h-4" /> ShopWise Tech News
-              </div>
-              <div className="flex items-center gap-3">
-                <button className="p-2 border border-black dark:border-white hover:bg-black hover:text-white transition-colors">
-                  <Share2 className="w-4 h-4" />
-                </button>
-              </div>
+            {/* Action Footer */}
+            <div className="pt-8 border-t border-zinc-200 flex items-center justify-between">
+              <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
+                ShopWise Tech Journal
+              </span>
+              <button
+                onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({ title: article.title, url: window.location.href });
+                  } else {
+                    navigator.clipboard.writeText(window.location.href);
+                    alert("Đã sao chép đường dẫn bài viết!");
+                  }
+                }}
+                className="inline-flex items-center gap-1.5 border border-black px-4 py-2 text-xs font-bold hover:bg-zinc-100 cursor-pointer"
+              >
+                <Share2 size={14} /> Chia sẻ bài viết
+              </button>
             </div>
           </div>
         </section>
+
+        {/* RECENT ARTICLES SECTION */}
+        {recentArticles.length > 0 && (
+          <section className="w-full border-t border-black bg-white py-12">
+            <div className="w-[1200px] max-w-full mx-auto px-6 space-y-6">
+              <h3 className="text-2xl font-bold">Bài viết mới nhất khác</h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                {recentArticles
+                  .filter((a) => a.slug !== slug)
+                  .slice(0, 3)
+                  .map((rec) => (
+                    <Link
+                      key={rec.id}
+                      href={`/news/${rec.slug}`}
+                      className="group border border-black p-4 bg-[#F9F9F9] hover:bg-white transition-colors space-y-3 block"
+                    >
+                      <div className="relative w-full aspect-[16/10] overflow-hidden border border-black/10">
+                        <Image
+                          src={rec.thumbnail || "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800&auto=format&fit=crop&q=80"}
+                          alt={rec.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform"
+                        />
+                      </div>
+                      <h4 className="font-bold text-base line-clamp-2 group-hover:underline">
+                        {rec.title}
+                      </h4>
+                      <span className="text-xs font-bold uppercase underline inline-flex items-center gap-1">
+                        Đọc tiếp <ArrowUpRight size={12} />
+                      </span>
+                    </Link>
+                  ))}
+              </div>
+            </div>
+          </section>
+        )}
 
       </div>
     </PublicLayout>

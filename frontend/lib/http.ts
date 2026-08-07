@@ -1,5 +1,6 @@
 import axios from "axios";
 import Cookies from "js-cookie";
+import { useAuthStore } from "@/store/authStore";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080/api/v1";
 
@@ -14,7 +15,7 @@ const http = axios.create({
 // Request interceptor: đính kèm access token vào header
 http.interceptors.request.use(
   (config) => {
-    const token = Cookies.get("token");
+    const token = useAuthStore.getState().accessToken || Cookies.get("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -34,12 +35,12 @@ http.interceptors.response.use(
       originalRequest &&
       !originalRequest._retry &&
       !originalRequest.url?.includes("/auth/login") &&
-      !originalRequest.url?.includes("/auth/refresh")
+      !originalRequest.url?.includes("/auth/token/refresh")
     ) {
       originalRequest._retry = true;
       try {
         const refreshRes: any = await axios.post(
-          `${API_URL}/auth/refresh`,
+          `${API_URL}/auth/token/refresh`,
           {},
           { withCredentials: true }
         );
@@ -51,14 +52,22 @@ http.interceptors.response.use(
 
         if (newToken) {
           Cookies.set("token", newToken, { expires: 7 });
+          useAuthStore.getState().setAuth(newToken);
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return http(originalRequest);
         }
       } catch {
         Cookies.remove("token");
         Cookies.remove("user");
-        if (typeof window !== "undefined" && !window.location.pathname.startsWith("/admin")) {
-          window.location.href = "/login";
+        useAuthStore.getState().clearAuth();
+        if (typeof window !== "undefined") {
+          const currentPath = window.location.pathname;
+          const isProtectedPath = currentPath.startsWith("/account") || 
+                                 currentPath.startsWith("/checkout") || 
+                                 currentPath.startsWith("/orders");
+          if (isProtectedPath) {
+            window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+          }
         }
       }
     }

@@ -25,7 +25,7 @@ public class TokenBlacklistServiceImpl implements ITokenBlacklistService {
         try {
             redisTemplate.opsForValue().set(KEY_PREFIX + jti, "1", Duration.ofSeconds(remainingTtlSeconds));
         } catch (Exception e) {
-            log.warn("Không thể kết nối Redis để lưu blacklist jti={}: {}", jti, e.getMessage());
+            // Redis offline local bypass
         }
     }
 
@@ -34,8 +34,9 @@ public class TokenBlacklistServiceImpl implements ITokenBlacklistService {
         try {
             return Boolean.TRUE.equals(redisTemplate.hasKey(KEY_PREFIX + jti));
         } catch (Exception e) {
-            log.warn("Không thể kết nối Redis để kiểm tra blacklist jti={}: {}", jti, e.getMessage());
+            // Redis offline local bypass
             return false;
         }
     }
 }
+

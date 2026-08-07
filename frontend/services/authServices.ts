@@ -86,12 +86,13 @@ export const authService = {
   },
 
   /**
-   * POST /auth/reset-password — đặt mật khẩu mới với token từ email
+   * POST /auth/reset-password — đặt mật khẩu mới với email, otp, newPassword
    */
-  resetPassword: async (
-    token: string,
-    newPassword: string
-  ): Promise<ApiResponse<null>> => {
-    return http.post("/auth/reset-password", { token, newPassword });
+  resetPassword: async (data: {
+    email: string;
+    otp: string;
+    newPassword: string;
+  }): Promise<ApiResponse<null>> => {
+    return http.post("/auth/reset-password", data);
   },
 };

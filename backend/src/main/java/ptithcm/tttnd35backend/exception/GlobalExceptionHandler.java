@@ -6,6 +6,7 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -38,25 +39,29 @@ public class GlobalExceptionHandler {
         );
     }
 
-    // ===== Lỗi nghiệp vụ chung =====
+// ===== Lỗi nghiệp vụ chung =====
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ApiResponse<?>> handleBadRequest(BadRequestException ex) {
+        log.warn("BadRequestException: {}", ex.getMessage());
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<?>> handleResourceNotFound(ResourceNotFoundException ex) {
+        log.warn("ResourceNotFoundException: {}", ex.getMessage());
         return build(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<ApiResponse<?>> handleDuplicateResource(DuplicateResourceException ex) {
+        log.warn("DuplicateResourceException: {}", ex.getMessage());
         return build(HttpStatus.CONFLICT, ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<?>> handleValidation(MethodArgumentNotValidException ex) {
+        log.warn("MethodArgumentNotValidException: {}", ex.getBindingResult().getFieldErrors());
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(error ->
                 errors.put(error.getField(), error.getDefaultMessage()));
@@ -71,32 +76,35 @@ public class GlobalExceptionHandler {
         );
     }
 
-    // ===== Auth: đăng nhập / mật khẩu =====
+// ===== Auth: đăng nhập / mật khẩu =====
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiResponse<?>> handleBadCredentials(BadCredentialsException ex) {
+        log.warn("BadCredentialsException: {}", ex.getMessage());
         return build(HttpStatus.UNAUTHORIZED, "Email hoặc mật khẩu không chính xác");
     }
 
     @ExceptionHandler(AccountNotVerifiedException.class)
     public ResponseEntity<ApiResponse<?>> handleAccountNotVerified(AccountNotVerifiedException ex) {
+        log.warn("AccountNotVerifiedException: {}", ex.getMessage());
         return build(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
-    // ===== Auth: OTP =====
+// ===== Auth: OTP =====
 
     @ExceptionHandler(InvalidOtpException.class)
     public ResponseEntity<ApiResponse<?>> handleInvalidOtp(InvalidOtpException ex) {
+        log.warn("InvalidOtpException: {}", ex.getMessage());
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(OtpCooldownException.class)
     public ResponseEntity<ApiResponse<?>> handleOtpCooldown(OtpCooldownException ex) {
+        log.warn("OtpCooldownException: {}", ex.getMessage());
         return build(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());
     }
 
-    // ===== Auth: JWT / refresh token =====
-    // Lỗi liên quan tới token -> luôn trả 401
+// ===== Auth: JWT / refresh token =====
 
     @ExceptionHandler({
             ExpiredJwtException.class,
@@ -105,6 +113,7 @@ public class GlobalExceptionHandler {
             UnsupportedJwtException.class
     })
     public ResponseEntity<ApiResponse<?>> handleJwtException(Exception ex) {
+        log.warn("JwtException [{}]: {}", ex.getClass().getSimpleName(), ex.getMessage());
         String msg;
         if (ex instanceof ExpiredJwtException) {
             msg = "Token đã hết hạn, vui lòng đăng nhập lại";
@@ -120,28 +129,40 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidRefreshTokenException.class)
     public ResponseEntity<ApiResponse<?>> handleInvalidRefreshToken(InvalidRefreshTokenException ex) {
+        log.warn("InvalidRefreshTokenException: {}", ex.getMessage());
+        return build(HttpStatus.UNAUTHORIZED, ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidGoogleTokenException.class)
+    public ResponseEntity<ApiResponse<?>> handleInvalidGoogleToken(InvalidGoogleTokenException ex) {
+        log.warn("InvalidGoogleTokenException: {}", ex.getMessage());
         return build(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<?>> handleAccessDenied(AccessDeniedException ex) {
+        log.warn("AccessDeniedException: {}", ex.getMessage());
         return build(HttpStatus.FORBIDDEN, "Bạn không có quyền thực hiện thao tác này");
     }
 
-    // ===== Lỗi tham số / request format =====
+// ===== Lỗi tham số / request format =====
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ApiResponse<?>> handleMissingParams(MissingServletRequestParameterException ex) {
+        log.warn("MissingServletRequestParameterException: {}", ex.getParameterName());
         return build(HttpStatus.BAD_REQUEST, "Thiếu tham số bắt buộc '" + ex.getParameterName() + "'");
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponse<?>> handleJsonParseError(HttpMessageNotReadableException ex) {
+        log.warn("HttpMessageNotReadableException: {}", ex.getMessage());
         return build(HttpStatus.BAD_REQUEST, "Dữ liệu JSON không hợp lệ");
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiResponse<?>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        log.warn("MethodArgumentTypeMismatchException: {} - Expected: {}, Got: {}",
+                ex.getName(), ex.getRequiredType(), ex.getValue());
         String message;
         if (ex.getRequiredType() != null && ex.getRequiredType().isEnum()) {
             String validValues = String.join(", ",
@@ -157,19 +178,29 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ApiResponse<?>> handleNoResourceFound(NoResourceFoundException ex) {
+        log.warn("NoResourceFoundException: {}", ex.getResourcePath());
         return build(HttpStatus.NOT_FOUND, "Đường dẫn '" + ex.getResourcePath() + "' không tồn tại");
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<?>> handleIllegalArgument(IllegalArgumentException ex) {
+        log.warn("IllegalArgumentException: {}", ex.getMessage());
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    // ===== Lỗi chung chung =====
+// ===== Lỗi ràng buộc DB =====
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<?>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        log.warn("DataIntegrityViolationException chưa được bắt riêng ở service: {}", ex.getMessage(), ex);
+        return build(HttpStatus.BAD_REQUEST, "Dữ liệu vi phạm ràng buộc, vui lòng kiểm tra lại thông tin đã nhập");
+    }
+
+// ===== Lỗi chung chung =====
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleGeneral(Exception ex) {
-        log.error("Unhandled exception", ex); // debug
+        log.error("Unhandled exception: {}", ex.getMessage(), ex);
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Đã có lỗi xảy ra ở hệ thống, vui lòng thử lại sau");
     }
 }

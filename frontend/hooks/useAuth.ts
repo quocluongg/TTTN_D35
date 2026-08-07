@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { authService, ApiResponse, TokenResponse, User } from "@/services/authServices";
 import { notifyError, notifySuccess } from "@/components/Notify";
+import { useAuthStore } from "@/store/authStore";
 
 export const CURRENT_USER_KEY = ["currentUser"];
 
@@ -16,21 +17,25 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: authService.login,
     onSuccess: (response: ApiResponse<TokenResponse>) => {
-      // http interceptor đã unwrap axios.response.data
-      // nên `response` ở đây là ApiResponse<TokenResponse>
       const tokenData = response?.data;
 
       if (tokenData?.accessToken) {
         Cookies.set("token", tokenData.accessToken, { expires: 7 });
+        useAuthStore.getState().setAuth(tokenData.accessToken, tokenData.user);
       }
 
       if (tokenData?.user) {
+        const rawRole = tokenData.user.role;
+        const normalizedRole = Array.isArray(rawRole)
+          ? String((rawRole as any)[0] || "").toUpperCase()
+          : String(rawRole || "").toUpperCase();
+
         Cookies.set(
           "user",
           JSON.stringify({
             name: tokenData.user.fullName,
             email: tokenData.user.email,
-            role: tokenData.user.role,
+            role: normalizedRole,
             avatar: tokenData.user.avatarUrl,
           }),
           { expires: 7 }
@@ -40,8 +45,8 @@ export const useLogin = () => {
       queryClient.invalidateQueries({ queryKey: CURRENT_USER_KEY });
       notifySuccess("Đăng nhập thành công!");
 
-      const role = tokenData?.user?.role;
-      if (role === "ADMIN" || role === "admin") {
+      const roleStr = JSON.stringify(tokenData?.user?.role || "").toUpperCase();
+      if (roleStr.includes("ADMIN") || roleStr.includes("EMPLOYEE")) {
         router.push("/admin");
       } else {
         router.push("/");
@@ -96,11 +101,11 @@ export const useLogout = () => {
   const queryClient = useQueryClient();
 
   return () => {
-    // Gọi backend logout (fire-and-forget)
     authService.logout().catch(() => {});
 
     Cookies.remove("token");
     Cookies.remove("user");
+    useAuthStore.getState().clearAuth();
 
     queryClient.setQueryData(CURRENT_USER_KEY, null);
     queryClient.invalidateQueries({ queryKey: CURRENT_USER_KEY });
@@ -129,8 +134,8 @@ export const useResetPassword = () => {
   const router = useRouter();
 
   return useMutation({
-    mutationFn: ({ token, newPassword }: { token: string; newPassword: string }) =>
-      authService.resetPassword(token, newPassword),
+    mutationFn: (data: { email: string; otp: string; newPassword: string }) =>
+      authService.resetPassword(data),
     onSuccess: () => {
       notifySuccess("Đặt lại mật khẩu thành công! Vui lòng đăng nhập.");
       router.push("/login");
@@ -139,7 +144,7 @@ export const useResetPassword = () => {
       const message =
         error?.message ||
         error?.response?.data?.message ||
-        "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.";
+        "Mã OTP không hợp lệ hoặc đã hết hạn.";
       notifyError(message);
     },
   });

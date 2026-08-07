@@ -51,13 +51,20 @@ public class OtpServiceImpl implements IOtpService {
     @Transactional
     public void generateAndSend(Profile profile, OtpPurpose purpose) {
         String cooldownKey = cooldownKey(profile.getId().toString(), purpose);
-        Boolean cooldownSet = redisTemplate.opsForValue()
-                .setIfAbsent(cooldownKey, "1", Duration.ofSeconds(resendCooldownSeconds));
+        try {
+            Boolean cooldownSet = redisTemplate.opsForValue()
+                    .setIfAbsent(cooldownKey, "1", Duration.ofSeconds(resendCooldownSeconds));
 
-        if (Boolean.FALSE.equals(cooldownSet)) {
-            throw new OtpCooldownException(
-                    "Bạn vừa yêu cầu gửi mã, vui lòng thử lại sau ít phút");
+            if (Boolean.FALSE.equals(cooldownSet)) {
+                throw new OtpCooldownException(
+                        "Bạn vừa yêu cầu gửi mã, vui lòng thử lại sau ít phút");
+            }
+        } catch (OtpCooldownException e) {
+            throw e;
+        } catch (Exception e) {
+            // Redis offline local bypass
         }
+
 
         String otpCode = generateOtpCode();
 

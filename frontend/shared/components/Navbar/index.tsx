@@ -31,11 +31,13 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 // Import authentication hooks
 import { useCurrentUser, useLogout } from "@/hooks/useAuth";
+import { useCart } from "@/hooks/useCart";
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
   const { data: user, isLoading } = useCurrentUser();
   const logout = useLogout();
+  const { totalItems: cartCount } = useCart();
 
   // Scroll-hide animation logic
   const [isVisible, setIsVisible] = useState(true);
@@ -171,60 +173,61 @@ export function Navbar() {
                   <span className="truncate max-w-[120px] text-black dark:text-white text-[24px] font-medium">{user?.fullName.split(" ").pop()}</span>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none truncate">
+              <DropdownMenuContent className="w-56 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-1.5 shadow-lg shadow-black/5 dark:shadow-black/40" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal px-3 py-2 border-b border-zinc-100 dark:border-zinc-800 mb-1">
+                  <div className="flex flex-col space-y-0.5">
+                    <p className="text-sm font-bold leading-tight text-zinc-900 dark:text-zinc-100 truncate">
                       {user.fullName}
                     </p>
-                    <p className="text-xs leading-none text-muted-foreground truncate">
+                    <p className="text-xs text-zinc-500 truncate">
                       {user.email}
                     </p>
                   </div>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator />
 
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="rounded-lg text-sm font-medium text-zinc-700 dark:text-zinc-200 focus:bg-zinc-100 dark:focus:bg-zinc-800 focus:text-zinc-900 dark:focus:text-white cursor-pointer py-2 px-3">
                   <Link
-                    href={user.role === "admin" ? "/admin" : "/"}
-                    className="cursor-pointer w-full flex items-center"
+                    href={String(user.role).toLowerCase().includes("admin") ? "/admin" : "/account"}
+                    className="w-full flex items-center gap-2.5"
                   >
-                    <LayoutDashboard className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <span>Dashboard</span>
+                    <LayoutDashboard className="h-4 w-4 text-zinc-500" />
+                    <span>Trang Quản trị</span>
                   </Link>
                 </DropdownMenuItem>
 
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="rounded-lg text-sm font-medium text-zinc-700 dark:text-zinc-200 focus:bg-zinc-100 dark:focus:bg-zinc-800 focus:text-zinc-900 dark:focus:text-white cursor-pointer py-2 px-3">
                   <Link
-                    href="/profile"
-                    className="cursor-pointer w-full flex items-center"
+                    href="/account"
+                    className="w-full flex items-center gap-2.5"
                   >
-                    <User className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <span>Hồ sơ</span>
+                    <User className="h-4 w-4 text-zinc-500" />
+                    <span>Hồ sơ cá nhân</span>
                   </Link>
                 </DropdownMenuItem>
 
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="rounded-lg text-sm font-medium text-zinc-700 dark:text-zinc-200 focus:bg-zinc-100 dark:focus:bg-zinc-800 focus:text-zinc-900 dark:focus:text-white cursor-pointer py-2 px-3">
                   <Link
-                    href="/settings"
-                    className="cursor-pointer w-full flex items-center"
+                    href="/cart"
+                    className="w-full flex items-center gap-2.5"
                   >
-                    <Settings className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <span>Cài đặt</span>
+                    <ShoppingBag className="h-4 w-4 text-zinc-500" />
+                    <span>Giỏ hàng</span>
                   </Link>
                 </DropdownMenuItem>
 
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator className="bg-zinc-100 dark:bg-zinc-800 my-1" />
 
                 <DropdownMenuItem
-                  className="text-destructive cursor-pointer focus:text-destructive focus:bg-destructive/10"
+                  className="rounded-lg text-sm font-medium text-red-600 focus:bg-red-50 dark:focus:bg-red-950/40 focus:text-red-600 cursor-pointer py-2 px-3 flex items-center gap-2.5"
                   onClick={logout}
                 >
-                  <LogOut className="mr-2 h-4 w-4" />
+                  <LogOut className="h-4 w-4 text-red-500" />
                   <span>Đăng xuất</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
+
           ) : (
             <Link href="/login" className="text-black dark:text-white hover:opacity-75 transition-opacity">
               Đăng nhập
@@ -232,10 +235,13 @@ export function Navbar() {
           )}
         </div>
 
-        {/* Item 7: Giỏ hàng (0) & Theme Switcher */}
+        {/* Item 7: Giỏ hàng & Theme Switcher */}
         <div className="flex items-center gap-6">
-          <Link href="/cart" className="text-black dark:text-white hover:opacity-75 transition-opacity">
-            Giỏ hàng (0)
+          <Link href="/cart" className="text-black dark:text-white hover:opacity-75 transition-opacity flex items-center gap-1.5 group">
+            <span>Giỏ hàng</span>
+            <span className="inline-flex items-center justify-center bg-lime-400 text-black text-xs font-bold w-5 h-5 rounded-full group-hover:scale-110 transition-transform">
+              {cartCount}
+            </span>
           </Link>
           <Button
             variant="ghost"
@@ -268,8 +274,8 @@ export function Navbar() {
         <div className="flex items-center space-x-3">
           <Link href="/cart" className="p-2 relative">
             <ShoppingBag className="h-5 w-5" />
-            <span className="absolute top-1 right-1 bg-black text-white dark:bg-white dark:text-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
-              0
+            <span className="absolute top-1 right-1 bg-[#C5FA1F] text-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+              {cartCount}
             </span>
           </Link>
 

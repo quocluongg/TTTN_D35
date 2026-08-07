@@ -1,5 +1,6 @@
 package ptithcm.tttnd35backend.service;
 
+import ptithcm.tttnd35backend.dto.request.GoogleLoginRequest;
 import ptithcm.tttnd35backend.dto.request.LoginRequest;
 import ptithcm.tttnd35backend.dto.request.RegisterRequest;
 import ptithcm.tttnd35backend.dto.request.ResetPasswordRequest;
@@ -60,4 +61,11 @@ public interface IAuthService {
      * Revoke toàn bộ refresh token cũ sau khi đổi mật khẩu (ép đăng nhập lại mọi thiết bị),
      */
     void resetPassword(ResetPasswordRequest request);
+
+    /**
+     * Đăng nhập/đăng ký tự động bằng Google ID token (đã verify với Google).
+     * Nếu email đã tồn tại với auth_provider = LOCAL -> từ chối (tránh chiếm đoạt tài khoản
+     * đã đăng ký bằng mật khẩu). Nếu chưa tồn tại -> tự tạo Profile mới, email_verified = true.
+     */
+    AuthResult loginWithGoogle(GoogleLoginRequest request, String deviceInfo, String ipAddress);
 }

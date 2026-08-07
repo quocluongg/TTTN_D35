@@ -9,6 +9,21 @@ const nextConfig: NextConfig = {
         hostname: 'cdn2.cellphones.com.vn',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'cdn2.fptshop.com.vn',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '/**',
+      },
     ],
   },
 };

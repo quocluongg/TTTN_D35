@@ -1,58 +1,100 @@
 package ptithcm.tttnd35backend.entity;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.List;
+import java.util.UUID;
 
+/**
+ * KHÔNG map @OneToMany 2 chiều tới ProductImage/ProductVariant ở đây
+ * (tránh lazy-load kéo cả list mỗi lần load Product cho việc khác, vd chỉ cần
+ * sửa tên sản phẩm cũng phải load hết ảnh/variant). Ảnh và variant được load
+ * riêng qua IProductImageRepository/IProductVariantRepository theo productId
+ * khi thực sự cần (trang chi tiết).
+ *
+ * Chiều Product -> Category giữ @ManyToOne vì đây là quan hệ n-1 đơn (không phải
+ * collection), fetch join 1 lần là đủ, không có rủi ro N+1.
+ */
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "product")
-public class Product {
+@Table(name = "products")
+public class Product extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String name;
+
+    @Column(nullable = false, unique = true, length = 280)
+    private String slug;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(length = 100)
     private String brand;
 
+    @Column(length = 100)
     private String origin;
 
     private String thumbnail;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
     @Column(name = "warranty_months")
     private Integer warrantyMonths;
 
-    @Column(name = "discount_percent")
-    private BigDecimal discountPercent;
+    // Dữ liệu cột này là custom
+    // content của tab
+    //  - có lúc là object thông số kỹ thuật,
+    //  - có lúc là string mô tả;
+    //  - có lúc bị double JSON-encode).
+    // Dùng JsonNode (kiểu JSON tổng quát của Jackson) để load được mọi trường hợp
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "custom_tabs", columnDefinition = "jsonb")
+    @Builder.Default
+    private JsonNode customTabs = JsonNodeFactory.instance.arrayNode();
 
-    private String slug;
+    // Denormalized, cập nhật lại mỗi khi ProductReview thay đổi (module Review, giai đoạn 6).
+    @Builder.Default
+    @Column(name = "rating_avg", precision = 2, scale = 1)
+    private BigDecimal ratingAvg = BigDecimal.ZERO;
 
-    @Column(name = "source_url")
+    @Builder.Default
+    @Column(name = "review_count")
+    private int reviewCount = 0;
+
+    // Ẩn sản phẩm hết hàng dài hạn mà không xóa, tránh vỡ FK với OrderItem/Review về sau.
+    @Builder.Default
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+
+    // Denormalized, cộng dồn atomic (IProductRepository#incrementSoldQuantity) khi đơn
+    // chuyển sang COMPLETED - dùng hiển thị "Đã bán x" và sort sản phẩm bán chạy.
+    @Builder.Default
+    @Column(name = "sold_quantity", nullable = false)
+    private int soldQuantity = 0;
+
+    // Nhãn nhu cầu sử dụng tự do do admin nhập (vd "Gaming", "Văn phòng", "Đồ họa"),
+    // dùng để filter nhanh ở trang danh sách - không phải bảng tag riêng vì chỉ cần lọc exact-match.
+    @Column(name = "use_case", length = 100)
+    private String useCase;
+
+    // Link nguồn dữ liệu gốc (crawl) - chỉ phục vụ admin đối chiếu, không hiển thị cho khách.
+    @Column(name = "source_url", length = 2000)
     private String sourceUrl;
-
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    private List<ProductVariant> variants;
-
-    @Column(name = "created_at", updatable = false)
-    private ZonedDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private ZonedDateTime updatedAt;
 }

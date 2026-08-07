@@ -2,13 +2,14 @@ package ptithcm.tttnd35backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import ptithcm.tttnd35backend.util.enums.AuthProvider;
 
 import java.util.UUID;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -41,11 +42,12 @@ public class Profile extends BaseEntity {
     @Column(name = "full_name", length = 150)
     private String fullName;
 
-    @Column(length = 30)
-    private String phone;
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
 
-    @Column(name = "locked_reason", length = 500)
-    private String lockedReason;
+    // URL ảnh trên Supabase Storage - nullable, FE tự fallback chữ cái đầu tên khi null.
+    @Column(name = "avatar_url", length = 2000)
+    private String avatarUrl;
 
     @Builder.Default
     @Column(name = "email_notif")

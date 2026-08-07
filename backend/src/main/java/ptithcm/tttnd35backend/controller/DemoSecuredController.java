@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class DemoSecuredController {
 
-    @GetMapping("/demo/me")
+    @GetMapping("/auth/me")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<ProfileResponse> me(Authentication authentication) {
         UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
