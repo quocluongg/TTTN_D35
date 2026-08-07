@@ -1,4 +1,4 @@
--- Migration V41: Seed tin tức mẫu chất lượng cao vào bảng news
+-- Migration V44: Seed tin tức mẫu chất lượng cao vào bảng news
 INSERT INTO news (id, title, slug, excerpt, content, thumbnail, category, is_published, published_at, view_count, created_at, updated_at)
 VALUES 
 (

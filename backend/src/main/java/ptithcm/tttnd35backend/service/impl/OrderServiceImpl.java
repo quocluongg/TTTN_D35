@@ -51,6 +51,7 @@ public class OrderServiceImpl implements IOrderService {
     private final IVoucherRepository voucherRepository;
     private final IPaymentTransactionRepository paymentTransactionRepository;
     private final IWarrantyService warrantyService;
+    private final IProfileRepository profileRepository;
 
     @Override
     @Transactional
@@ -100,7 +101,8 @@ public class OrderServiceImpl implements IOrderService {
     @Override
     @Transactional(readOnly = true)
     public OrderResponse getMyOrderDetail(UUID profileId, UUID orderId) {
-        Order order = orderRepository.findByIdAndUserId(orderId, profileId)
+        String email = profileRepository.findById(profileId).map(Profile::getEmail).orElse(null);
+        Order order = orderRepository.findMyOrderDetail(orderId, profileId, email)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng"));
         return toResponse(order, orderItemRepository.findAllByOrderId(orderId));
     }
@@ -108,7 +110,8 @@ public class OrderServiceImpl implements IOrderService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<OrderResponse> getMyOrders(UUID profileId, int page, int size) {
-        Page<Order> orders = orderRepository.findAllByUserIdOrderByCreatedAtDesc(profileId, PageRequest.of(page, size));
+        String email = profileRepository.findById(profileId).map(Profile::getEmail).orElse(null);
+        Page<Order> orders = orderRepository.findMyOrders(profileId, email, PageRequest.of(page, size));
         return toPageResponse(orders);
     }
 
@@ -133,7 +136,8 @@ public class OrderServiceImpl implements IOrderService {
     @Override
     @Transactional
     public OrderResponse cancelByCustomer(UUID profileId, UUID orderId) {
-        Order order = orderRepository.findByIdAndUserId(orderId, profileId)
+        String email = profileRepository.findById(profileId).map(Profile::getEmail).orElse(null);
+        Order order = orderRepository.findMyOrderDetail(orderId, profileId, email)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng"));
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new BadRequestException("Đơn hàng đang được xử lý, không thể tự huỷ. Vui lòng liên hệ hỗ trợ");

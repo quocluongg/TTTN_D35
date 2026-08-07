@@ -25,6 +25,28 @@ public interface IOrderRepository extends JpaRepository<Order, UUID> {
     Page<Order> findAllByUserIdOrderByCreatedAtDesc(UUID userId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"user", "address"})
+    @org.springframework.data.jpa.repository.Query("""
+            SELECT o FROM Order o
+            WHERE o.user.id = :userId
+               OR (o.user IS NULL AND :email IS NOT NULL AND LOWER(o.customerEmail) = LOWER(:email))
+            ORDER BY o.createdAt DESC
+            """)
+    Page<Order> findMyOrders(
+            @org.springframework.data.repository.query.Param("userId") UUID userId,
+            @org.springframework.data.repository.query.Param("email") String email,
+            Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Query("""
+            SELECT o FROM Order o
+            WHERE o.id = :orderId
+              AND (o.user.id = :userId OR (o.user IS NULL AND :email IS NOT NULL AND LOWER(o.customerEmail) = LOWER(:email)))
+            """)
+    Optional<Order> findMyOrderDetail(
+            @org.springframework.data.repository.query.Param("orderId") UUID orderId,
+            @org.springframework.data.repository.query.Param("userId") UUID userId,
+            @org.springframework.data.repository.query.Param("email") String email);
+
+    @EntityGraph(attributePaths = {"user", "address"})
     Page<Order> findAllByStatusOrderByCreatedAtDesc(OrderStatus status, Pageable pageable);
 
     @EntityGraph(attributePaths = {"user", "address"})

@@ -16,11 +16,31 @@ import { notifySuccess, notifyError } from "@/components/Notify";
 import { profileSchema, ProfileFormValues } from "@/schemas/profileSchema";
 import { Check, Eye, EyeOff, Loader2 } from "lucide-react";
 
+import { Suspense, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+
 type Any = Record<string, any>;
 const unwrap = (x: any) => x?.data ?? x;
 
 export default function AccountPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen grid place-items-center bg-white text-black text-sm">Đang tải tài khoản…</div>}>
+      <AccountContent />
+    </Suspense>
+  );
+}
+
+function AccountContent() {
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
   const [tab, setTab] = useState<"profile" | "addresses" | "orders">("profile");
+
+  useEffect(() => {
+    if (tabParam === "orders" || tabParam === "addresses" || tabParam === "profile") {
+      setTab(tabParam);
+    }
+  }, [tabParam]);
+
   const queryClient = useQueryClient();
   const logout = useLogout();
 
@@ -39,9 +59,12 @@ export default function AccountPage() {
   });
 
   const user: Any = unwrap(profileQuery.data) || {};
+
   const addressRows: Any[] = unwrap(addressesQuery.data) || [];
   const orderPayload: any = unwrap(ordersQuery.data) || {};
-  const orderRows: Any[] = orderPayload.content || [];
+  const orderRows: Any[] = Array.isArray(orderPayload)
+    ? orderPayload
+    : orderPayload.content || orderPayload.items || [];
 
   // State local
   const [editingAddress, setEditingAddress] = useState<Any | null>(null);
@@ -52,12 +75,12 @@ export default function AccountPage() {
   const {
     register: registerProfile,
     handleSubmit: handleSubmitProfile,
-    formState: { errors: profileErrors, isValid: isProfileValid, isDirty: isProfileDirty },
+    formState: { errors: profileErrors, isValid: isProfileValid },
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     values: {
       fullName: user.fullName || "",
-      phoneNumber: user.phoneNumber || user.phone || "",
+      phoneNumber: user.phoneNumber || "",
       avatarUrl: user.avatarUrl || "",
     },
     mode: "onChange",
@@ -131,9 +154,8 @@ export default function AccountPage() {
               <button
                 key={id}
                 onClick={() => setTab(id as any)}
-                className={`block w-full px-4 py-3 text-left text-sm font-medium transition-colors ${
-                  tab === id ? "bg-black text-white" : "hover:bg-zinc-100"
-                }`}
+                className={`block w-full px-4 py-3 text-left text-sm font-medium transition-colors ${tab === id ? "bg-black text-white" : "hover:bg-zinc-100"
+                  }`}
               >
                 {label}
               </button>
@@ -193,7 +215,7 @@ export default function AccountPage() {
                     <button
                       type="submit"
                       className="bg-black px-5 py-3 text-sm text-white disabled:opacity-40"
-                      disabled={!isProfileValid || !isProfileDirty || updateProfileMutation.isPending}
+                      disabled={!isProfileValid || updateProfileMutation.isPending}
                     >
                       {updateProfileMutation.isPending ? "Đang lưu…" : "Lưu thay đổi"}
                     </button>
@@ -529,9 +551,8 @@ function ChangePasswordModal({ userEmail, onClose }: { userEmail: string; onClos
                   ].map(({ ok, label }) => (
                     <div key={label} className="flex items-center gap-2">
                       <span
-                        className={`w-3.5 h-3.5 flex items-center justify-center border text-[9px] ${
-                          ok ? "bg-green-600 border-green-600 text-white" : "border-zinc-400"
-                        }`}
+                        className={`w-3.5 h-3.5 flex items-center justify-center border text-[9px] ${ok ? "bg-green-600 border-green-600 text-white" : "border-zinc-400"
+                          }`}
                       >
                         {ok && <Check className="w-2.5 h-2.5 stroke-[3]" />}
                       </span>
