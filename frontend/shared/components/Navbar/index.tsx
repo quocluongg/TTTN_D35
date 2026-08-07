@@ -31,13 +31,13 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 // Import authentication hooks
 import { useCurrentUser, useLogout } from "@/hooks/useAuth";
-import { useCartCount } from "@/hooks/useCart";
+import { useCart } from "@/hooks/useCart";
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
   const { data: user, isLoading } = useCurrentUser();
   const logout = useLogout();
-  const cartCount = useCartCount();
+  const { totalItems: cartCount } = useCart();
 
   // Scroll-hide animation logic
   const [isVisible, setIsVisible] = useState(true);

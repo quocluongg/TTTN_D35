@@ -60,4 +60,36 @@ public class MailServiceImpl implements IMailService {
             log.error("Gửi email OTP ({}) tới {} thất bại: {}", purpose, to, ex.getMessage(), ex);
         }
     }
+
+    @Override
+    @Async("mailTaskExecutor")
+    public void sendStaffAccountCreatedEmail(String to, String tempPassword) {
+        String subject = "Tài khoản nhân viên ShopWise đã được tạo";
+        String body = """
+                Xin chào,
+
+                Tài khoản nhân viên của bạn tại hệ thống ShopWise đã được khởi tạo thành công.
+
+                Thông tin đăng nhập:
+                Email: %s
+                Mật khẩu tạm thời: %s
+
+                Vui lòng đổi mật khẩu ngay sau lần đăng nhập đầu tiên.
+
+                Trân trọng,
+                ShopWise Admin Team.
+                """.formatted(to, tempPassword);
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(from);
+            message.setTo(to);
+            message.setSubject(subject);
+            message.setText(body);
+            mailSender.send(message);
+            log.info("Đã gửi email tạo tài khoản nhân viên tới {}", to);
+        } catch (Exception ex) {
+            log.error("Gửi email tạo tài khoản nhân viên tới {} thất bại: {}", to, ex.getMessage(), ex);
+        }
+    }
 }

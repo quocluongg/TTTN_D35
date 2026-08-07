@@ -1,0 +1,1965 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crawler & Schema Inspection Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #090d16;
+      --bg-card: #131b2e;
+      --bg-input: #1c2742;
+      --bg-input-hover: #22304f;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #2e3d60;
+      --radius: 0.9rem;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      *,
+      *::before,
+      *::after {
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg-main);
+      background-image: radial-gradient(circle at 15% 0%, rgba(99, 102, 241, 0.10), transparent 45%),
+        radial-gradient(circle at 85% 10%, rgba(16, 185, 129, 0.08), transparent 40%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    header {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .brand h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #a5b4fc, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .brand p {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      margin-top: 0.15rem;
+    }
+
+    .status-cluster {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .badge-status {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 0.4rem 0.9rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+    }
+
+    .badge-status.ok {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-status.err {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .badge-dirty {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      display: none;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .badge-dirty.show {
+      display: inline-flex;
+    }
+
+    main {
+      flex: 1;
+      padding: 2rem;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .card h2 {
+      font-size: 1.05rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 0.85rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    input[type="url"],
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.7rem 1rem;
+      color: var(--text-main);
+      font-size: 0.92rem;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+      font-family: inherit;
+    }
+
+    textarea {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      resize: vertical;
+    }
+
+    input[type="url"] {
+      flex: 1;
+      padding: 0.85rem 1.2rem;
+      font-size: 1rem;
+    }
+
+    input:hover,
+    select:hover,
+    textarea:hover {
+      background: var(--bg-input-hover);
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
+    .field-edited {
+      border-color: var(--warning) !important;
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15) !important;
+    }
+
+    .field-error {
+      border-color: var(--danger) !important;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18) !important;
+    }
+
+    tr.row-edited td:first-child {
+      box-shadow: inset 3px 0 0 var(--warning);
+    }
+
+    .btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 0.5rem;
+      padding: 0.85rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: #334155;
+      color: #e2e8f0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #475569;
+    }
+
+    .btn-supabase {
+      background: #059669;
+      color: #fff;
+    }
+
+    .btn-supabase:hover:not(:disabled) {
+      background: #047857;
+    }
+
+    .btn-sm {
+      padding: 0.35rem 0.65rem;
+      font-size: 0.78rem;
+      border-radius: 0.4rem;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: #dc2626;
+    }
+
+    .btn-warning {
+      background: var(--warning);
+      color: #000;
+    }
+
+    .btn-warning:hover:not(:disabled) {
+      background: #d97706;
+    }
+
+    .btn-success {
+      background: var(--success);
+    }
+
+    .btn-success:hover:not(:disabled) {
+      background: #059669;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--text-muted);
+    }
+
+    .btn-ghost:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: var(--text-main);
+    }
+
+    .inline-url-editor {
+      display: flex;
+      gap: 0.4rem;
+      margin-top: 0.5rem;
+      align-items: center;
+    }
+
+    .inline-url-editor input {
+      flex: 1;
+      padding: 0.4rem 0.7rem;
+      font-size: 0.78rem;
+      font-family: 'JetBrains Mono', monospace;
+      min-width: 0;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.75rem 1.1rem;
+      font-size: 0.92rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-count {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--warning);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.05rem 0.4rem;
+      border-radius: 9999px;
+      display: none;
+    }
+
+    .tab-count.show {
+      display: inline-block;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .legend {
+      display: flex;
+      gap: 1.25rem;
+      margin-bottom: 1rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .dot.edited {
+      background: var(--warning);
+    }
+
+    .dot.error {
+      background: var(--danger);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+      font-size: 0.88rem;
+    }
+
+    th,
+    td {
+      padding: 0.8rem 0.9rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    th {
+      background: rgba(15, 23, 42, 0.6);
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+      position: sticky;
+      top: 0;
+    }
+
+    td {
+      color: #cbd5e1;
+    }
+
+    td.mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    tr:hover td {
+      background: rgba(99, 102, 241, 0.04);
+    }
+
+    .field-label {
+      color: #a5b4fc;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+    }
+
+    .field-readonly {
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+    }
+
+    .system-badge {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 0.1rem 0.4rem;
+      border-radius: 0.3rem;
+      margin-left: 0.4rem;
+    }
+
+    .img-preview {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      background: #0f172a;
+      border-radius: 0.4rem;
+      border: 1px solid var(--border);
+    }
+
+    .code-block {
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 1.25rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: #34d399;
+      max-height: 480px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      padding: 1.25rem 1.5rem;
+      border-radius: 0.75rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .action-bar.has-error {
+      background: rgba(239, 68, 68, 0.08);
+      border-color: rgba(239, 68, 68, 0.25);
+    }
+
+    .action-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .action-info h4 {
+      color: var(--success);
+      font-size: 1.05rem;
+    }
+
+    .action-bar.has-error .action-info h4 {
+      color: var(--danger);
+    }
+
+    .action-info p {
+      color: var(--text-muted);
+      font-size: 0.83rem;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .preset-links {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      background: rgba(99, 102, 241, 0.1);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chip:hover {
+      background: rgba(99, 102, 241, 0.25);
+      color: #fff;
+    }
+
+    .storage-badge {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.3rem;
+      font-size: 0.75rem;
+    }
+
+    .cell-value-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .original-hint {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    #toastStack {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      z-index: 999;
+    }
+
+    .toast {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      color: var(--text-main);
+      padding: 0.85rem 1.1rem;
+      border-radius: 0.6rem;
+      font-size: 0.85rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+      max-width: 340px;
+      animation: toastIn 0.2s ease-out;
+    }
+
+    .toast.success {
+      border-left-color: var(--success);
+    }
+
+    .toast.error {
+      border-left-color: var(--danger);
+    }
+
+    .toast.warning {
+      border-left-color: var(--warning);
+    }
+
+    /* Queue Styles */
+    .queue-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 0.25rem;
+    }
+
+    .queue-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      padding: 0.85rem 1.1rem;
+      border-radius: 0.65rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      gap: 1rem;
+    }
+
+    .queue-item:hover {
+      border-color: var(--accent);
+      background: var(--bg-input-hover);
+    }
+
+    .queue-item.active {
+      border-color: var(--accent);
+      background: rgba(99, 102, 241, 0.15);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+    }
+
+    .queue-item.status-approved {
+      border-left: 4px solid var(--success);
+    }
+
+    .queue-item.status-skipped {
+      opacity: 0.65;
+      border-left: 4px solid var(--text-muted);
+    }
+
+    .queue-item.status-error {
+      border-left: 4px solid var(--danger);
+    }
+
+    .queue-item.status-pending {
+      border-left: 4px solid var(--warning);
+    }
+
+    .queue-item-info {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .queue-item-title {
+      font-weight: 600;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text-main);
+    }
+
+    .queue-item-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+    }
+
+    .queue-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      white-space: nowrap;
+    }
+
+    .queue-badge.pending {
+      background: rgba(245, 158, 11, 0.18);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .queue-badge.approved {
+      background: rgba(16, 185, 129, 0.18);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .queue-badge.skipped {
+      background: rgba(148, 163, 184, 0.18);
+      color: var(--text-muted);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    .queue-badge.error {
+      background: rgba(239, 68, 68, 0.18);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    /* URL Warning and Red Highlight Styles */
+    input.url-duplicate, textarea.url-duplicate {
+      border-color: var(--danger) !important;
+      background-color: rgba(239, 68, 68, 0.12) !important;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25) !important;
+      color: #f87171 !important;
+    }
+
+    .link-warning-box {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+      padding: 0.55rem 0.95rem;
+      border-radius: 0.5rem;
+      font-size: 0.83rem;
+      font-weight: 500;
+      margin-top: 0.65rem;
+      width: 100%;
+    }
+
+    .batch-analysis-container {
+      margin-top: 0.75rem;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 0.65rem;
+      padding: 0.85rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .batch-analysis-header {
+      font-size: 0.83rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .batch-url-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .batch-url-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.45rem 0.75rem;
+      border-radius: 0.45rem;
+      font-size: 0.82rem;
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      gap: 0.5rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .queue-item.status-exists,
+    .queue-item.status-in-db {
+      background: rgba(239, 68, 68, 0.16) !important;
+      border: 1px solid rgba(239, 68, 68, 0.55) !important;
+      border-left: 5px solid var(--danger) !important;
+    }
+
+    .queue-item.status-exists:hover,
+    .queue-item.status-in-db:hover {
+      background: rgba(239, 68, 68, 0.25) !important;
+    }
+
+    .queue-badge.exists,
+    .queue-badge.duplicate {
+      background: rgba(239, 68, 68, 0.25) !important;
+      color: #f87171 !important;
+      border: 1px solid rgba(239, 68, 68, 0.6) !important;
+      font-weight: 700;
+    }
+
+    .alert-banner-duplicate {
+      background: rgba(239, 68, 68, 0.18);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+      padding: 0.85rem 1.25rem;
+      border-radius: 0.65rem;
+      font-size: 0.92rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+    }
+  </style>
+
+
+</head>
+
+<body>
+
+  <header>
+    <div class="brand">
+      <h1>🚀 E-Commerce Crawl & Database Mapping Dashboard</h1>
+      <p>Crawl → kiểm tra từng bảng → chỉnh sửa trực tiếp → duyệt trước khi ghi vào Supabase.</p>
+    </div>
+    <div class="status-cluster">
+      <span class="badge-dirty" id="dirtyBadge">🟠 0 thay đổi chưa lưu</span>
+      <div class="badge-status" id="globalStatus"><span>🟡 Ready — Nhập URL để bắt đầu Crawl</span></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+        <h2>1. Nhập Link Crawl Sản Phẩm</h2>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn btn-secondary btn-sm" id="btnModeSingle" onclick="switchCrawlMode('single')" style="background: var(--accent);">🔗 1 Link Duy Nhất</button>
+          <button class="btn btn-secondary btn-sm" id="btnModeBatch" onclick="switchCrawlMode('batch')">📦 Nhiều Links (Batch Queue)</button>
+        </div>
+      </div>
+
+      <!-- Single URL Input -->
+      <div id="singleCrawlBoxContainer" style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <div id="singleCrawlBox" class="search-box">
+          <input type="url" id="targetUrl" placeholder="https://fptshop.com.vn/..."
+            value="https://fptshop.com.vn/may-tinh-xach-tay/macbook-air-13-m5-2026-10cpu-8gpu-16gb-512gb">
+          <button class="btn" onclick="startCrawl()">🔍 Crawl 1 Sản Phẩm</button>
+        </div>
+        <div id="singleUrlWarning" style="display: none;"></div>
+      </div>
+
+      <!-- Batch URLs Textarea Input -->
+      <div id="batchCrawlBox" style="display: none; flex-direction: column; gap: 0.75rem;">
+        <textarea id="targetBatchUrls" rows="5" placeholder="Dán danh sách các link sản phẩm tại đây (mỗi link 1 dòng)...&#10;https://fptshop.com.vn/may-tinh-xach-tay/macbook-air-13-m5-2026-10cpu-8gpu-16gb-512gb&#10;https://fptshop.com.vn/may-tinh-xach-tay/laptop-acer-aspire-go-14-ag14-72p-563l-core-5-120u-16gb-512gb-14-fhd-win11" oninput="updateBatchUrlCount()"></textarea>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <span style="font-size: 0.82rem; color: var(--text-muted);" id="batchUrlCount">0 link được phát hiện</span>
+          <button class="btn btn-success" onclick="startBatchCrawl()">🚀 Crawl Tất Cả Links Trong Danh Sách</button>
+        </div>
+        <div id="batchAnalysisBox" style="display: none;"></div>
+      </div>
+
+      <div class="preset-links">
+        <span style="font-size: 0.8rem; color: var(--text-muted); align-self: center;">Mẫu nhanh:</span>
+        <div class="chip"
+          onclick="setPreset('https://fptshop.com.vn/may-tinh-xach-tay/macbook-air-13-m5-2026-10cpu-8gpu-16gb-512gb')">
+          Single: MacBook Air M5</div>
+        <div class="chip"
+          onclick="setPreset('https://fptshop.com.vn/may-tinh-xach-tay/laptop-acer-aspire-go-14-ag14-72p-563l-core-5-120u-16gb-512gb-14-fhd-win11')">
+          Single: Acer Aspire Go 14</div>
+        <div class="chip" onclick="setBatchPresets()">
+          📦 Batch Mẫu (3 Laptops FPTShop)</div>
+      </div>
+    </div>
+
+    <!-- Multi Product Queue List Card -->
+    <div class="card" id="queueCard" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2>📦 Danh Sách Sản Phẩm Đã Crawl (Duyệt Từng Sản Phẩm)</h2>
+          <p style="font-size: 0.83rem; color: var(--text-muted);" id="queueSummaryText">Đã duyệt 0/0 sản phẩm</p>
+        </div>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button class="btn btn-supabase btn-sm" onclick="convertBatchImagesToStorage('supabase')">☁️ Chuyển TOÀN BỘ Ảnh Sang Supabase Storage</button>
+          <button class="btn btn-success btn-sm" onclick="approveBatchAll()">⚡ Duyệt Tất Cả Sản Phẩm Cực Nhanh</button>
+        </div>
+
+      </div>
+      <div class="queue-container" id="queueList"></div>
+    </div>
+
+
+    <div class="card" id="resultCard" style="display: none;">
+      <div id="duplicateAlert" class="alert-banner-duplicate" style="display: none;">
+        🚨 CẢNH BÁO: Link sản phẩm này ĐÃ TỒN TẠI trong Database Supabase! Khi lưu có thể ghi đè hoặc tạo bản ghi trùng lặp.
+      </div>
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+
+        <div>
+          <h2 style="font-size: 1.2rem; color: #a5b4fc; margin-bottom:0.2rem;" id="productTitle">Tên sản phẩm</h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted);" id="productBrand">Thương hiệu</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <button class="btn btn-supabase" onclick="convertImagesToStorage('supabase')">☁️ Chuyển TOÀN BỘ ảnh sang
+            Supabase Storage</button>
+          <button class="btn btn-secondary" onclick="convertImagesToStorage('local')">📁 Chuyển TOÀN BỘ ảnh sang Local
+            Storage</button>
+          <img id="productThumb" class="img-preview" style="width: 70px; height: 70px;" src="" alt="">
+        </div>
+      </div>
+
+      <div class="legend">
+        <span><span class="dot edited"></span> Ô đã chỉnh sửa so với dữ liệu crawl gốc</span>
+        <span><span class="dot error"></span> Định dạng JSON không hợp lệ (chưa được lưu)</span>
+      </div>
+
+      <div class="tabs" id="tabBar">
+        <button class="tab-btn active" data-tab="tab-products" onclick="switchTab('tab-products', this)">📌 products
+          <span class="tab-count" id="cnt-products">0</span></button>
+        <button class="tab-btn" data-tab="tab-images" onclick="switchTab('tab-images', this)">🖼️ product_images <span
+            class="tab-count" id="cnt-images">0</span></button>
+        <button class="tab-btn" data-tab="tab-variants" onclick="switchTab('tab-variants', this)">⚙️ product_variants
+          <span class="tab-count" id="cnt-variants">0</span></button>
+        <button class="tab-btn" data-tab="tab-specs" onclick="switchTab('tab-specs', this)">📋 product_specifications
+          <span class="tab-count" id="cnt-specs">0</span></button>
+        <button class="tab-btn" data-tab="tab-json" onclick="switchTab('tab-json', this)">CODE Raw Payload</button>
+      </div>
+
+      <div id="tab-products" class="tab-content active">
+        <table>
+          <thead>
+            <tr>
+              <th>Field Name</th>
+              <th>Giá trị (chỉnh sửa được)</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="tblProducts"></tbody>
+        </table>
+      </div>
+
+      <div id="tab-images" class="tab-content">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:70px">Sort</th>
+              <th style="width:80px">Preview</th>
+              <th>Image URL</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="tblImages"></tbody>
+        </table>
+        <button class="btn btn-ghost" style="margin-top: 1rem; font-size: 0.85rem;" onclick="addEmptyGalleryImage()">➕
+          Thêm ảnh mới vào Gallery</button>
+      </div>
+
+      <div id="tab-variants" class="tab-content">
+        <table>
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Variant Name</th>
+              <th style="width:130px">Price (VNĐ)</th>
+              <th style="width:90px">Stock</th>
+              <th>Attributes (JSONB)</th>
+              <th style="width:60px"></th>
+            </tr>
+          </thead>
+          <tbody id="tblVariants"></tbody>
+        </table>
+        <button class="btn btn-ghost" style="margin-top: 1rem; font-size: 0.85rem;" onclick="addEmptyVariant()">➕ Thêm
+          variant mới</button>
+      </div>
+
+      <div id="tab-specs" class="tab-content">
+        <table>
+          <thead>
+            <tr>
+              <th>Spec Group</th>
+              <th>Spec Key</th>
+              <th>Spec Value</th>
+              <th style="width:60px"></th>
+            </tr>
+          </thead>
+          <tbody id="tblSpecs"></tbody>
+        </table>
+        <button class="btn btn-ghost" style="margin-top: 1rem; font-size: 0.85rem;" onclick="addEmptySpec()">➕ Thêm spec
+          mới</button>
+      </div>
+
+      <div id="tab-json" class="tab-content">
+        <pre class="code-block" id="jsonOutput"></pre>
+      </div>
+    </div>
+
+    <div class="action-bar" id="approvalBar" style="display: none;">
+      <div class="action-info">
+        <h4 id="approvalTitle">✅ Dữ liệu chưa lưu vào Database</h4>
+        <p id="approvalDesc">Kiểm tra các bảng trên. Bấm "Duyệt & Đưa vào Database" để lưu trực tiếp vào Supabase
+          Database.</p>
+      </div>
+      <div class="action-buttons">
+        <button class="btn btn-secondary" onclick="revertAllChanges()">↺ Khôi phục dữ liệu gốc</button>
+        <button class="btn btn-success" id="btnApprove" onclick="approveAndIngest()">✅ Duyệt & Đưa vào Database</button>
+      </div>
+    </div>
+  </main>
+
+  <div id="toastStack"></div>
+
+  <script>
+    let currentCrawlPayload = null;
+    let originalCrawlPayload = null;
+    let availableCategories = [];
+    const dirtyFields = new Set();
+    const errorFields = new Set();
+
+    // Multi-product Crawl Queue State
+    let crawlMode = 'single'; // 'single' | 'batch'
+    let crawlQueue = []; // array of { id, url, status: 'pending'|'approved'|'skipped'|'error', payload, originalPayload, dirtyFields, errorFields, errorMsg }
+    let activeQueueIndex = -1;
+
+    const READONLY_PRODUCT_FIELDS = ['id', 'created_at', 'updated_at'];
+
+
+    function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
+    function sameValue(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+
+    async function fetchCategories() {
+      try {
+        const resp = await fetch('/api/categories');
+        const res = await resp.json();
+        if (res.success && Array.isArray(res.categories)) {
+          availableCategories = res.categories;
+        }
+      } catch (err) {
+        console.warn('Lỗi nạp categories:', err);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchCategories();
+    });
+
+    function showToast(message, type = 'info') {
+      const stack = document.getElementById('toastStack');
+      const el = document.createElement('div');
+      el.className = `toast ${type}`;
+      el.textContent = message;
+      stack.appendChild(el);
+      setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.25s'; setTimeout(() => el.remove(), 250); }, 3200);
+    }
+
+    function setGlobalStatus(html, cls) {
+      const el = document.getElementById('globalStatus');
+      el.innerHTML = `<span>${html}</span>`;
+      el.className = 'badge-status' + (cls ? ' ' + cls : '');
+    }
+
+    function el(tag, opts = {}) {
+      const node = document.createElement(tag);
+      if (opts.class) node.className = opts.class;
+      if (opts.text !== undefined) node.textContent = opts.text;
+      if (opts.html !== undefined) node.innerHTML = opts.html;
+      if (opts.attrs) for (const [k, v] of Object.entries(opts.attrs)) node.setAttribute(k, v);
+      if (opts.value !== undefined) node.value = opts.value;
+      if (opts.on) for (const [evt, fn] of Object.entries(opts.on)) node.addEventListener(evt, fn);
+      if (opts.children) opts.children.forEach(c => c && node.appendChild(c));
+      return node;
+    }
+
+    function getStorageBadgeHTML(urlStr) {
+      if (!urlStr) return '<span style="color: #f59e0b; font-size: 0.75rem;">⚠️ Chưa có URL</span>';
+      if (urlStr.includes('supabase.co/storage')) return '<span class="storage-badge">☁️ Supabase Storage</span>';
+      if (urlStr.startsWith('/images/products/')) return '<span class="storage-badge">📁 Local Storage</span>';
+      return '<span style="color: #f59e0b; font-size: 0.75rem;">🌐 External URL</span>';
+    }
+
+    function updateDirtyUI() {
+      const badge = document.getElementById('dirtyBadge');
+      badge.textContent = `🟠 ${dirtyFields.size} thay đổi chưa lưu`;
+      badge.classList.toggle('show', dirtyFields.size > 0);
+
+      ['products', 'images', 'variants', 'specs'].forEach(tableKey => {
+        const prefix = tableKey + '|';
+        const count = [...dirtyFields].filter(k => k.startsWith(prefix)).length;
+        const cntEl = document.getElementById('cnt-' + tableKey);
+        if (cntEl) {
+          cntEl.textContent = count;
+          cntEl.classList.toggle('show', count > 0);
+        }
+      });
+
+      const bar = document.getElementById('approvalBar');
+      const hasError = errorFields.size > 0;
+      bar.classList.toggle('has-error', hasError);
+      document.getElementById('btnApprove').disabled = hasError;
+      document.getElementById('approvalTitle').textContent = hasError
+        ? '⛔ Có trường JSON không hợp lệ'
+        : '✅ Sẵn sàng đưa vào Database';
+      document.getElementById('approvalDesc').textContent = hasError
+        ? 'Sửa lại các ô đang viền đỏ (JSON sai định dạng) trước khi duyệt.'
+        : `Kiểm tra các bảng trên. ${dirtyFields.size > 0 ? dirtyFields.size + ' trường đã chỉnh sửa sẽ được gửi kèm. ' : ''}Bấm "Duyệt & Đưa vào Database" để lưu trực tiếp vào Supabase.`;
+
+      document.getElementById('jsonOutput').textContent = currentCrawlPayload ? JSON.stringify(currentCrawlPayload, null, 2) : '';
+    }
+
+    function trackField(key, isDirty, inputEl) {
+      if (isDirty) dirtyFields.add(key); else dirtyFields.delete(key);
+      if (inputEl) inputEl.classList.toggle('field-edited', isDirty);
+      updateDirtyUI();
+    }
+
+    function trackError(key, hasError, inputEl) {
+      if (hasError) errorFields.add(key); else errorFields.delete(key);
+      if (inputEl) inputEl.classList.toggle('field-error', hasError);
+      updateDirtyUI();
+    }
+
+    function setPreset(url) { document.getElementById('targetUrl').value = url; }
+
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function switchCrawlMode(mode) {
+      crawlMode = mode;
+      document.getElementById('singleCrawlBox').style.display = mode === 'single' ? 'flex' : 'none';
+      document.getElementById('batchCrawlBox').style.display = mode === 'batch' ? 'flex' : 'none';
+      document.getElementById('btnModeSingle').style.background = mode === 'single' ? 'var(--accent)' : 'transparent';
+      document.getElementById('btnModeBatch').style.background = mode === 'batch' ? 'var(--accent)' : 'transparent';
+    }
+
+    function setBatchPresets() {
+      switchCrawlMode('batch');
+      const presetUrls = [
+        'https://fptshop.com.vn/may-tinh-xach-tay/macbook-air-13-m5-2026-10cpu-8gpu-16gb-512gb',
+        'https://fptshop.com.vn/may-tinh-xach-tay/laptop-acer-aspire-go-14-ag14-72p-563l-core-5-120u-16gb-512gb-14-fhd-win11',
+        'https://fptshop.com.vn/may-tinh-xach-tay/laptop-asus-vivobook-x1404va-eb355w-core-7-150u-16gb-512gb-14-fhd-win11'
+      ];
+      const ta = document.getElementById('targetBatchUrls');
+      ta.value = presetUrls.join('\n');
+      updateBatchUrlCount();
+    }
+
+    function updateBatchUrlCount() {
+      const val = document.getElementById('targetBatchUrls').value;
+      const urls = val.split('\n').map(u => u.trim()).filter(u => u.length > 0);
+      document.getElementById('batchUrlCount').textContent = `${urls.length} link được phát hiện`;
+    }
+
+    async function startBatchCrawl() {
+      const val = document.getElementById('targetBatchUrls').value;
+      const urls = val.split('\n').map(u => u.trim()).filter(u => u.length > 0);
+      if (urls.length === 0) return showToast('Vui lòng nhập ít nhất 1 link URL!', 'error');
+
+      setGlobalStatus(`⏳ Đang Crawl ${urls.length} sản phẩm trong danh sách...`);
+      try {
+        const resp = await fetch('/api/crawl-batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ urls })
+        });
+        const res = await resp.json();
+
+        if (res.success) {
+          if (Array.isArray(res.available_categories) && res.available_categories.length > 0) {
+            availableCategories = res.available_categories;
+          }
+          
+          crawlQueue = [];
+          res.items.forEach((item, idx) => {
+            if (item.success) {
+              const p = item.data;
+              p.product_images = p.product_images || [];
+              p.product_variants = p.product_variants || [];
+              p.product_specifications = p.product_specifications || [];
+              p.exists_in_db = item.exists_in_db || false;
+              crawlQueue.push({
+                id: 'q_' + idx,
+                url: item.url,
+                exists_in_db: item.exists_in_db || false,
+                status: 'pending',
+                payload: p,
+                originalPayload: deepClone(p),
+                dirtyFields: new Set(),
+                errorFields: new Set(),
+                errorMsg: null
+              });
+            } else {
+              crawlQueue.push({
+                id: 'q_' + idx,
+                url: item.url,
+                exists_in_db: item.exists_in_db || false,
+                status: 'error',
+                payload: null,
+                originalPayload: null,
+                dirtyFields: new Set(),
+                errorFields: new Set(),
+                errorMsg: item.error
+              });
+            }
+          });
+
+          renderQueueList();
+          document.getElementById('queueCard').style.display = 'block';
+          
+          const firstValidIdx = crawlQueue.findIndex(q => q.status === 'pending');
+          if (firstValidIdx >= 0) {
+            selectQueueItem(firstValidIdx);
+          } else {
+            showToast('Không có sản phẩm nào crawl thành công trong danh sách.', 'error');
+          }
+          setGlobalStatus(`🟢 Đã Crawl Xong ${crawlQueue.length} sản phẩm — Bạn có thể xem & duyệt từng sản phẩm bên dưới!`, 'ok');
+          showToast(`Crawl thành công ${crawlQueue.filter(q=>q.payload).length}/${urls.length} sản phẩm!`, 'success');
+        } else {
+          showToast('Lỗi Batch Crawl: ' + res.error, 'error');
+          setGlobalStatus('🔴 Lỗi Crawl dữ liệu', 'err');
+        }
+      } catch (err) {
+        showToast('Lỗi kết nối Server: ' + err, 'error');
+        setGlobalStatus('🔴 Lỗi kết nối Server', 'err');
+      }
+    }
+
+    function renderQueueList() {
+      const container = document.getElementById('queueList');
+      container.innerHTML = '';
+
+      const approvedCount = crawlQueue.filter(q => q.status === 'approved').length;
+      const totalCount = crawlQueue.length;
+      document.getElementById('queueSummaryText').textContent = `Đã duyệt ${approvedCount}/${totalCount} sản phẩm`;
+
+      crawlQueue.forEach((item, idx) => {
+        const p = item.payload ? item.payload.products : null;
+        const title = p ? p.name : item.url;
+        const inDb = item.exists_in_db && item.status !== 'approved';
+        const brand = p ? `${p.brand} | ${p.category_name}${inDb ? ' — 🔴 Link đã có trong DB' : ''}` : 'Lỗi crawl link này';
+        const thumb = p ? p.thumbnail : '';
+        const isSelected = idx === activeQueueIndex;
+
+        const rowClass = `queue-item status-${item.status}${inDb ? ' status-exists' : ''}${isSelected ? ' active' : ''}`;
+        const row = el('div', { class: rowClass });
+        row.onclick = () => selectQueueItem(idx);
+
+        const info = el('div', { class: 'queue-item-info' });
+        if (thumb) {
+          info.appendChild(el('img', { class: 'img-preview', attrs: { src: thumb, style: 'width: 45px; height: 45px;' } }));
+        }
+        const textWrap = el('div');
+        textWrap.appendChild(el('div', { class: 'queue-item-title', text: `#${idx + 1}. ${title}` }));
+        textWrap.appendChild(el('div', { class: 'queue-item-sub', text: item.errorMsg ? `Lỗi: ${item.errorMsg}` : brand }));
+        info.appendChild(textWrap);
+
+        row.appendChild(info);
+
+        let badgeClass = item.status;
+        let badgeText = '⏳ Chờ duyệt';
+        if (item.status === 'approved') badgeText = '✅ Đã duyệt DB';
+        else if (item.status === 'skipped') badgeText = '🚫 Đã bỏ qua';
+        else if (item.status === 'error') badgeText = '❌ Lỗi Crawl';
+        else if (inDb) {
+          badgeClass = 'exists';
+          badgeText = '🔴 Đã có trong DB';
+        } else if (item.dirtyFields && item.dirtyFields.size > 0) {
+          badgeText = `🟠 Có ${item.dirtyFields.size} chỉnh sửa`;
+        }
+
+        const badge = el('span', { class: `queue-badge ${badgeClass}`, text: badgeText });
+        row.appendChild(badge);
+
+        const actions = el('div', { class: 'action-buttons', attrs: { style: 'gap: 0.3rem;' } });
+        if (item.status === 'pending') {
+          const btnApprove = el('button', { class: 'btn btn-success btn-sm', text: '✅ Duyệt', on: { click: (e) => { e.stopPropagation(); approveSingleQueueItem(idx); } } });
+          const btnSkip = el('button', { class: 'btn btn-secondary btn-sm', text: '⏭️ Bỏ qua', on: { click: (e) => { e.stopPropagation(); skipQueueItem(idx); } } });
+          actions.appendChild(btnApprove);
+          actions.appendChild(btnSkip);
+        }
+        row.appendChild(actions);
+
+        container.appendChild(row);
+      });
+    }
+
+
+    function selectQueueItem(index) {
+      if (index < 0 || index >= crawlQueue.length) return;
+      const item = crawlQueue[index];
+      if (!item.payload) {
+        return showToast(`Sản phẩm #${index + 1} bị lỗi crawl, không thể chỉnh sửa.`, 'error');
+      }
+
+      if (activeQueueIndex >= 0 && activeQueueIndex < crawlQueue.length) {
+        const oldItem = crawlQueue[activeQueueIndex];
+        oldItem.dirtyFields = new Set(dirtyFields);
+        oldItem.errorFields = new Set(errorFields);
+      }
+
+      activeQueueIndex = index;
+      currentCrawlPayload = item.payload;
+      originalCrawlPayload = item.originalPayload;
+
+      dirtyFields.clear();
+      if (item.dirtyFields) item.dirtyFields.forEach(f => dirtyFields.add(f));
+
+      errorFields.clear();
+      if (item.errorFields) item.errorFields.forEach(f => errorFields.add(f));
+
+      renderInspection(currentCrawlPayload);
+      document.getElementById('resultCard').style.display = 'block';
+      document.getElementById('approvalBar').style.display = 'flex';
+      renderQueueList();
+
+      document.getElementById('approvalTitle').textContent = `✅ Đang xem & chỉnh sửa Sản phẩm #${index + 1}: ${item.payload.products.name}`;
+    }
+
+    function skipQueueItem(index) {
+      if (index < 0 || index >= crawlQueue.length) return;
+      crawlQueue[index].status = 'skipped';
+      showToast(`Đã bỏ qua sản phẩm #${index + 1}.`, 'info');
+      renderQueueList();
+
+      const nextPendingIdx = crawlQueue.findIndex((q, i) => i > index && q.status === 'pending');
+      if (nextPendingIdx >= 0) {
+        selectQueueItem(nextPendingIdx);
+      }
+    }
+
+    async function approveSingleQueueItem(index) {
+      if (index < 0 || index >= crawlQueue.length) return;
+      const item = crawlQueue[index];
+      if (!item.payload) return;
+
+      try {
+        setGlobalStatus(`⏳ Đang lưu sản phẩm #${index + 1} vào Database...`);
+        const resp = await fetch('/api/approve-ingest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product_data: item.payload })
+        });
+        const res = await resp.json();
+
+        if (res.success) {
+          item.status = 'approved';
+          showToast(`✅ Đã duyệt & đưa sản phẩm #${index + 1} vào Database!`, 'success');
+          renderQueueList();
+
+          const nextPendingIdx = crawlQueue.findIndex((q, i) => i > index && q.status === 'pending');
+          if (nextPendingIdx >= 0) {
+            selectQueueItem(nextPendingIdx);
+          } else {
+            setGlobalStatus('🎉 TẤT CẢ SẢN PHẨM TRONG DANH SÁCH ĐÃ ĐƯỢC DUYỆT THÀNH CÔNG!', 'ok');
+            showToast('Tất cả sản phẩm trong Queue đã được xử lý xong!', 'success');
+          }
+        } else {
+          showToast('Lỗi lưu DB: ' + res.error, 'error');
+        }
+      } catch (err) {
+        showToast('Lỗi kết nối Server: ' + err, 'error');
+      }
+    }
+
+    async function convertBatchImagesToStorage(targetStorage = 'supabase') {
+      const validItems = crawlQueue.filter(q => q.payload);
+      if (validItems.length === 0) return showToast('Không có sản phẩm nào trong danh sách để chuyển đổi ảnh.', 'warning');
+
+      setGlobalStatus(`⏳ Đang chuyển đổi toàn bộ ảnh của ${validItems.length} sản phẩm sang ${targetStorage === 'supabase' ? 'Supabase Storage' : 'Local Storage'}...`);
+
+      try {
+        const resp = await fetch('/api/convert-images-batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items: validItems.map(q => q.payload),
+            target_storage: targetStorage
+          })
+        });
+        const res = await resp.json();
+
+        if (res.success && Array.isArray(res.data)) {
+          res.data.forEach((updatedPayload, idx) => {
+            const queueItem = validItems[idx];
+            queueItem.payload = updatedPayload;
+            if (!queueItem.originalPayload) queueItem.originalPayload = deepClone(updatedPayload);
+          });
+
+          if (activeQueueIndex >= 0 && activeQueueIndex < crawlQueue.length) {
+            const activeItem = crawlQueue[activeQueueIndex];
+            if (activeItem.payload) {
+              currentCrawlPayload = activeItem.payload;
+              renderInspection(currentCrawlPayload);
+            }
+          }
+
+          renderQueueList();
+          showToast(`Đã chuyển đổi thành công ${res.count} ảnh của ${res.data.length} sản phẩm lên ${targetStorage === 'supabase' ? 'Supabase Storage' : 'Local Storage'}!`, 'success');
+          setGlobalStatus(`🟢 Đã chuyển đổi toàn bộ ảnh của tất cả sản phẩm sang ${targetStorage === 'supabase' ? 'Supabase Storage' : 'Local Storage'}!`, 'ok');
+        } else {
+          showToast('Lỗi chuyển đổi ảnh batch: ' + res.error, 'error');
+        }
+      } catch (err) {
+        showToast('Lỗi kết nối Server: ' + err, 'error');
+      }
+    }
+
+    async function approveBatchAll() {
+
+      const pendingItems = crawlQueue.filter(q => q.status === 'pending' && q.payload);
+      if (pendingItems.length === 0) return showToast('Không có sản phẩm nào đang chờ duyệt trong danh sách.', 'warning');
+
+      if (!confirm(`Xác nhận Duyệt & Đưa TẤT CẢ ${pendingItems.length} sản phẩm còn lại vào Supabase Database?`)) return;
+
+      setGlobalStatus(`⏳ Đang đưa ${pendingItems.length} sản phẩm vào Database...`);
+      try {
+        const resp = await fetch('/api/approve-batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: pendingItems.map(q => q.payload) })
+        });
+        const res = await resp.json();
+
+        if (res.success) {
+          pendingItems.forEach(q => q.status = 'approved');
+          renderQueueList();
+          setGlobalStatus(`🎉 TẤT CẢ ${res.inserted_count} SẢN PHẨM ĐÃ ĐƯỢC LƯU VÀO DATABASE THÀNH CÔNG!`, 'ok');
+          showToast(`Đã lưu ${res.inserted_count} sản phẩm vào Database!`, 'success');
+        } else {
+          showToast('Lỗi Approve Batch: ' + res.error, 'error');
+        }
+      } catch (err) {
+        showToast('Lỗi kết nối Server: ' + err, 'error');
+      }
+    }
+
+    async function startCrawl() {
+      const url = document.getElementById('targetUrl').value;
+      if (!url) return showToast('Vui lòng nhập URL!', 'error');
+
+      activeQueueIndex = -1;
+      document.getElementById('queueCard').style.display = 'none';
+      setGlobalStatus('⏳ Đang Crawl & Phân tích Schema...');
+
+      try {
+        const resp = await fetch('/api/crawl', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        const res = await resp.json();
+
+        if (res.success) {
+          if (Array.isArray(res.available_categories) && res.available_categories.length > 0) {
+            availableCategories = res.available_categories;
+          }
+          currentCrawlPayload = res.data;
+          currentCrawlPayload.exists_in_db = res.exists_in_db || false;
+          currentCrawlPayload.product_images = currentCrawlPayload.product_images || [];
+          currentCrawlPayload.product_variants = currentCrawlPayload.product_variants || [];
+          currentCrawlPayload.product_specifications = currentCrawlPayload.product_specifications || [];
+          originalCrawlPayload = deepClone(currentCrawlPayload);
+          dirtyFields.clear();
+          errorFields.clear();
+          renderInspection(currentCrawlPayload);
+          setGlobalStatus('🟢 Đã Crawl Xong — Đang chờ bạn Duyệt lưu DB', 'ok');
+          document.getElementById('resultCard').style.display = 'block';
+          document.getElementById('approvalBar').style.display = 'flex';
+          showToast(res.exists_in_db ? '⚠️ Crawl xong! Link sản phẩm này ĐÃ CÓ trong Database.' : 'Crawl thành công, có thể chỉnh sửa dữ liệu trước khi lưu.', res.exists_in_db ? 'warning' : 'success');
+        } else {
+          showToast('Lỗi: ' + res.error, 'error');
+          setGlobalStatus('🔴 Lỗi Crawl dữ liệu', 'err');
+        }
+      } catch (err) {
+        showToast('Lỗi kết nối Server: ' + err, 'error');
+        setGlobalStatus('🔴 Lỗi kết nối Server', 'err');
+      }
+    }
+
+    async function convertSingleImage(extUrl, targetType, index, targetStorage = 'supabase') {
+      if (!currentCrawlPayload) return;
+      const pid = currentCrawlPayload.products.id;
+
+      try {
+        const resp = await fetch('/api/convert-single-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product_id: pid, image_url: extUrl, target_storage: targetStorage })
+        });
+        const res = await resp.json();
+
+        if (res.success) {
+          const storageUrl = res.storage_url;
+          if (targetType === 'thumbnail') currentCrawlPayload.products.thumbnail = storageUrl;
+          else if (targetType === 'image_gallery') currentCrawlPayload.product_images[index].url = storageUrl;
+          renderInspection(currentCrawlPayload);
+          showToast(`Đã chuyển ảnh lên ${targetStorage === 'supabase' ? 'Supabase Storage' : 'Local Storage'}.`, 'success');
+        } else {
+          showToast('Lỗi chuyển đổi ảnh: ' + res.error, 'error');
+        }
+      } catch (err) {
+        showToast('Lỗi kết nối Server: ' + err, 'error');
+      }
+    }
+
+    async function convertImagesToStorage(targetStorage = 'supabase') {
+      if (!currentCrawlPayload) return;
+      setGlobalStatus(`⏳ Đang chuyển đổi toàn bộ ảnh sang ${targetStorage === 'supabase' ? 'Supabase Storage' : 'Local Storage'}...`);
+
+      try {
+        const resp = await fetch('/api/convert-images', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product_data: currentCrawlPayload, target_storage: targetStorage })
+        });
+        const res = await resp.json();
+
+        if (res.success) {
+          currentCrawlPayload = res.data;
+          currentCrawlPayload.product_images = currentCrawlPayload.product_images || [];
+          currentCrawlPayload.product_variants = currentCrawlPayload.product_variants || [];
+          currentCrawlPayload.product_specifications = currentCrawlPayload.product_specifications || [];
+          renderInspection(currentCrawlPayload);
+          showToast(`Đã chuyển đổi tất cả ${res.count} ảnh thành công!`, 'success');
+          setGlobalStatus('🟢 Đã chuyển đổi toàn bộ ảnh sang Storage — Đang chờ bạn Duyệt lưu DB', 'ok');
+        } else {
+          showToast('Lỗi chuyển đổi ảnh: ' + res.error, 'error');
+        }
+      } catch (err) {
+        showToast('Lỗi kết nối Server: ' + err, 'error');
+      }
+    }
+
+    function revertAllChanges() {
+      if (!originalCrawlPayload) return;
+      if (!confirm('Khôi phục toàn bộ dữ liệu về đúng như lúc vừa crawl xong? Mọi chỉnh sửa sẽ mất.')) return;
+      currentCrawlPayload = deepClone(originalCrawlPayload);
+      dirtyFields.clear();
+      errorFields.clear();
+      renderInspection(currentCrawlPayload);
+      showToast('Đã khôi phục dữ liệu gốc.', 'warning');
+    }
+
+    async function approveAndIngest() {
+      if (!currentCrawlPayload) return;
+      if (errorFields.size > 0) return showToast('Còn trường JSON không hợp lệ, không thể lưu.', 'error');
+
+      if (activeQueueIndex >= 0) {
+        return approveSingleQueueItem(activeQueueIndex);
+      }
+
+      if (!confirm('Xác nhận Duyệt & Đưa sản phẩm này vào Supabase Database?')) return;
+
+      setGlobalStatus('⏳ Đang Đưa dữ liệu vào Supabase Database...');
+
+      try {
+        const resp = await fetch('/api/approve-ingest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product_data: currentCrawlPayload })
+        });
+        const res = await resp.json();
+
+        if (res.success) {
+          showToast(res.message || 'Đã lưu vào database.', 'success');
+          setGlobalStatus('✅ ĐÃ LƯU VÀO SUPABASE DATABASE THÀNH CÔNG!', 'ok');
+          document.getElementById('approvalBar').style.display = 'none';
+        } else {
+          showToast('Lỗi lưu DB: ' + res.error, 'error');
+        }
+      } catch (err) {
+        showToast('Lỗi kết nối Server: ' + err, 'error');
+      }
+    }
+
+
+    function renderInspection(data) {
+      const p = data.products;
+      document.getElementById('productTitle').textContent = p.name || '(chưa có tên)';
+      document.getElementById('productBrand').textContent = `Thương hiệu: ${p.brand || '—'} | Loại: ${p.category_name || '—'}`;
+      document.getElementById('productThumb').src = p.thumbnail || '';
+
+      const isDuplicateInDb = data.exists_in_db || (activeQueueIndex >= 0 && crawlQueue[activeQueueIndex] && crawlQueue[activeQueueIndex].exists_in_db);
+      const dupAlert = document.getElementById('duplicateAlert');
+      if (dupAlert) {
+        dupAlert.style.display = isDuplicateInDb ? 'flex' : 'none';
+      }
+
+      renderProductsTab(data);
+      renderImagesTab(data);
+      renderVariantsTab(data);
+      renderSpecsTab(data);
+      updateDirtyUI();
+    }
+
+
+    function renderProductsTab(data) {
+      const tbody = document.getElementById('tblProducts');
+      tbody.innerHTML = '';
+      const p = data.products;
+
+      Object.entries(p).forEach(([k, v]) => {
+        const key = `products|0|${k}`;
+        const tr = el('tr');
+        tr.classList.toggle('row-edited', dirtyFields.has(key));
+
+        const tdLabel = el('td');
+        const labelSpan = el('span', { class: 'field-label', text: k });
+        tdLabel.appendChild(labelSpan);
+        if (READONLY_PRODUCT_FIELDS.includes(k)) tdLabel.appendChild(el('span', { class: 'system-badge', text: 'read-only' }));
+
+        const tdValue = el('td');
+        const tdAction = el('td', { html: '<span style="color:#64748b;">—</span>' });
+
+        if (READONLY_PRODUCT_FIELDS.includes(k)) {
+          tdValue.appendChild(el('span', { class: 'field-readonly', text: typeof v === 'object' ? JSON.stringify(v) : String(v ?? '') }));
+        } else if (k === 'thumbnail') {
+          const wrap = el('div', { class: 'cell-value-wrap' });
+          const badgeLine = el('div', { html: `<span style="word-break:break-all; font-size:0.8rem;">${escHtml(v || '')}</span> ${getStorageBadgeHTML(String(v || ''))}` });
+          const inlineEditor = el('div', { class: 'inline-url-editor' });
+          const input = el('input', { attrs: { type: 'url', placeholder: 'Dán URL ảnh mới...' }, value: v || '' });
+          input.addEventListener('input', () => {
+            currentCrawlPayload.products.thumbnail = input.value;
+            const dirty = !sameValue(input.value, originalCrawlPayload.products.thumbnail);
+            trackField(key, dirty, input);
+            document.getElementById('productThumb').src = input.value;
+            badgeLine.innerHTML = `<span style="word-break:break-all; font-size:0.8rem;">${escHtml(input.value)}</span> ${getStorageBadgeHTML(input.value)}`;
+          });
+          inlineEditor.appendChild(input);
+          wrap.appendChild(badgeLine);
+          wrap.appendChild(inlineEditor);
+          tdValue.appendChild(wrap);
+
+          const actionWrap = el('div', { class: 'cell-value-wrap' });
+          const btnRow = el('div', { attrs: { style: 'display:flex;gap:0.3rem;flex-wrap:wrap;' } });
+          btnRow.appendChild(el('button', { class: 'btn btn-supabase btn-sm', text: '☁️ Supabase', on: { click: () => convertSingleImage(currentCrawlPayload.products.thumbnail, 'thumbnail', 0, 'supabase') } }));
+          btnRow.appendChild(el('button', { class: 'btn btn-secondary btn-sm', text: '📁 Local', on: { click: () => convertSingleImage(currentCrawlPayload.products.thumbnail, 'thumbnail', 0, 'local') } }));
+          actionWrap.appendChild(btnRow);
+          tdAction.innerHTML = '';
+          tdAction.appendChild(actionWrap);
+        } else if (k === 'category_name' || k === 'category_id') {
+          const sel = el('select', { attrs: { style: 'width:100%; font-weight: 500; color: #a5b4fc;' } });
+          sel.appendChild(el('option', { attrs: { value: '' }, text: '-- Chọn Danh Mục Trong Database --' }));
+
+          let selectedId = '';
+          availableCategories.forEach(c => {
+            const isMatch = (k === 'category_id' && c.id === v) ||
+                            (c.name === v || c.name.toLowerCase() === String(v || '').toLowerCase());
+            if (isMatch) selectedId = c.id;
+            const opt = el('option', {
+              attrs: { value: c.id, 'data-name': c.name },
+              text: `📁 ${c.name}`
+            });
+            sel.appendChild(opt);
+          });
+
+          if (selectedId) {
+            sel.value = selectedId;
+          }
+
+          sel.addEventListener('change', () => {
+            const opt = sel.options[sel.selectedIndex];
+            const catId = sel.value;
+            const catName = opt ? (opt.getAttribute('data-name') || '') : '';
+            currentCrawlPayload.products.category_id = catId;
+            currentCrawlPayload.products.category_name = catName;
+
+            const pBrand = document.getElementById('productBrand');
+            if (pBrand) pBrand.textContent = `Thương hiệu: ${currentCrawlPayload.products.brand || '—'} | Loại: ${catName || '—'}`;
+
+            trackField(key, catId !== (originalCrawlPayload.products.category_id || ''), sel);
+          });
+          tdValue.appendChild(sel);
+        } else if (v !== null && typeof v === 'object') {
+          const ta = el('textarea', { attrs: { rows: '3', style: 'width:100%;' }, value: JSON.stringify(v, null, 2) });
+          ta.addEventListener('input', () => {
+            try {
+              const parsed = JSON.parse(ta.value);
+              currentCrawlPayload.products[k] = parsed;
+              trackError(key, false, ta);
+              trackField(key, !sameValue(parsed, originalCrawlPayload.products[k]), ta);
+            } catch (e) {
+              trackError(key, true, ta);
+            }
+          });
+          tdValue.appendChild(ta);
+        } else if (typeof v === 'boolean') {
+          const sel = el('select', { attrs: { style: 'width:100%;' } });
+          sel.appendChild(el('option', { attrs: { value: 'true' }, text: 'true' }));
+          sel.appendChild(el('option', { attrs: { value: 'false' }, text: 'false' }));
+          sel.value = String(v);
+          sel.addEventListener('change', () => {
+            const parsed = sel.value === 'true';
+            currentCrawlPayload.products[k] = parsed;
+            trackField(key, parsed !== originalCrawlPayload.products[k], sel);
+          });
+          tdValue.appendChild(sel);
+        } else if (typeof v === 'number') {
+          const input = el('input', { attrs: { type: 'number', style: 'width:100%;' }, value: v });
+          input.addEventListener('input', () => {
+            const parsed = input.value === '' ? null : Number(input.value);
+            currentCrawlPayload.products[k] = parsed;
+            trackField(key, parsed !== originalCrawlPayload.products[k], input);
+          });
+          tdValue.appendChild(input);
+        } else if (k === 'description') {
+          const ta = el('textarea', { attrs: { rows: '3', style: 'width:100%; font-family:inherit; font-size:0.85rem;' }, value: v || '' });
+          ta.addEventListener('input', () => {
+            currentCrawlPayload.products[k] = ta.value;
+            trackField(key, ta.value !== (originalCrawlPayload.products[k] || ''), ta);
+          });
+          tdValue.appendChild(ta);
+        } else {
+          const input = el('input', { attrs: { type: 'text', style: 'width:100%;' }, value: v ?? '' });
+          input.addEventListener('input', () => {
+            currentCrawlPayload.products[k] = input.value;
+            trackField(key, input.value !== String(originalCrawlPayload.products[k] ?? ''), input);
+          });
+          tdValue.appendChild(input);
+        }
+
+        tr.appendChild(tdLabel);
+        tr.appendChild(tdValue);
+        tr.appendChild(tdAction);
+        tbody.appendChild(tr);
+      });
+    }
+
+    function escHtml(str) {
+      return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function renderImagesTab(data) {
+      const tbody = document.getElementById('tblImages');
+      tbody.innerHTML = '';
+
+      (data.product_images || []).forEach((img, idx) => {
+        const keySort = `images|${idx}|sort_order`;
+        const keyUrl = `images|${idx}|url`;
+        const orig = (originalCrawlPayload.product_images || [])[idx];
+
+        const tr = el('tr');
+        tr.classList.toggle('row-edited', dirtyFields.has(keySort) || dirtyFields.has(keyUrl));
+
+        const tdSort = el('td');
+        const sortInput = el('input', { attrs: { type: 'number', style: 'width:60px;' }, value: img.sort_order });
+        sortInput.addEventListener('input', () => {
+          img.sort_order = Number(sortInput.value);
+          trackField(keySort, orig ? img.sort_order !== orig.sort_order : true, sortInput);
+        });
+        tdSort.appendChild(sortInput);
+
+        const tdPreview = el('td');
+        const thumb = el('img', { class: 'img-preview', attrs: { src: img.url || '' } });
+        thumb.addEventListener('error', () => { thumb.style.opacity = 0.2; });
+        tdPreview.appendChild(thumb);
+
+        const tdUrl = el('td', { attrs: { style: 'word-break: break-all; font-size: 0.78rem;' } });
+        const urlLine = el('span', { html: `${escHtml(img.url)} ${getStorageBadgeHTML(img.url)}` });
+        tdUrl.appendChild(urlLine);
+
+        const tdAction = el('td');
+        const wrap = el('div', { class: 'cell-value-wrap' });
+        const btnRow = el('div', { attrs: { style: 'display:flex;gap:0.4rem;flex-wrap:wrap;' } });
+        btnRow.appendChild(el('button', { class: 'btn btn-supabase btn-sm', text: '☁️ Supabase', on: { click: () => convertSingleImage(img.url, 'image_gallery', idx, 'supabase') } }));
+        btnRow.appendChild(el('button', { class: 'btn btn-secondary btn-sm', text: '📁 Local', on: { click: () => convertSingleImage(img.url, 'image_gallery', idx, 'local') } }));
+        btnRow.appendChild(el('button', { class: 'btn btn-danger btn-sm', text: '🗑️ Xóa', on: { click: () => deleteGalleryImage(idx) } }));
+
+        const editorRow = el('div', { class: 'inline-url-editor' });
+        const urlInput = el('input', { attrs: { type: 'url', placeholder: 'Dán URL ảnh mới...' }, value: img.url });
+        urlInput.addEventListener('input', () => {
+          img.url = urlInput.value;
+          thumb.src = urlInput.value;
+          thumb.style.opacity = 1;
+          urlLine.innerHTML = `${escHtml(img.url)} ${getStorageBadgeHTML(img.url)}`;
+          trackField(keyUrl, orig ? img.url !== orig.url : true, urlInput);
+        });
+        editorRow.appendChild(urlInput);
+
+        wrap.appendChild(btnRow);
+        wrap.appendChild(editorRow);
+        tdAction.appendChild(wrap);
+
+        tr.appendChild(tdSort);
+        tr.appendChild(tdPreview);
+        tr.appendChild(tdUrl);
+        tr.appendChild(tdAction);
+        tbody.appendChild(tr);
+      });
+    }
+
+    function deleteGalleryImage(idx) {
+      currentCrawlPayload.product_images.splice(idx, 1);
+      currentCrawlPayload.product_images.forEach((img, i) => { img.sort_order = i + 1; });
+      [...dirtyFields].filter(k => k.startsWith('images|')).forEach(k => dirtyFields.delete(k));
+      renderImagesTab(currentCrawlPayload);
+      updateDirtyUI();
+      showToast('Đã xóa ảnh.', 'info');
+    }
+
+    function addEmptyGalleryImage() {
+      const newIdx = currentCrawlPayload.product_images.length;
+      currentCrawlPayload.product_images.push({ product_id: currentCrawlPayload.products.id, url: '', sort_order: newIdx + 1 });
+      originalCrawlPayload.product_images[newIdx] = { product_id: currentCrawlPayload.products.id, url: '', sort_order: newIdx + 1 };
+      renderImagesTab(currentCrawlPayload);
+      document.querySelector('[data-tab="tab-images"]').click();
+    }
+
+    function renderVariantsTab(data) {
+      const tbody = document.getElementById('tblVariants');
+      tbody.innerHTML = '';
+
+      (data.product_variants || []).forEach((v, idx) => {
+        const orig = (originalCrawlPayload.product_variants || [])[idx] || {};
+        const rowKeys = ['sku', 'variant_name', 'price', 'stock', 'attributes'].map(f => `variants|${idx}|${f}`);
+        const tr = el('tr');
+        tr.classList.toggle('row-edited', rowKeys.some(k => dirtyFields.has(k)));
+
+        const tdSku = el('td', { class: 'mono' });
+        const skuInput = el('input', { attrs: { type: 'text', style: 'width:100%; color: #34d399;' }, value: v.sku });
+        skuInput.addEventListener('input', () => {
+          v.sku = skuInput.value;
+          trackField(`variants|${idx}|sku`, v.sku !== (orig.sku ?? ''), skuInput);
+        });
+        tdSku.appendChild(skuInput);
+
+        const tdName = el('td');
+        const nameInput = el('input', { attrs: { type: 'text', style: 'width:100%;' }, value: v.variant_name || '' });
+        nameInput.addEventListener('input', () => {
+          v.variant_name = nameInput.value;
+          trackField(`variants|${idx}|variant_name`, v.variant_name !== (orig.variant_name ?? ''), nameInput);
+        });
+        tdName.appendChild(nameInput);
+
+        const tdPrice = el('td');
+        const priceInput = el('input', { attrs: { type: 'number', style: 'width:100%;' }, value: v.price });
+        priceInput.addEventListener('input', () => {
+          v.price = priceInput.value === '' ? 0 : Number(priceInput.value);
+          trackField(`variants|${idx}|price`, v.price !== orig.price, priceInput);
+        });
+        tdPrice.appendChild(priceInput);
+
+        const tdStock = el('td');
+        const stockInput = el('input', { attrs: { type: 'number', style: 'width:100%;' }, value: v.stock });
+        stockInput.addEventListener('input', () => {
+          v.stock = stockInput.value === '' ? 0 : Number(stockInput.value);
+          trackField(`variants|${idx}|stock`, v.stock !== orig.stock, stockInput);
+        });
+        tdStock.appendChild(stockInput);
+
+        const tdAttrs = el('td');
+        const attrsTa = el('textarea', { attrs: { rows: '2', style: 'width:100%;' }, value: JSON.stringify(v.attributes || {}, null, 2) });
+        attrsTa.addEventListener('input', () => {
+          try {
+            const parsed = JSON.parse(attrsTa.value);
+            v.attributes = parsed;
+            trackError(`variants|${idx}|attributes`, false, attrsTa);
+            trackField(`variants|${idx}|attributes`, !sameValue(parsed, orig.attributes || {}), attrsTa);
+          } catch (e) {
+            trackError(`variants|${idx}|attributes`, true, attrsTa);
+          }
+        });
+        tdAttrs.appendChild(attrsTa);
+
+        const tdDel = el('td');
+        tdDel.appendChild(el('button', { class: 'btn btn-danger btn-sm', text: '🗑️', on: { click: () => deleteVariant(idx) } }));
+
+        tr.appendChild(tdSku); tr.appendChild(tdName); tr.appendChild(tdPrice); tr.appendChild(tdStock); tr.appendChild(tdAttrs); tr.appendChild(tdDel);
+        tbody.appendChild(tr);
+      });
+    }
+
+    function deleteVariant(idx) {
+      currentCrawlPayload.product_variants.splice(idx, 1);
+      [...dirtyFields].filter(k => k.startsWith('variants|')).forEach(k => dirtyFields.delete(k));
+      [...errorFields].filter(k => k.startsWith('variants|')).forEach(k => errorFields.delete(k));
+      renderVariantsTab(currentCrawlPayload);
+      updateDirtyUI();
+      showToast('Đã xóa variant.', 'info');
+    }
+
+    function addEmptyVariant() {
+      const blank = {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        product_id: currentCrawlPayload.products.id,
+        sku: '',
+        variant_name: '',
+        price: 0,
+        stock: 0,
+        image: currentCrawlPayload.products.thumbnail || '',
+        discount_percent: 0,
+        attributes: {},
+        vat_percent: 10.0,
+        is_active: true,
+      };
+      currentCrawlPayload.product_variants.push(blank);
+      originalCrawlPayload.product_variants[currentCrawlPayload.product_variants.length - 1] = deepClone(blank);
+      renderVariantsTab(currentCrawlPayload);
+      document.querySelector('[data-tab="tab-variants"]').click();
+    }
+
+    function renderSpecsTab(data) {
+      const tbody = document.getElementById('tblSpecs');
+      tbody.innerHTML = '';
+
+      (data.product_specifications || []).forEach((s, idx) => {
+        const orig = (originalCrawlPayload.product_specifications || [])[idx] || {};
+        const rowKeys = ['spec_group', 'spec_key', 'spec_value'].map(f => `specs|${idx}|${f}`);
+        const tr = el('tr');
+        tr.classList.toggle('row-edited', rowKeys.some(k => dirtyFields.has(k)));
+
+        const tdGroup = el('td');
+        const gInput = el('input', { attrs: { type: 'text', style: 'width:100%;' }, value: s.spec_group || '' });
+        gInput.addEventListener('input', () => { s.spec_group = gInput.value; trackField(`specs|${idx}|spec_group`, s.spec_group !== (orig.spec_group ?? ''), gInput); });
+        tdGroup.appendChild(gInput);
+
+        const tdKey = el('td');
+        const kInput = el('input', { attrs: { type: 'text', style: 'width:100%; color:#f472b6;' }, value: s.spec_key || '' });
+        kInput.addEventListener('input', () => { s.spec_key = kInput.value; trackField(`specs|${idx}|spec_key`, s.spec_key !== (orig.spec_key ?? ''), kInput); });
+        tdKey.appendChild(kInput);
+
+        const tdVal = el('td');
+        const vInput = el('input', { attrs: { type: 'text', style: 'width:100%;' }, value: s.spec_value || '' });
+        vInput.addEventListener('input', () => { s.spec_value = vInput.value; trackField(`specs|${idx}|spec_value`, s.spec_value !== (orig.spec_value ?? ''), vInput); });
+        tdVal.appendChild(vInput);
+
+        const tdDel = el('td');
+        tdDel.appendChild(el('button', { class: 'btn btn-danger btn-sm', text: '🗑️', on: { click: () => deleteSpec(idx) } }));
+
+        tr.appendChild(tdGroup); tr.appendChild(tdKey); tr.appendChild(tdVal); tr.appendChild(tdDel);
+        tbody.appendChild(tr);
+      });
+    }
+
+    function deleteSpec(idx) {
+      currentCrawlPayload.product_specifications.splice(idx, 1);
+      [...dirtyFields].filter(k => k.startsWith('specs|')).forEach(k => dirtyFields.delete(k));
+      renderSpecsTab(currentCrawlPayload);
+      updateDirtyUI();
+      showToast('Đã xóa thông số kỹ thuật.', 'info');
+    }
+
+    function addEmptySpec() {
+      const blank = { product_id: currentCrawlPayload.products.id, spec_group: '', spec_key: '', spec_value: '' };
+      currentCrawlPayload.product_specifications.push(blank);
+      originalCrawlPayload.product_specifications[currentCrawlPayload.product_specifications.length - 1] = deepClone(blank);
+      renderSpecsTab(currentCrawlPayload);
+      document.querySelector('[data-tab="tab-specs"]').click();
+    }
+  </script>
+</body>
+
+</html>

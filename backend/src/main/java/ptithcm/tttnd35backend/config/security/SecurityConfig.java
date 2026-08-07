@@ -28,24 +28,46 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // bật @PreAuthorize/@PostAuthorize trên method
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    // Endpoint không yêu cầu đăng nhập (Không cần Access Token).
     private static final String[] PUBLIC_ENDPOINTS = {
-            "/auth/register",
-            "/auth/verify-otp",
-            "/auth/resend-otp",
-            "/auth/login",
-            "/auth/token/refresh",
-            "/auth/forgot-password",
-            "/auth/reset-password",
-            "/auth/google-login",
-            "/products/**",
-            "/categories/**",
+            "/auth/**",
+            "/api/v1/auth/**",
+            "/swagger-ui.html",
             "/swagger-ui/**",
-            "/v3/api-docs/**"
+            "/v3/api-docs/**",
+            "/categories",
+            "/categories/**",
+            "/api/v1/categories",
+            "/api/v1/categories/**",
+            "/products",
+            "/products/**",
+            "/api/v1/products",
+            "/api/v1/products/**",
+            "/campaigns",
+            "/campaigns/**",
+            "/api/v1/campaigns/**",
+            "/orders/guest",
+            "/api/v1/orders/guest",
+            "/payments/*/init",
+            "/payments/vnpay/return",
+            "/payments/vnpay/ipn",
+            "/payments/stripe/webhook",
+            "/api/v1/payments/**",
+            "/news",
+            "/news/**",
+            "/api/v1/news",
+            "/api/v1/news/**",
+            "/home/**",
+            "/api/v1/home/**",
+            "/warranty/lookup",
+            "/api/v1/warranty/lookup",
+            "/system-configs/public",
+            "/api/v1/system-configs/public",
+            "/dev/**",
+            "/api/v1/dev/**"
     };
 
     @Value("${service.domain.frontend}")
@@ -73,8 +95,6 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // Hỗ trợ nhiều domain trong .env, ví dụ:
-        // FRONTEND_DOMAIN=http://localhost:3000,https://electroshop.vercel.app
         List<String> origins = StringUtils.hasText(frontendDomains)
                 ? Arrays.asList(frontendDomains.split(","))
                 : List.of("*");
@@ -82,7 +102,7 @@ public class SecurityConfig {
         config.setAllowedOriginPatterns(origins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true); // true vì refresh token nằm ở HttpOnly cookie
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
@@ -93,13 +113,21 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable) // dùng JWT (stateless) nên không cần CSRF token
+                .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,
+                                "/products", "/products/**", "/api/v1/products", "/api/v1/products/**",
+                                "/categories", "/categories/**", "/api/v1/categories", "/api/v1/categories/**",
+                                "/news", "/news/**", "/api/v1/news", "/api/v1/news/**",
+                                "/home", "/home/**", "/api/v1/home", "/api/v1/home/**",
+                                "/warranty/lookup", "/api/v1/warranty/lookup",
+                                "/system-configs/public", "/api/v1/system-configs/public"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

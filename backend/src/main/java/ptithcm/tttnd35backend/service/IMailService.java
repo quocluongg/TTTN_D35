@@ -16,4 +16,6 @@ public interface IMailService {
      * @param purpose mục đích OTP (REGISTER / RESET_PASSWORD) để tùy biến nội dung mail
      */
     void sendOtpEmail(String to, String otpCode, OtpPurpose purpose);
+
+    void sendStaffAccountCreatedEmail(String to, String tempPassword);
 }

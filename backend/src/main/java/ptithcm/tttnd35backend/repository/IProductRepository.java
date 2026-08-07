@@ -1,12 +1,48 @@
 package ptithcm.tttnd35backend.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.repository.query.Param;
 import ptithcm.tttnd35backend.entity.Product;
 
+import java.util.Optional;
 import java.util.UUID;
 
-@Repository
-public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
+public interface IProductRepository extends JpaRepository<Product, UUID>, JpaSpecificationExecutor<Product> {
+
+    Optional<Product> findBySlugAndIsActiveTrue(String slug);
+
+    // Dùng cho admin (kể cả sản phẩm đang bị ẩn) khi sửa/xem chi tiết.
+    Optional<Product> findBySlug(String slug);
+
+    boolean existsBySlug(String slug);
+
+    /**
+     * Override findAll(Specification, Pageable) kèm @EntityGraph để fetch join category
+     * trong CÙNG 1 query - tránh N+1 khi map categoryName cho từng dòng ở trang danh sách.
+     */
+    @EntityGraph(attributePaths = "category")
+    Page<Product> findAll(Specification<Product> spec, Pageable pageable);
+
+    // Dùng cho admin (xem/sửa theo id, kể cả sản phẩm đang ẩn), kèm fetch category luôn trong 1 query.
+    @EntityGraph(attributePaths = "category")
+    Optional<Product> findById(UUID id);
+
+    // 1 UPDATE atomic ngay ở DB khi đơn chuyển COMPLETED - tránh phải load cả entity Product chỉ để
+    // cộng dồn 1 cột, và tránh lost-update khi nhiều đơn cùng COMPLETED gần như đồng thời.
+    @Modifying(clearAutomatically = true)
+    @Query("update Product p set p.soldQuantity = p.soldQuantity + :qty where p.id = :id")
+    int incrementSoldQuantity(@Param("id") UUID id, @Param("qty") int qty);
+
+    // Recompute denormalized rating khi ProductReview đổi trạng thái (xem ProductReviewServiceImpl) -
+    // 1 UPDATE atomic, tránh phải load cả entity Product chỉ để ghi lại 2 cột.
+    @Modifying(clearAutomatically = true)
+    @Query("update Product p set p.ratingAvg = :avg, p.reviewCount = :reviewCount where p.id = :id")
+    int updateRatingAggregate(@Param("id") UUID id, @Param("avg") java.math.BigDecimal avg, @Param("reviewCount") int reviewCount);
 }

@@ -13,10 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import ptithcm.tttnd35backend.config.security.UserPrincipal;
-import ptithcm.tttnd35backend.dto.response.ProfileResponse;
 import ptithcm.tttnd35backend.dto.request.ForgotPasswordRequest;
+import ptithcm.tttnd35backend.dto.request.GoogleLoginRequest;
 import ptithcm.tttnd35backend.dto.request.LoginRequest;
 import ptithcm.tttnd35backend.dto.request.RegisterRequest;
 import ptithcm.tttnd35backend.dto.request.ResendOtpRequest;
@@ -42,19 +40,6 @@ public class AuthController {
     private static final String REFRESH_TOKEN_COOKIE_PATH = "/auth/token";
 
     private final IAuthService authService;
-
-    @org.springframework.web.bind.annotation.GetMapping("/me")
-    public ResponseEntity<ApiResponse<ProfileResponse>> me(@AuthenticationPrincipal UserPrincipal principal) {
-        if (principal == null || principal.getProfile() == null) {
-            return ResponseEntity.status(401).body(ApiResponse.<ProfileResponse>builder()
-                    .success(false).message("Chưa đăng nhập").timestamp(LocalDateTime.now()).build());
-        }
-        ProfileResponse profile = ProfileResponse.builder().id(principal.getProfile().getId())
-                .email(principal.getProfile().getEmail()).fullName(principal.getProfile().getFullName())
-                .role(principal.getProfile().getRole() != null ? principal.getProfile().getRole().getName() : "CUSTOMER").build();
-        return ResponseEntity.ok(ApiResponse.<ProfileResponse>builder().success(true).message("Lấy thông tin tài khoản thành công")
-                .data(profile).timestamp(LocalDateTime.now()).build());
-    }
 
     @Value("${service.cookie.secure}")
     private boolean cookieSecure;
@@ -119,6 +104,30 @@ public class AuthController {
                 .path(REFRESH_TOKEN_COOKIE_PATH)
                 .maxAge(Duration.ofMillis(maxAgeMs))
                 .build();
+    }
+
+    // Frontend dùng Google Identity Services lấy idToken phía client, gửi lên đây để backend
+    // tự verify với Google rồi tự cấp access/refresh token của hệ thống mình (không tin Google session).
+    @PostMapping("/google-login")
+    public ResponseEntity<ApiResponse<TokenResponse>> googleLogin(
+            @RequestBody @Valid GoogleLoginRequest request,
+            HttpServletRequest httpRequest) {
+
+        String deviceInfo = httpRequest.getHeader("User-Agent");
+        String ipAddress = extractClientIp(httpRequest);
+
+        AuthResult result = authService.loginWithGoogle(request, deviceInfo, ipAddress);
+
+        ResponseCookie cookie = buildRefreshTokenCookie(result.getRawRefreshToken(), result.getRefreshExpirationMs());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(ApiResponse.<TokenResponse>builder()
+                        .success(true)
+                        .message("Đăng nhập bằng Google thành công")
+                        .data(result.getTokenResponse())
+                        .timestamp(LocalDateTime.now())
+                        .build());
     }
 
     // Ưu tiên X-Forwarded-For nếu app chạy sau reverse proxy/load balancer, fallback về remote address

@@ -1,110 +1,87 @@
-"use client";
-
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import Cookies from "js-cookie";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { cartService } from "@/services/cartService";
-import type { ApiResponse } from "@/services/apiTypes";
-import { notifyError } from "@/components/Notify";
+import { notifySuccess, notifyError } from "@/components/Notify";
 
-export const CART_KEY = ["cart"];
+export const CART_QUERY_KEY = ["cart"];
 
-export interface CartItem {
-  id: string;
-  productId: string;
-  productName: string;
-  productSlug: string;
-  variantId: string;
-  variantName?: string;
-  attributes?: Record<string, string>;
-  image?: string;
-  price: number;
-  salePrice?: number | null;
-  vatPercent?: number;
-  quantity: number;
-  subtotal: number;
-  availableStock: number;
-}
-
-export interface Cart {
-  items: CartItem[];
-  totalItems: number;
-  subtotal: number;
-}
-
-function extractErrorMessage(error: any, fallback: string): string {
-  return error?.response?.data?.message || error?.message || fallback;
-}
-
-// GET /cart - chỉ bật khi có token, tránh gọi API thừa cho khách chưa đăng nhập.
-export const useCartQuery = () => {
-  return useQuery<Cart>({
-    queryKey: CART_KEY,
-    queryFn: async () => {
-      const res: ApiResponse<Cart> = (await cartService.getCart()) as any;
-      return res?.data ?? { items: [], totalItems: 0, subtotal: 0 };
-    },
-    enabled: !!Cookies.get("token"),
-    staleTime: 30 * 1000,
-  });
-};
-
-// Dùng cho Navbar/nơi chỉ cần số lượng, không cần subscribe toàn bộ list item.
-export const useCartCount = () => {
-  const { data } = useCartQuery();
-  return data?.totalItems ?? 0;
-};
-
-export const useAddToCart = () => {
+export const useCart = () => {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: { variantId: string; quantity: number }) => cartService.addItem(data),
+
+  const cartQuery = useQuery({
+    queryKey: CART_QUERY_KEY,
+    queryFn: () => cartService.getCart(),
+    staleTime: 1000 * 60 * 5, // 5 mins
+  });
+
+  const addToCartMutation = useMutation({
+    mutationFn: ({ variantId, quantity }: { variantId: string; quantity: number }) =>
+      cartService.addItem({ variantId, quantity }),
     onSuccess: (res: any) => {
-      queryClient.setQueryData(CART_KEY, res?.data);
+      queryClient.setQueryData(CART_QUERY_KEY, res);
+      queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
+      notifySuccess("Đã thêm sản phẩm vào giỏ hàng!");
     },
-    onError: (error: any) => {
-      notifyError(extractErrorMessage(error, "Không thể thêm vào giỏ hàng."));
+    onError: (err: any) => {
+      notifyError(err?.response?.data?.message || err?.message || "Không thể thêm vào giỏ hàng!");
     },
   });
-};
 
-export const useUpdateCartQuantity = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+  const updateQuantityMutation = useMutation({
     mutationFn: ({ id, quantity }: { id: string; quantity: number }) =>
       cartService.updateItem(id, { quantity }),
     onSuccess: (res: any) => {
-      queryClient.setQueryData(CART_KEY, res?.data);
+      queryClient.setQueryData(CART_QUERY_KEY, res);
+      queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
     },
-    onError: (error: any) => {
-      notifyError(extractErrorMessage(error, "Không thể cập nhật số lượng."));
-      // Rollback: dữ liệu server mới nhất luôn đúng, refetch lại để UI trở về giá trị thật.
-      queryClient.invalidateQueries({ queryKey: CART_KEY });
+    onError: (err: any) => {
+      notifyError(err?.response?.data?.message || err?.message || "Không thể cập nhật số lượng!");
     },
   });
-};
 
-export const useRemoveCartItem = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+  const removeItemMutation = useMutation({
     mutationFn: (id: string) => cartService.removeItem(id),
     onSuccess: (res: any) => {
-      queryClient.setQueryData(CART_KEY, res?.data);
+      queryClient.setQueryData(CART_QUERY_KEY, res);
+      queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
+      notifySuccess("Đã xóa sản phẩm khỏi giỏ hàng!");
     },
-    onError: (error: any) => {
-      notifyError(extractErrorMessage(error, "Không thể xóa sản phẩm khỏi giỏ hàng."));
+    onError: (err: any) => {
+      notifyError(err?.response?.data?.message || err?.message || "Không thể xóa sản phẩm!");
     },
   });
-};
 
-export const useClearCart = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+  const clearCartMutation = useMutation({
     mutationFn: () => cartService.clear(),
     onSuccess: () => {
-      queryClient.setQueryData(CART_KEY, { items: [], totalItems: 0, subtotal: 0 });
-    },
-    onError: (error: any) => {
-      notifyError(extractErrorMessage(error, "Không thể xóa giỏ hàng."));
+      queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
+      notifySuccess("Đã làm trống giỏ hàng!");
     },
   });
+
+  const rawCartData: any = (cartQuery.data as any)?.data ?? cartQuery.data;
+  const items: any[] = rawCartData?.items || [];
+  const totalItems = items.reduce((sum: number, item: any) => sum + Number(item.quantity || 0), 0);
+  const totalPrice = items.reduce(
+    (sum: number, item: any) =>
+      sum + Number(item.subtotal || (Number(item.salePrice ?? item.price ?? 0) * Number(item.quantity || 0))),
+    0
+  );
+
+  return {
+    cartData: rawCartData,
+    items,
+    totalItems,
+    totalPrice,
+    isLoading: cartQuery.isLoading,
+    isError: cartQuery.isError,
+    refetchCart: cartQuery.refetch,
+    addToCart: addToCartMutation.mutate,
+    isAddingToCart: addToCartMutation.isPending,
+    updateQuantity: updateQuantityMutation.mutate,
+    isUpdatingQuantity: updateQuantityMutation.isPending,
+    removeItem: removeItemMutation.mutate,
+    isRemovingItem: removeItemMutation.isPending,
+    clearCart: clearCartMutation.mutate,
+    isClearingCart: clearCartMutation.isPending,
+  };
 };

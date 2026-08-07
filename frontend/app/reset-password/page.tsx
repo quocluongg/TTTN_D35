@@ -4,13 +4,15 @@ import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import PublicLayout from "@/shared/layouts/PublicLayout";
-import { AlertTriangle, Check, CheckCircle2, Eye, EyeOff, Loader2 } from "lucide-react";
-import { useResetPassword } from "@/hooks/useAuth";
+import { Check, CheckCircle2, Eye, EyeOff, Loader2 } from "lucide-react";
+import { useResetPassword, useForgotPassword } from "@/hooks/useAuth";
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
-  const token = searchParams.get("token") || "";
+  const initialEmail = searchParams.get("email") || "";
 
+  const [email, setEmail] = useState(initialEmail);
+  const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [rePassword, setRePassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -18,14 +20,33 @@ function ResetPasswordForm() {
   const [mismatchError, setMismatchError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [otpSentMsg, setOtpSentMsg] = useState("");
 
   const { mutate: resetPassword, isPending } = useResetPassword();
+  const { mutate: sendOtp, isPending: isSendingOtp } = useForgotPassword();
 
   // Password validation
   const hasLowercase = /[a-z]/.test(newPassword);
   const hasNumber = /[0-9]/.test(newPassword);
   const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
   const isMinLength = newPassword.length >= 8;
+  const isPasswordValid = hasLowercase && hasNumber && hasSpecialChar && isMinLength;
+
+  const handleSendOtp = () => {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setErrorMsg("Vui lòng nhập email hợp lệ để nhận mã OTP.");
+      return;
+    }
+    setErrorMsg("");
+    sendOtp(email, {
+      onSuccess: () => {
+        setOtpSentMsg("Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư!");
+      },
+      onError: (err: any) => {
+        setErrorMsg(err?.message || err?.response?.data?.message || "Không thể gửi OTP. Vui lòng kiểm tra email.");
+      },
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,58 +58,43 @@ function ResetPasswordForm() {
       return;
     }
 
-    if (!token) {
-      setErrorMsg("Liên kết đặt lại mật khẩu không hợp lệ. Vui lòng thử lại từ email.");
+    if (!email) {
+      setErrorMsg("Vui lòng nhập Email.");
+      return;
+    }
+
+    if (!otp) {
+      setErrorMsg("Vui lòng nhập mã OTP.");
       return;
     }
 
     resetPassword(
-      { token, newPassword },
+      { email, otp, newPassword },
       {
         onSuccess: () => setIsSuccess(true),
         onError: (err: any) => {
           const msg =
             err?.message ||
             err?.response?.data?.message ||
-            "Liên kết không hợp lệ hoặc đã hết hạn. Vui lòng gửi lại yêu cầu.";
+            "Mã OTP không hợp lệ hoặc đã hết hạn. Vui lòng thử lại.";
           setErrorMsg(msg);
         },
       }
     );
   };
 
-  // Nếu không có token trong URL
-  if (!token) {
-    return (
-      <div className="p-6 bg-white dark:bg-zinc-900 border border-[#E01715] space-y-4 text-center">
-        <AlertTriangle className="w-12 h-12 text-[#E01715] mx-auto" />
-        <h3 className="text-xl font-bold">Liên kết không hợp lệ</h3>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.
-        </p>
-        <Link
-          href="/forgot-password"
-          className="inline-flex items-center justify-center w-full h-[54px] bg-black text-white dark:bg-white dark:text-black font-medium text-[18px] hover:bg-zinc-800 transition-colors"
-        >
-          Gửi Lại Email
-        </Link>
-      </div>
-    );
-  }
-
   return (
     <>
-      {/* Success Box or Form */}
       {isSuccess ? (
-        <div className="p-6 bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 space-y-4 text-center">
+        <div className="p-6 bg-white border border-black space-y-4 text-center">
           <CheckCircle2 className="w-12 h-12 text-[#1CCA00] mx-auto" />
           <h3 className="text-xl font-bold">Mật Khẩu Đã Đổi Thành Công</h3>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Mật khẩu mới của bạn đã được cập nhật. Bạn có thể sử dụng mật khẩu này để đăng nhập ngay bây giờ.
+          <p className="text-sm text-zinc-600">
+            Mật khẩu mới của bạn đã được cập nhật. Bạn có thể sử dụng mật khẩu mới này để đăng nhập ngay.
           </p>
           <Link
             href="/login"
-            className="inline-flex items-center justify-center w-full h-[54px] bg-black text-white dark:bg-white dark:text-black font-medium text-[18px] hover:bg-zinc-800 transition-colors"
+            className="inline-flex items-center justify-center w-full h-[54px] bg-black text-white font-medium text-[18px] hover:bg-zinc-800 transition-colors"
           >
             Đăng nhập Ngay
           </Link>
@@ -96,16 +102,59 @@ function ResetPasswordForm() {
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6">
           {errorMsg && (
-            <div className="p-4 bg-red-50 dark:bg-red-950/50 border border-[#E01715] text-[#E01715] dark:text-red-400 text-sm font-medium">
+            <div className="p-4 bg-red-50 border border-[#E01715] text-[#E01715] text-sm font-medium">
               {errorMsg}
             </div>
           )}
 
-          {/* Input 1: New Password */}
+          {otpSentMsg && (
+            <div className="p-4 bg-green-50 border border-green-600 text-green-700 text-sm font-medium">
+              {otpSentMsg}
+            </div>
+          )}
+
+          {/* Email input */}
+          <div className="space-y-2">
+            <label className="block text-[18px] font-medium">Email *</label>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Nhập email của bạn"
+                required
+                disabled={isPending}
+                className="flex-1 h-[54px] px-4 bg-white border border-black text-[18px] focus:outline-none focus:ring-2 focus:ring-black disabled:opacity-50"
+              />
+              <button
+                type="button"
+                onClick={handleSendOtp}
+                disabled={isSendingOtp || !email}
+                className="px-4 h-[54px] border border-black bg-white hover:bg-zinc-100 text-sm font-medium text-black disabled:opacity-40"
+              >
+                {isSendingOtp ? "Đang gửi..." : "Gửi OTP"}
+              </button>
+            </div>
+          </div>
+
+          {/* OTP Input */}
+          <div className="space-y-2">
+            <label className="block text-[18px] font-medium">Mã OTP (6 chữ số) *</label>
+            <input
+              type="text"
+              maxLength={6}
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              placeholder="Ví dụ: 123456"
+              required
+              disabled={isPending}
+              className="w-full h-[54px] px-4 bg-white border border-black text-[18px] font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-black disabled:opacity-50"
+            />
+          </div>
+
+          {/* Input: New Password */}
           <div className="space-y-3">
-            <label className="block text-[18px] sm:text-[20px] font-medium">
-              New password
-            </label>
+            <label className="block text-[18px] font-medium">Mật khẩu mới *</label>
             <div className="relative flex items-center">
               <input
                 type={showNewPassword ? "text" : "password"}
@@ -114,15 +163,15 @@ function ResetPasswordForm() {
                   setNewPassword(e.target.value);
                   if (mismatchError) setMismatchError(false);
                 }}
-                placeholder="New password"
+                placeholder="Mật khẩu mới"
                 required
                 disabled={isPending}
-                className="w-full h-[54px] pl-4 pr-12 bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 text-[18px] text-black dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all disabled:opacity-50"
+                className="w-full h-[54px] pl-4 pr-12 bg-white border border-black text-[18px] focus:outline-none focus:ring-2 focus:ring-black transition-all disabled:opacity-50"
               />
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-4 text-zinc-500 hover:text-black dark:hover:text-white focus:outline-none"
+                className="absolute right-4 text-zinc-500 hover:text-black focus:outline-none"
               >
                 {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -152,11 +201,9 @@ function ResetPasswordForm() {
             )}
           </div>
 
-          {/* Input 2: Re-enter New Password */}
+          {/* Input: Re-enter New Password */}
           <div className="space-y-2">
-            <label className="block text-[18px] sm:text-[20px] font-medium">
-              Re-enter new password
-            </label>
+            <label className="block text-[18px] font-medium">Nhập lại mật khẩu mới *</label>
             <div className="relative flex items-center">
               <input
                 type={showRePassword ? "text" : "password"}
@@ -165,17 +212,17 @@ function ResetPasswordForm() {
                   setRePassword(e.target.value);
                   if (mismatchError) setMismatchError(false);
                 }}
-                placeholder="Re-enter new password"
+                placeholder="Nhập lại mật khẩu mới"
                 required
                 disabled={isPending}
-                className={`w-full h-[54px] pl-4 pr-12 bg-white dark:bg-zinc-900 border ${
-                  mismatchError ? "border-[#E01715]" : "border-black dark:border-zinc-700"
-                } text-[18px] text-black dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all disabled:opacity-50`}
+                className={`w-full h-[54px] pl-4 pr-12 bg-white border ${
+                  mismatchError ? "border-[#E01715]" : "border-black"
+                } text-[18px] focus:outline-none focus:ring-2 focus:ring-black transition-all disabled:opacity-50`}
               />
               <button
                 type="button"
                 onClick={() => setShowRePassword(!showRePassword)}
-                className="absolute right-4 text-zinc-500 hover:text-black dark:hover:text-white focus:outline-none"
+                className="absolute right-4 text-zinc-500 hover:text-black focus:outline-none"
               >
                 {showRePassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -183,7 +230,7 @@ function ResetPasswordForm() {
 
             {mismatchError && (
               <p className="text-[#E01715] text-[15px] font-medium pt-1 leading-snug">
-                Mật khẩu không trùng khớp. Vui lòng kiểm tra lại.
+                Mật khẩu nhập lại không trùng khớp. Vui lòng kiểm tra lại.
               </p>
             )}
           </div>
@@ -192,15 +239,15 @@ function ResetPasswordForm() {
           <div className="pt-2">
             <button
               type="submit"
-              disabled={isPending || !isMinLength || !hasLowercase || !hasNumber || !hasSpecialChar}
-              className="w-full h-[54px] bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-[20px] font-medium flex items-center justify-center gap-2 hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors cursor-pointer disabled:opacity-50"
+              disabled={isPending || !isPasswordValid || !otp || !email}
+              className="w-full h-[54px] bg-black text-white border border-black text-[20px] font-medium flex items-center justify-center gap-2 hover:bg-zinc-800 transition-colors cursor-pointer disabled:opacity-50"
             >
               {isPending ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" /> Saving...
+                  <Loader2 className="w-5 h-5 animate-spin" /> Đang lưu...
                 </>
               ) : (
-                "Save New Password"
+                "Lưu mật khẩu mới"
               )}
             </button>
           </div>
@@ -213,19 +260,18 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   return (
     <PublicLayout fullWidth>
-      <div className="w-full bg-[#F2F2F2] dark:bg-zinc-950 min-h-[calc(100vh-60px)] flex items-center justify-center py-16 lg:py-24 px-4 transition-colors duration-300">
-        <div className="w-full max-w-[448px] mx-auto space-y-8 text-black dark:text-white">
-          {/* Header Title & Subtitle */}
+      <div className="w-full bg-[#F2F2F2] min-h-[calc(100vh-60px)] flex items-center justify-center py-16 lg:py-24 px-4">
+        <div className="w-full max-w-[448px] mx-auto space-y-8 text-black">
           <div className="space-y-3">
             <h1 className="text-[36px] sm:text-[48px] font-bold tracking-tight leading-[1.1]">
-              Reset Password
+              Đặt lại mật khẩu
             </h1>
-            <p className="text-[16px] text-zinc-600 dark:text-zinc-400 font-medium">
-              Enter a new password for your account.
+            <p className="text-[16px] text-zinc-600 font-medium">
+              Nhập mã OTP từ email và mật khẩu mới cho tài khoản của bạn.
             </p>
           </div>
 
-          <Suspense fallback={<div className="h-[300px] animate-pulse bg-zinc-100 dark:bg-zinc-800" />}>
+          <Suspense fallback={<div className="h-[300px] animate-pulse bg-zinc-200" />}>
             <ResetPasswordForm />
           </Suspense>
         </div>
