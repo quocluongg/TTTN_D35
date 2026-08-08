@@ -112,6 +112,12 @@ export default function RAGDashboardPage() {
 
   const quickActions = [
     {
+      label: "Quản lý Sync",
+      description: "Đồng bộ sản phẩm vào RAG",
+      href: "/admin/ai-management/sync",
+      icon: RefreshCw,
+    },
+    {
       label: "Quản lý Chunks",
       description: "Xem, tìm kiếm, xóa chunks",
       href: "/admin/ai-management/chunks",

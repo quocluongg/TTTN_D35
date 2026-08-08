@@ -452,3 +452,249 @@ async def test_query(query: str):
         },
         "latency_ms": latency,
     }
+
+
+# ============ SYNC MANAGEMENT ============
+
+@router.get("/sync/status")
+async def get_sync_status():
+    """Get sync status for all products - shows which are in RAG and which are not."""
+    from core.retriever import _chunk_metadata
+
+    # Get all products from DB
+    all_products = fetch_all_products()
+
+    # Get synced product IDs from chunk metadata
+    synced_product_ids = set()
+    for meta in _chunk_metadata.values():
+        pid = meta.get("metadata", {}).get("product_id")
+        if pid:
+            synced_product_ids.add(pid)
+
+    # Categorize products
+    synced = []
+    not_synced = []
+
+    for product in all_products:
+        pid = str(product.get("id", ""))
+        product_info = {
+            "id": pid,
+            "name": product.get("name", ""),
+            "brand": product.get("brand", ""),
+            "category": product.get("category", ""),
+            "price": product.get("price", 0),
+        }
+
+        if pid in synced_product_ids:
+            # Count chunks for this product
+            chunk_count = sum(
+                1 for meta in _chunk_metadata.values()
+                if meta.get("metadata", {}).get("product_id") == pid
+            )
+            product_info["chunk_count"] = chunk_count
+            product_info["status"] = "synced"
+            synced.append(product_info)
+        else:
+            product_info["chunk_count"] = 0
+            product_info["status"] = "not_synced"
+            not_synced.append(product_info)
+
+    return {
+        "total_products": len(all_products),
+        "synced_count": len(synced),
+        "not_synced_count": len(not_synced),
+        "sync_percentage": round(len(synced) / len(all_products) * 100, 1) if all_products else 0,
+        "synced": synced,
+        "not_synced": not_synced,
+    }
+
+
+@router.post("/sync/product/{product_id}")
+async def sync_single_product(product_id: str):
+    """Sync a single product to RAG."""
+    from db.supabase_client import fetch_product_by_id, save_chunks_to_supabase
+    from core.chunker import chunk_product
+    from core.embedder import encode_texts
+    from core import retriever
+
+    # Fetch product
+    product = fetch_product_by_id(product_id)
+    if not product:
+        raise HTTPException(404, f"Product {product_id} not found")
+
+    start = time.time()
+
+    # Remove old chunks
+    retriever.remove_product_chunks(product_id)
+
+    # Generate chunks
+    chunks = chunk_product(product)
+    if not chunks:
+        raise HTTPException(400, "No chunks generated")
+
+    # Generate embeddings
+    texts = [c.text for c in chunks]
+    embeddings = encode_texts(texts)
+    for chunk, emb in zip(chunks, embeddings):
+        chunk.embedding = emb.tolist()
+
+    # Index
+    retriever.index_chunks(chunks)
+    save_chunks_to_supabase(chunks)
+
+    duration_ms = int((time.time() - start) * 1000)
+
+    # Log sync
+    log_sync(
+        product_id=product_id,
+        product_name=product.get("name", ""),
+        action="sync",
+        chunks=len(chunks),
+        status="success",
+        duration_ms=duration_ms,
+    )
+
+    return {
+        "status": "synced",
+        "product_id": product_id,
+        "product_name": product.get("name", ""),
+        "chunks_created": len(chunks),
+        "duration_ms": duration_ms,
+    }
+
+
+@router.post("/sync/batch")
+async def sync_batch_products(product_ids: list[str]):
+    """Sync multiple products to RAG."""
+    from db.supabase_client import fetch_product_by_id, save_chunks_to_supabase
+    from core.chunker import chunk_product
+    from core.embedder import encode_texts
+    from core import retriever
+
+    results = []
+    total_chunks = 0
+    start = time.time()
+
+    for pid in product_ids:
+        try:
+            product = fetch_product_by_id(pid)
+            if not product:
+                results.append({"product_id": pid, "status": "not_found"})
+                continue
+
+            # Remove old chunks
+            retriever.remove_product_chunks(pid)
+
+            # Generate chunks
+            chunks = chunk_product(product)
+            if not chunks:
+                results.append({"product_id": pid, "status": "no_chunks"})
+                continue
+
+            # Generate embeddings
+            texts = [c.text for c in chunks]
+            embeddings = encode_texts(texts)
+            for chunk, emb in zip(chunks, embeddings):
+                chunk.embedding = emb.tolist()
+
+            # Index
+            retriever.index_chunks(chunks)
+            save_chunks_to_supabase(chunks)
+
+            total_chunks += len(chunks)
+            results.append({
+                "product_id": pid,
+                "product_name": product.get("name", ""),
+                "status": "synced",
+                "chunks": len(chunks),
+            })
+
+        except Exception as e:
+            results.append({"product_id": pid, "status": "error", "error": str(e)})
+
+    duration_ms = int((time.time() - start) * 1000)
+
+    return {
+        "total_requested": len(product_ids),
+        "total_synced": sum(1 for r in results if r["status"] == "synced"),
+        "total_chunks": total_chunks,
+        "duration_ms": duration_ms,
+        "results": results,
+    }
+
+
+@router.post("/sync/all")
+async def sync_all_products():
+    """Sync all products to RAG (full reindex)."""
+    from db.supabase_client import fetch_all_products, save_chunks_to_supabase
+    from core.chunker import chunk_product
+    from core.embedder import encode_texts
+    from core import retriever
+
+    products = fetch_all_products()
+    if not products:
+        raise HTTPException(400, "No products found")
+
+    start = time.time()
+
+    # Generate all chunks
+    all_chunks = []
+    for p in products:
+        chunks = chunk_product(p)
+        all_chunks.extend(chunks)
+
+    # Generate embeddings
+    texts = [c.text for c in all_chunks]
+    embeddings = encode_texts(texts)
+    for chunk, emb in zip(all_chunks, embeddings):
+        chunk.embedding = emb.tolist()
+
+    # Rebuild index
+    retriever.load_index()
+    retriever.index_chunks(all_chunks)
+    save_chunks_to_supabase(all_chunks)
+
+    duration_ms = int((time.time() - start) * 1000)
+
+    # Log
+    log_sync(
+        product_id="ALL",
+        product_name=f"{len(products)} products",
+        action="full_sync",
+        chunks=len(all_chunks),
+        status="success",
+        duration_ms=duration_ms,
+    )
+
+    return {
+        "status": "completed",
+        "products_synced": len(products),
+        "chunks_created": len(all_chunks),
+        "duration_ms": duration_ms,
+    }
+
+
+@router.get("/products/{product_id}/chunks")
+async def get_product_chunks_detail(product_id: str):
+    """Get detailed chunk information for a specific product."""
+    from core.retriever import _chunk_metadata
+
+    chunks = []
+    for cid, meta in _chunk_metadata.items():
+        m = meta.get("metadata", {})
+        if m.get("product_id") == product_id:
+            chunks.append({
+                "id": cid,
+                "chunk_type": m.get("chunk_type", ""),
+                "text": meta.get("text", ""),
+                "text_length": len(meta.get("text", "")),
+            })
+
+    if not chunks:
+        raise HTTPException(404, "No chunks found for this product")
+
+    return {
+        "product_id": product_id,
+        "total_chunks": len(chunks),
+        "chunks": chunks,
+    }
