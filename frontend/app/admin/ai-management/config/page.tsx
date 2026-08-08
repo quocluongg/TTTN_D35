@@ -181,7 +181,7 @@ export default function ConfigPage() {
                         onChange={(e) => handleChange(field.key as keyof SystemConfig, e.target.value)}
                         className="w-full px-3 py-2 border border-zinc-300 rounded text-sm"
                       >
-                        {field.options?.map((opt) => (
+                        {(field as any).options?.map((opt: string) => (
                           <option key={opt} value={opt}>{opt}</option>
                         ))}
                       </select>
@@ -189,9 +189,9 @@ export default function ConfigPage() {
                       <div className="flex items-center gap-3">
                         <input
                           type="range"
-                          min={field.min}
-                          max={field.max}
-                          step={field.step}
+                          min={(field as any).min}
+                          max={(field as any).max}
+                          step={(field as any).step}
                           value={(config as any)[field.key]}
                           onChange={(e) => handleChange(field.key as keyof SystemConfig, parseFloat(e.target.value))}
                           className="flex-1"
@@ -203,18 +203,18 @@ export default function ConfigPage() {
                     ) : field.type === "number" ? (
                       <input
                         type="number"
-                        min={field.min}
-                        max={field.max}
+                        min={(field as any).min}
+                        max={(field as any).max}
                         value={(config as any)[field.key]}
                         onChange={(e) => handleChange(field.key as keyof SystemConfig, parseInt(e.target.value))}
-                        disabled={field.disabled}
+                        disabled={(field as any).disabled}
                         className="w-full px-3 py-2 border border-zinc-300 rounded text-sm disabled:bg-zinc-100"
                       />
                     ) : (
                       <input
                         type="text"
                         value={(config as any)[field.key]}
-                        disabled={field.disabled}
+                        disabled={(field as any).disabled}
                         className="w-full px-3 py-2 border border-zinc-300 rounded text-sm disabled:bg-zinc-100"
                       />
                     )}

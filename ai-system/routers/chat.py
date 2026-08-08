@@ -3,10 +3,11 @@ import sys
 import os
 import time
 import logging
+from typing import Optional
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from routers.schemas import ChatRequest, ChatResponse
 from core import retriever, llm_client
 from core.nlu import process_query, NLUResult
@@ -16,7 +17,11 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 
 
 @router.post("", response_model=ChatResponse)
-async def chat_endpoint(payload: ChatRequest):
+async def chat_endpoint(
+    payload: ChatRequest,
+    conversation_id: Optional[str] = Query(None),
+    user_id: Optional[str] = Query(None),
+):
     """Process chat query through RAG pipeline with NLU."""
     start_time = time.time()
     query = payload.query.strip()
@@ -63,6 +68,19 @@ async def chat_endpoint(payload: ChatRequest):
     except:
         pass
 
+    # Save messages to database if conversation_id provided
+    if conversation_id:
+        try:
+            _save_message(conversation_id, "user", query, {})
+            _save_message(conversation_id, "assistant", response, {
+                "intent": nlu_result.intent,
+                "confidence": nlu_result.confidence,
+                "sources": sources,
+                "entities": entities,
+            })
+        except Exception as e:
+            logger.warning(f"Failed to save messages: {e}")
+
     return ChatResponse(
         query=query,
         response=response,
@@ -72,6 +90,35 @@ async def chat_endpoint(payload: ChatRequest):
         entities=entities,
         intent_display=nlu_result.intent_display,
     )
+
+
+def _save_message(conversation_id: str, role: str, content: str, metadata: dict):
+    """Save message to database."""
+    import json
+    from db.supabase_client import get_connection
+
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            INSERT INTO rag_messages (conversation_id, role, content, confidence, sources, suggested_products, provider)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (
+            conversation_id,
+            role,
+            content,
+            metadata.get("confidence"),
+            json.dumps(metadata.get("sources", [])),
+            json.dumps(metadata.get("suggested_products", [])),
+            "gemini",
+        ))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
+        cur.close()
+        conn.close()
 
 
 def _build_filters_from_entities(nlu_result: NLUResult) -> dict | None:

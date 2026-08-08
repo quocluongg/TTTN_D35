@@ -9,11 +9,11 @@ import {
   AlertTriangle,
   Search,
   Filter,
-  Sync,
   Database,
   ChevronDown,
   ChevronUp,
   Package,
+  ArrowUpDown,
 } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_AI_API_URL || "http://localhost:8001";
@@ -148,7 +148,7 @@ export default function SyncManagementPage() {
             disabled={syncAllMutation.isPending}
             className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded hover:bg-zinc-800 disabled:opacity-50"
           >
-            <Sync size={16} className={syncAllMutation.isPending ? "animate-spin" : ""} />
+            <RefreshCw size={16} className={syncAllMutation.isPending ? "animate-spin" : ""} />
             {syncAllMutation.isPending ? "Đang sync…" : "Sync All"}
           </button>
         </div>
@@ -278,7 +278,7 @@ export default function SyncManagementPage() {
                     disabled={syncMutation.isPending}
                     className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 disabled:opacity-50"
                   >
-                    <Sync size={14} />
+                    <RefreshCw size={14} />
                     Sync
                   </button>
                 </div>

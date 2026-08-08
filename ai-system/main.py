@@ -19,7 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from config import get_settings
-from routers import chat, sync, admin, health, rag_admin
+from routers import chat, sync, admin, health, rag_admin, conversations
 
 settings = get_settings()
 logging.basicConfig(level=settings.LOG_LEVEL)
@@ -60,6 +60,7 @@ app.include_router(chat.router)
 app.include_router(sync.router)
 app.include_router(admin.router)
 app.include_router(rag_admin.router)
+app.include_router(conversations.router)
 
 
 # Serve test UI
