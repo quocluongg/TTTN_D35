@@ -27,17 +27,23 @@ router = APIRouter(prefix="/test", tags=["rag-stage-testing"])
 @router.post("/stage1-nlu", response_model=Stage1NLUResponse)
 async def test_stage1_nlu(payload: ChatRequest):
     """
-    STAGED TEST 1: Kiểm thử NLU Module (Phân tích cú pháp & ngữ nghĩa).
-    - Xử lý Out of Scope
-    - Phân loại Intent (PhoBERT)
-    - Trích xuất Thực thể (NER)
+    IPO Model:
+    - Input: payload (ChatRequest chứa câu hỏi 'query')
+    - Process:
+        Step 1: Chuẩn hóa câu hỏi đầu vào
+        Step 2: Thực thi nlu.query_processor.process_query (Phân loại Intent & Trích xuất Thực thể NER)
+        Step 3: Đóng gói kết quả phân tích NLU vào Stage1NLUResponse
+    - Output: Stage1NLUResponse (câu truy vấn, intent, confidence, entities, is_out_of_scope)
     """
+    # Step 1: Kiểm tra và chuẩn hóa chuỗi đầu vào
     query = payload.query.strip()
     if not query:
         raise HTTPException(status_code=400, detail="Query không được để trống.")
 
+    # Step 2: Xử lý NLU bằng module query_processor trong thread riêng
     nlu_result = await asyncio.to_thread(query_processor.process_query, query)
 
+    # Step 3: Định dạng kết quả trả về cho client
     return Stage1NLUResponse(
         query=query,
         intent=nlu_result.intent,
@@ -51,20 +57,29 @@ async def test_stage1_nlu(payload: ChatRequest):
 @router.post("/stage2-retrieval", response_model=Stage2RetrievalResponse)
 async def test_stage2_retrieval(payload: ChatRequest):
     """
-    STAGED TEST 2: Kiểm thử Retrieval Module (Dense ChromaDB + Sparse BM25 + RRF Fusion).
-    - Sinh RetrievalQuery từ kết quả NLU
-    - Thực hiện Dense Search và BM25 Search
-    - Dung hợp kết quả bằng Reciprocal Rank Fusion (RRF)
+    IPO Model:
+    - Input: payload (ChatRequest chứa câu hỏi 'query')
+    - Process:
+        Step 1: Chuẩn hóa câu hỏi đầu vào
+        Step 2: Xử lý NLU để xác định Intent và Thực thể
+        Step 3: Xây dựng RetrievalQuery (từ khóa search + bộ lọc metadata)
+        Step 4: Thực thi Hybrid Retrieval (Dense Search ChromaDB + Sparse Search BM25 + RRF Fusion)
+        Step 5: Đóng gói kết quả tài liệu tìm kiếm được
+    - Output: Stage2RetrievalResponse (danh sách tài liệu kèm điểm RRF score)
     """
+    # Step 1: Chuẩn hóa dữ liệu đầu vào
     query = payload.query.strip()
     if not query:
         raise HTTPException(status_code=400, detail="Query không được để trống.")
 
+    # Step 2: Xử lý NLU và xây dựng Retrieval Query
     nlu_result = await asyncio.to_thread(query_processor.process_query, query)
     retrieval_query = query_builder.build_retrieval_query(nlu_result)
 
+    # Step 3: Thực hiện tìm kiếm hỗn hợp Hybrid Retrieval
     raw_docs = await asyncio.to_thread(hybrid_retriever.retrieve, retrieval_query)
 
+    # Step 4: Chuyển đổi các tài liệu sang schema SourceDocument
     documents = [
         SourceDocument(
             id=d.id,
@@ -75,6 +90,7 @@ async def test_stage2_retrieval(payload: ChatRequest):
         for d in raw_docs
     ]
 
+    # Step 5: Trả về phản hồi chi tiết Stage 2
     return Stage2RetrievalResponse(
         query=query,
         search_text=retrieval_query.search_text,
@@ -88,29 +104,41 @@ async def test_stage2_retrieval(payload: ChatRequest):
 @router.post("/stage3-generation", response_model=Stage3GenerationResponse)
 async def test_stage3_generation(payload: ChatRequest):
     """
-    STAGED TEST 3: Kiểm thử Generation & Validation Module (Rerank -> Prompt -> LLM -> Validation).
-    - Cross-Encoder Re-ranking
-    - Prompt Construction
-    - LLM Generation
-    - Response Validation (Faithfulness & Numerical Consistency)
+    IPO Model:
+    - Input: payload (ChatRequest chứa câu hỏi 'query')
+    - Process:
+        Step 1: Chuẩn hóa câu hỏi đầu vào
+        Step 2: Thực thi Stage 1 NLU & Stage 2 Retrieval để lấy ngữ cảnh
+        Step 3: Đánh giá lại thứ tự tài liệu bằng Cross-Encoder Re-ranker
+        Step 4: Xây dựng Prompt cho LLM
+        Step 5: Sinh phản hồi từ LLM Client
+        Step 6: Kiểm định tính trung thực và nhất quán của câu trả lời (Response Validation)
+    - Output: Stage3GenerationResponse (câu trả lời gốc, câu trả lời đã lọc, kết quả kiểm định)
     """
+    # Step 1: Chuẩn hóa câu truy vấn đầu vào
     query = payload.query.strip()
     if not query:
         raise HTTPException(status_code=400, detail="Query không được để trống.")
 
-    # Execute Stage 1 & 2
+    # Step 2: Chạy NLU và Retrieval lấy dữ liệu nền
     nlu_result = await asyncio.to_thread(query_processor.process_query, query)
     retrieval_query = query_builder.build_retrieval_query(nlu_result)
     raw_docs = await asyncio.to_thread(hybrid_retriever.retrieve, retrieval_query)
 
-    # Execute Stage 3
+    # Step 3: Re-rank các tài liệu retrieved bằng Cross-Encoder
     reranked_docs = await asyncio.to_thread(reranker.rerank_documents, query, raw_docs)
+
+    # Step 4: Tạo Prompt hoàn chỉnh gửi tới LLM
     prompt = prompt_builder.build_prompt(query, reranked_docs, nlu_result)
 
+    # Step 5: Sinh phản hồi từ mô hình ngôn ngữ LLM
     client = llm_client.get_llm_client()
     raw_response = await client.generate_response(prompt)
+
+    # Step 6: Kiểm định chất lượng câu trả lời (Check Hallucination & Số liệu)
     validation = response_validator.validate_response(raw_response, reranked_docs, query)
 
+    # Step 7: Chuyển đổi dữ liệu tài liệu sang Pydantic schema
     source_docs = [
         SourceDocument(
             id=d.id,
@@ -121,6 +149,7 @@ async def test_stage3_generation(payload: ChatRequest):
         for d in reranked_docs
     ]
 
+    # Step 8: Trả về chi tiết kết quả Stage 3
     return Stage3GenerationResponse(
         query=query,
         nlu_intent=nlu_result.intent,
@@ -135,3 +164,4 @@ async def test_stage3_generation(payload: ChatRequest):
             "issues": validation.issues,
         },
     )
+

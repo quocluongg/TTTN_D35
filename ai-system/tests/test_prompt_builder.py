@@ -1,7 +1,6 @@
 """
 Unit test cho Prompt Builder.
 """
-# pyrefly: ignore [missing-import]
 import pytest
 from retrieval.hybrid_retriever import RetrievedDocument
 from generation.prompt_builder import build_prompt

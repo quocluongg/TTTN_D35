@@ -10,7 +10,7 @@ import re
 import logging
 from typing import List
 
-from config.constants import EntityType, ExtractedEntity
+from nlu.schema import EntityType, ExtractedEntity
 
 logger = logging.getLogger(__name__)
 

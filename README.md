@@ -68,6 +68,11 @@ TTTN_D35/
 │   └── src/
 │       ├── main/java/ptithcm/tttnd35backend/
 │       └── main/resources/db/migration/
+├── 📂 crawler/                  # Thư mục Crawler (Server, Dashboard & Script cào dữ liệu)
+│   ├── crawler_dashboard.html  # Dashboard UI xem & duyệt dữ liệu crawl
+│   ├── crawler_server.py       # Crawler API Server
+│   ├── crawl_fptshop_laptops.py# Script crawl dữ liệu laptop
+│   └── run_crawler_server.cmd  # Script khởi chạy Crawler Server
 ├── 📂 data/                     # Dữ liệu Crawl sản phẩm & Tài liệu Chuẩn bị RAG
 │   ├── DB_Design.md
 │   ├── processed/              # Chunks dữ liệu đã được xử lý làm Vector DB
@@ -78,7 +83,21 @@ TTTN_D35/
 │   ├── shared/                 # Core Components (Navbar, Footer, InputField) & Layouts
 │   ├── hooks/                  # Custom React Hooks (useAuth, TanStack Query hooks)
 │   └── services/               # API Call Services
+├── 📂 ai-system/                # Core Python AI System (FastAPI, NLU, Hybrid Retrieval, Generation)
+│   ├── 📂 api/                  # FastAPI App & Routers (`admin_products.py`, `chat.py`)
+│   ├── 📂 config/               # Common Config & Constants (`settings.py`, `constants.py`)
+│   ├── 📂 db/                   # Database Connections & Repositories (`db.py`, `database.py`, `models.py`)
+│   ├── 📂 embedding/            # BGE-M3 Dense Embedding & Batch Embedder
+│   ├── 📂 evaluation/           # Retrieval Metrics (Recall@K, MRR) & Generation Metrics
+│   ├── 📂 generation/           # Prompt Builder, Multi-Provider LLM Client, Response Validator
+│   ├── 📂 indexing/             # Hybrid Indexing (ChromaDB Vector Store + BM25 Sparse Index)
+│   ├── 📂 nlu/                  # PhoBERT Intent Classifier, NER Extractor, Out-of-Scope Detector
+│   ├── 📂 pipeline/             # Data Normalizer & Chunker Engine
+│   ├── 📂 retrieval/            # Query Builder, Hybrid Retriever (RRF Fusion), Cross-Encoder Reranker
+│   ├── 📂 tests/                # Unit Tests suite (pytest)
+│   └── 📂 workers/              # Celery Workers & Ingestion Queue
 └── README.md
+
 ```
 
 ---

@@ -11,24 +11,15 @@ import asyncio
 import logging
 import uuid
 
-# pyrefly: ignore [missing-import]
 from celery import Task
 
-# pyrefly: ignore [missing-import]
 from workers.celery_app import celery_app
-# pyrefly: ignore [missing-import]
 from db.database import db_session_ctx
-# pyrefly: ignore [missing-import]
 from db.product_repository import ProductRepository
-# pyrefly: ignore [missing-import]
 from data_pipeline.cleaning.normalizer import normalize_product
-# pyrefly: ignore [missing-import]
 from data_pipeline.chunking.chunk_orchestrator import chunk_product
-# pyrefly: ignore [missing-import]
 from embedding.batch_embedder import embed_chunks
-# pyrefly: ignore [missing-import]
 from indexing.hybrid_indexer import index_chunks, remove_product_chunks
-# pyrefly: ignore [missing-import]
 from config.constants import SyncAction, ProductStatus
 
 

@@ -5,9 +5,7 @@ Re-ranker: Sử dụng Cross-Encoder (BAAI/bge-reranker-v2-m3) để đánh giá
 import logging
 from typing import List
 
-# pyrefly: ignore [missing-import]
 import torch
-# pyrefly: ignore [missing-import]
 from FlagEmbedding import FlagReranker
 
 from retrieval.hybrid_retriever import RetrievedDocument

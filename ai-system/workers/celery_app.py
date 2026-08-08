@@ -1,7 +1,6 @@
 """
 Khởi tạo ứng dụng Celery Worker cho hệ thống RAG Ingestion.
 """
-# pyrefly: ignore [missing-import]
 from celery import Celery
 from config.settings import get_settings
 

@@ -5,13 +5,10 @@ Vector DB / BM25 chỉ là index phục vụ tìm kiếm, build lại được t
 import uuid
 from datetime import datetime
 
-# pyrefly: ignore [missing-import]
 from sqlalchemy import (
     String, Integer, Text, DateTime, ForeignKey, func
 )
-# pyrefly: ignore [missing-import]
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-# pyrefly: ignore [missing-import]
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from config.constants import ProductStatus

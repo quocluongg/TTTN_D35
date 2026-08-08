@@ -1,7 +1,6 @@
 """
 Unit test cho Response Validator (Faithfulness & Numerical consistency).
 """
-# pyrefly: ignore [missing-import]
 import pytest
 from retrieval.hybrid_retriever import RetrievedDocument
 from generation.response_validator import validate_response

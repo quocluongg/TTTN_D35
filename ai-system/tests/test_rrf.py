@@ -1,7 +1,6 @@
 """
 Unit test cho thuật toán Reciprocal Rank Fusion (RRF).
 """
-# pyrefly: ignore [missing-import]
 import pytest
 from retrieval.hybrid_retriever import rrf_fusion
 

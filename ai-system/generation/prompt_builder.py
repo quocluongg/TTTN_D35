@@ -9,12 +9,24 @@ from nlu.schema import NLUResult
 
 def build_prompt(query: str, retrieved_docs: List[RetrievedDocument], nlu_result: NLUResult | None = None) -> str:
     """
-    Xây dựng prompt hoàn chỉnh gửi tới LLM.
+    IPO Model:
+    - Input:
+        - query: Câu hỏi truy vấn từ người dùng
+        - retrieved_docs: Danh sách các tài liệu RetrievedDocument thu thập được từ bước Retrieval
+        - nlu_result: Kết quả phân tích NLU (tùy chọn)
+    - Process:
+        Step 1: Kiểm tra danh sách retrieved_docs rỗng -> tạo chuỗi context rỗng
+        Step 2: Nhóm các đoạn văn bản tài liệu theo tên sản phẩm (product_name)
+        Step 3: Tạo các khối CONTEXT tiếng Việt định dạng rõ ràng theo từng sản phẩm
+        Step 4: Định nghĩa System Instructions hướng dẫn AI tư vấn chuẩn mực
+        Step 5: Ghép nối System Instructions + Context Blocks + User Query
+    - Output: Chuỗi full_prompt hoàn chỉnh gửi tới mô hình LLM
     """
+    # Step 1: Kiểm tra xem có tài liệu ngữ cảnh nào được truyền vào hay không
     if not retrieved_docs:
         context_str = "Không tìm thấy thông tin phù hợp trong cơ sở dữ liệu."
     else:
-        # Nhóm tài liệu theo product_id / product_name
+        # Step 2: Nhóm tài liệu theo product_name để phân định ngữ cảnh rõ ràng
         grouped_docs: Dict[str, List[str]] = {}
         for doc in retrieved_docs:
             product_name = doc.metadata.get("product_name") or doc.metadata.get("name") or doc.metadata.get("product_id", "Sản phẩm")
@@ -22,6 +34,7 @@ def build_prompt(query: str, retrieved_docs: List[RetrievedDocument], nlu_result
                 grouped_docs[product_name] = []
             grouped_docs[product_name].append(doc.text)
 
+        # Step 3: Tạo các khối ngữ cảnh (context blocks) theo từng sản phẩm
         context_blocks = []
         for product_name, texts in grouped_docs.items():
             combined_texts = "\n---\n".join(texts)
@@ -29,6 +42,7 @@ def build_prompt(query: str, retrieved_docs: List[RetrievedDocument], nlu_result
 
         context_str = "\n\n====================\n\n".join(context_blocks)
 
+    # Step 4: Thiết lập chỉ dẫn hệ thống (System Instructions) đảm bảo AI không phán bừa
     system_instructions = (
         "Bạn là Chuyên viên tư vấn AI thông minh của hệ thống ShopWise chuyên cung cấp thiết bị công nghệ (Máy tính, Điện thoại, Phụ kiện).\n"
         "Nhiệm vụ của bạn là trả lời câu hỏi của khách hàng một cách lịch sự, chính xác và trung thực dựa trên thông tin CONTEXT được cung cấp dưới đây.\n\n"
@@ -39,6 +53,7 @@ def build_prompt(query: str, retrieved_docs: List[RetrievedDocument], nlu_result
         "4. Trả lời bằng tiếng Việt chuẩn mực, thân thiện và mạch lạc."
     )
 
+    # Step 5: Ghép System Instructions, Context và Query của khách hàng thành Prompt hoàn chỉnh
     full_prompt = (
         f"{system_instructions}\n\n"
         f"THÔNG TIN THAM KHẢO (CONTEXT):\n"
@@ -48,3 +63,4 @@ def build_prompt(query: str, retrieved_docs: List[RetrievedDocument], nlu_result
     )
 
     return full_prompt
+

@@ -28,7 +28,6 @@ from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import (
     AsyncSession, async_sessionmaker, create_async_engine
 )
-# pyrefly: ignore [missing-import]
 from config.settings import get_settings
 
 settings = get_settings()
@@ -47,21 +46,46 @@ AsyncSessionLocal = async_sessionmaker(
 
 
 async def get_db_session() -> AsyncSession:
-    """Dependency cho FastAPI: yield session, tự đóng sau khi request xong."""
+    """
+    IPO Model:
+    - Input: None
+    - Process:
+        Step 1: Khởi tạo AsyncSession từ AsyncSessionLocal factory
+        Step 2: Yield session cho FastAPI Dependency Injection
+        Step 3: Tự động đóng session sau khi request kết thúc
+    - Output: AsyncSession instance (generator)
+    """
+    # Step 1: Mở phiên làm việc bất đồng bộ với cơ sở dữ liệu
     async with AsyncSessionLocal() as session:
+        # Step 2: Cấp phiên cho controller xử lý
         yield session
 
 
 @asynccontextmanager
 async def db_session_ctx():
-    """Context manager dùng trong Celery worker (không có FastAPI DI)."""
+    """
+    IPO Model:
+    - Input: None
+    - Process:
+        Step 1: Khởi tạo AsyncSession dạng context manager
+        Step 2: Yield session cho worker (Celery/background task)
+        Step 3: Tự động giải phóng session khi kết thúc khối context
+    - Output: AsyncSession instance
+    """
+    # Step 1: Khởi tạo async context manager phiên DB
     async with AsyncSessionLocal() as session:
+        # Step 2: Cấp session xử lý công việc ngầm
         yield session
 
 
-
 def get_db_connection():
-    """Tạo kết nối tới Supabase PostgreSQL"""
+    """
+    IPO Model:
+    - Input: None (Sử dụng cấu hình môi trường DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD)
+    - Process: Tạo kết nối đồng bộ PostgreSQL qua thư viện psycopg2
+    - Output: psycopg2 connection instance
+    """
+    # Step 1: Thiết lập kết nối đồng bộ tới Supabase PostgreSQL
     return psycopg2.connect(
         host=DB_HOST,
         port=DB_PORT,
@@ -71,12 +95,24 @@ def get_db_connection():
         connect_timeout=10
     )
 
+
 def fetch_all_products():
-    """Lấy danh sách toàn bộ sản phẩm cùng thông số kỹ thuật từ Supabase Postgres hoặc Fallback Silver JSON"""
+    """
+    IPO Model:
+    - Input: None
+    - Process:
+        Step 1: Mở kết nối psycopg2 tới Supabase Postgres DB
+        Step 2: Thực thi SQL SELECT JOIN giữa các bảng products, categories, product_variants
+        Step 3: Duyệt kết quả, chuyển đổi kiểu dữ liệu (price float, specs dict, rating float...)
+        Step 4: Trường hợp DB lỗi -> Fallback đọc dữ liệu từ file JSON Silver local
+    - Output: List[dict] danh sách sản phẩm hoàn chỉnh cùng thông số kỹ thuật
+    """
+    # Step 1: Thử kết nối và truy vấn trực tiếp từ Supabase Database
     try:
         conn = get_db_connection()
         cur = conn.cursor(cursor_factory=RealDictCursor)
         
+        # Step 2: Truy vấn dữ liệu sản phẩm kèm danh mục và biến thể
         cur.execute("""
             SELECT 
                 p.id, 
@@ -101,6 +137,7 @@ def fetch_all_products():
         """)
         products = cur.fetchall()
         
+        # Step 3: Chuẩn hóa dữ liệu kiểu số và cấu trúc JSON
         product_dict_list = []
         for p in products:
             item = dict(p)
@@ -111,7 +148,7 @@ def fetch_all_products():
             item['sold_quantity'] = int(item['sold_quantity']) if item['sold_quantity'] is not None else 0
             item['use_case'] = item.get('use_case') or ('Gaming' if 'gaming' in (item.get('category') or '').lower() or 'rtx' in str(item.get('specifications') or '').lower() else 'Văn phòng')
             
-            # Đảm bảo specifications dạng dict
+            # Đảm bảo specifications ở dạng dictionary
             if isinstance(item.get('specifications'), str):
                 try:
                     item['specifications'] = json.loads(item['specifications'])
@@ -132,7 +169,7 @@ def fetch_all_products():
     except Exception as e:
         print(f"[DB] Supabase DB fetch error ({e}), falling back to Silver JSON: {SILVER_PATH}")
 
-    # Fallback to Silver JSON if DB query fails or returns empty
+    # Step 4: Fallback đọc từ file Silver JSON nếu kết nối DB thất bại
     if os.path.exists(SILVER_PATH):
         with open(SILVER_PATH, 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -146,6 +183,7 @@ def fetch_all_products():
             return records
 
     return []
+
 
 if __name__ == "__main__":
     products = fetch_all_products()

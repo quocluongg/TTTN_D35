@@ -3,7 +3,6 @@ Cấu trúc Chunk dữ liệu phục vụ Vector Store và BM25 Index.
 """
 from dataclasses import dataclass, field
 from typing import Any, Dict
-# pyrefly: ignore [missing-import]
 import numpy as np
 
 

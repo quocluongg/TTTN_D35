@@ -15,9 +15,7 @@ if "HF_HOME" not in os.environ:
     os.environ["HF_HOME"] = "D:/huggingface_cache"
 
 
-# pyrefly: ignore [missing-import]
 import torch
-# pyrefly: ignore [missing-import]
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 from config.constants import INTENT_LABELS

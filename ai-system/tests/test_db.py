@@ -1,4 +1,3 @@
-# pyrefly: ignore [missing-import]
 import pytest
 import sys
 import os
@@ -6,7 +5,6 @@ import os
 # Thêm ai-system vào sys.path để import các module
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# pyrefly: ignore [missing-import]
 from db.db import get_db_connection, fetch_all_products
 
 

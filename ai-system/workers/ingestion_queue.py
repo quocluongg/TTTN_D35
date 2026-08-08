@@ -2,7 +2,6 @@
 Wrapper mỏng quanh việc enqueue Celery task - tách riêng để service layer
 không phụ thuộc trực tiếp vào Celery (dễ mock khi viết unit test).
 """
-# pyrefly: ignore [missing-import]
 from workers.sync_product_index import sync_product_index
 
 
