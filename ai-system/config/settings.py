@@ -24,7 +24,7 @@ class Settings:
     DB_PORT : str = os.getenv("DB_PORT", "5432")
     DB_NAME : str = os.getenv("DB_NAME", "postgres")
     DB_USER : str = os.getenv("DB_USER", "postgres.zzukpubwbntihzztilqy")
-    DB_PASSWORD: str = os.getenv("DB_PASSWORD", "agW24oOesftDhJkA")
+    DB_PASSWORD: str = os.getenv("DB_PASSWORD", "")
 
     # ---- Redis / Celery ----
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")

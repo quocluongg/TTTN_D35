@@ -30,10 +30,7 @@ STORAGE_DIR = BASE_DIR / 'frontend' / 'public' / 'images' / 'products'
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://zzukpubwbntihzztilqy.supabase.co")
 
 # Supabase Service Role Key — lấy từ Supabase Dashboard > Project Settings > API > service_role
-# ⚠️ CẢNH BÁO BẢO MẬT: key + mật khẩu Postgres bên dưới đang bị hardcode thẳng trong source.
-# Nếu file này từng được chia sẻ / commit lên đâu đó, hãy REVOKE và tạo key mới ngay,
-# sau đó chỉ set qua biến môi trường (os.getenv), không hardcode giá trị thật vào code.
-_SUPABASE_KEY_HARDCODED = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp6dWtwdWJ3Ym50aWh6enRpbHF5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NDE4NzczMSwiZXhwIjoyMDk5NzYzNzMxfQ.6r29e3gRbVnFOR1N5jN-0Es9FQ99MWLZDNp-p-6yFyE"  # <-- ĐIỀN SERVICE ROLE KEY VÀO ĐÂY
+_SUPABASE_KEY_HARDCODED = ""
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", _SUPABASE_KEY_HARDCODED)
 SUPABASE_BUCKET = os.getenv("SUPABASE_STORAGE_BUCKET", "product-images")
 
@@ -50,7 +47,7 @@ def get_db_conn():
         port=int(os.getenv("SUPABASE_DB_PORT", "5432")),
         dbname=os.getenv("SUPABASE_DB_NAME", "postgres"),
         user=os.getenv("SUPABASE_DB_USER", "postgres.zzukpubwbntihzztilqy"),
-        password=os.getenv("SUPABASE_DB_PASSWORD", "agW24oOesftDhJkA"),
+        password=os.getenv("SUPABASE_DB_PASSWORD", ""),
     )
     conn.autocommit = True
     return conn

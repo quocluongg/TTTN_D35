@@ -22,7 +22,7 @@ class Settings:
         self.DB_PORT = int(os.getenv("DB_PORT", "5432"))
         self.DB_NAME = os.getenv("DB_NAME", "postgres")
         self.DB_USER = os.getenv("DB_USER", "postgres.zzukpubwbntihzztilqy")
-        self.DB_PASSWORD = os.getenv("DB_PASSWORD", "agW24oOesftDhJkA")
+        self.DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 
         # Embedding
         self.EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "BAAI/bge-m3")
@@ -40,7 +40,7 @@ class Settings:
         self.RERANK_TOP_K = int(os.getenv("RERANK_TOP_K", "5"))
 
         # LLM
-        self.GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyDqv1AKYKGu9VZahTk5LlkDMhwS8Vt50OA")
+        self.GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
         self.GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
         self.LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.2"))
 

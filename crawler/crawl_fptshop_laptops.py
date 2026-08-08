@@ -1,3 +1,4 @@
+import os
 import urllib.request
 import re
 import json
@@ -10,11 +11,11 @@ print("Starting FPTShop Laptop Crawler & DB Ingestion...")
 
 # 1. Connect to Supabase Postgres
 conn = psycopg2.connect(
-    host="aws-0-ap-southeast-1.pooler.supabase.com",
-    port=5432,
-    dbname="postgres",
-    user="postgres.zzukpubwbntihzztilqy",
-    password="agW24oOesftDhJkA"
+    host=os.getenv("SUPABASE_DB_HOST", "aws-0-ap-southeast-1.pooler.supabase.com"),
+    port=int(os.getenv("SUPABASE_DB_PORT", "5432")),
+    dbname=os.getenv("SUPABASE_DB_NAME", "postgres"),
+    user=os.getenv("SUPABASE_DB_USER", "postgres.zzukpubwbntihzztilqy"),
+    password=os.getenv("SUPABASE_DB_PASSWORD", "")
 )
 conn.autocommit = True
 cur = conn.cursor()

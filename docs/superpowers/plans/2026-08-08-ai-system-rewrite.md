@@ -15,7 +15,7 @@
 - Chunk ID format: `{product_id}_{chunk_type}_{index}`
 - 4 chunk types: spec, description, faq, policy
 - FAISS index saved to disk after each sync
-- Gemini API key: `AIzaSyDqv1AKYKGu9VZahTk5LlkDMhwS8Vt50OA`
+- Gemini API key: `your-gemini-api-key`
 - Gemini model: `gemini-3.1-flash-lite`
 
 ---
@@ -24,34 +24,22 @@
 
 ### Task 1.1: Project Structure & Configuration
 
-**Files:**
-- Create: `ai-system/main.py`
-- Create: `ai-system/config.py`
-- Create: `ai-system/.env`
-- Create: `ai-system/requirements.txt`
+- [ ] **Step 1: Update `ai-system/config.py`**
 
-- [ ] **Step 1: Create config.py**
+Create/update `ai-system/config.py` with full configuration fields matching `.env`.
 
 ```python
-"""Configuration from environment variables."""
 import os
-from functools import lru_cache
 from pydantic_settings import BaseSettings
-
+from functools import lru_cache
 
 class Settings(BaseSettings):
-    # App
-    APP_HOST: str = "0.0.0.0"
-    APP_PORT: int = 8000
-    APP_ENV: str = "development"
-    LOG_LEVEL: str = "INFO"
-
-    # Supabase
+    # Supabase DB
     DB_HOST: str = "aws-0-ap-southeast-1.pooler.supabase.com"
     DB_PORT: int = 5432
     DB_NAME: str = "postgres"
     DB_USER: str = "postgres.zzukpubwbntihzztilqy"
-    DB_PASSWORD: str = "agW24oOesftDhJkA"
+    DB_PASSWORD: str = ""
 
     # Embedding
     EMBEDDING_MODEL: str = "BAAI/bge-m3"
@@ -69,7 +57,7 @@ class Settings(BaseSettings):
     RERANK_TOP_K: int = 5
 
     # LLM
-    GEMINI_API_KEY: str = "AIzaSyDqv1AKYKGu9VZahTk5LlkDMhwS8Vt50OA"
+    GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-3.1-flash-lite"
     LLM_TEMPERATURE: float = 0.2
 
@@ -78,7 +66,6 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
-
 
 @lru_cache
 def get_settings() -> Settings:
@@ -180,14 +167,14 @@ DB_HOST=aws-0-ap-southeast-1.pooler.supabase.com
 DB_PORT=5432
 DB_NAME=postgres
 DB_USER=postgres.zzukpubwbntihzztilqy
-DB_PASSWORD=agW24oOesftDhJkA
+DB_PASSWORD=your-db-password
 
 # Embedding
 EMBEDDING_MODEL=BAAI/bge-m3
 EMBEDDING_DEVICE=cpu
 
 # LLM
-GEMINI_API_KEY=AIzaSyDqv1AKYKGu9VZahTk5LlkDMhwS8Vt50OA
+GEMINI_API_KEY=your-gemini-api-key
 GEMINI_MODEL=gemini-3.1-flash-lite
 
 # Security

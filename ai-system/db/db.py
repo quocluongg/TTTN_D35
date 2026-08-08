@@ -18,7 +18,7 @@ DB_HOST = os.getenv("DB_HOST", "aws-0-ap-southeast-1.pooler.supabase.com")
 DB_PORT = os.getenv("DB_PORT", "5432")
 DB_NAME = os.getenv("DB_NAME", "postgres")
 DB_USER = os.getenv("DB_USER", "postgres.zzukpubwbntihzztilqy")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "agW24oOesftDhJkA")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SILVER_PATH = os.path.join(BASE_DIR, "data", "processed", "products_silver.json")

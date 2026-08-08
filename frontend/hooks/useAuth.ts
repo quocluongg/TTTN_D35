@@ -21,7 +21,7 @@ export const useLogin = () => {
 
       if (tokenData?.accessToken) {
         Cookies.set("token", tokenData.accessToken, { expires: 7 });
-        useAuthStore.getState().setAuth(tokenData.accessToken, tokenData.user);
+        useAuthStore.getState().setAuth(tokenData.accessToken);
       }
 
       if (tokenData?.user) {
