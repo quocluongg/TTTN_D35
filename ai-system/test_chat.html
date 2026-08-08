@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopWise AI Chatbot — RAG Interactive Test Suite</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0B0F19;
+            --card-bg: rgba(22, 31, 49, 0.75);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-lime: #C5FA1F;
+            --accent-blue: #3B82F6;
+            --accent-purple: #8B5CF6;
+            --text-primary: #F3F4F6;
+            --text-secondary: #9CA3AF;
+            --user-bubble: #1E293B;
+            --ai-bubble: #111827;
+            --radius-lg: 16px;
+            --radius-md: 10px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(197, 250, 31, 0.08) 0px, transparent 50%);
+        }
+
+        header {
+            padding: 20px 32px;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(12px);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-badge {
+            background: var(--accent-lime);
+            color: #000;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .logo-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10B981;
+            box-shadow: 0 0 10px #10B981;
+        }
+
+        .main-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+            padding: 24px 32px;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Chat Panel */
+        .chat-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            backdrop-filter: blur(16px);
+        }
+
+        .chat-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-height: calc(100vh - 280px);
+        }
+
+        .message {
+            display: flex;
+            gap: 14px;
+            max-width: 85%;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .message.ai .avatar {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: #fff;
+        }
+
+        .message.user .avatar {
+            background: var(--accent-lime);
+            color: #000;
+        }
+
+        .bubble {
+            padding: 14px 18px;
+            border-radius: 14px;
+            font-size: 14px;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .message.ai .bubble {
+            background: var(--ai-bubble);
+            border: 1px solid var(--card-border);
+            border-top-left-radius: 4px;
+        }
+
+        .message.user .bubble {
+            background: var(--user-bubble);
+            border-top-right-radius: 4px;
+        }
+
+        /* Suggestions */
+        .sample-queries {
+            padding: 12px 24px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            border-top: 1px solid var(--card-border);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .sample-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--card-border);
+            color: var(--text-secondary);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .sample-btn:hover {
+            background: rgba(197, 250, 31, 0.15);
+            color: var(--accent-lime);
+            border-color: var(--accent-lime);
+        }
+
+        /* Input Bar */
+        .input-bar {
+            padding: 16px 24px;
+            display: flex;
+            gap: 12px;
+            background: rgba(11, 15, 25, 0.6);
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            padding: 14px 18px;
+            border-radius: var(--radius-md);
+            color: #fff;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: var(--accent-blue);
+        }
+
+        .send-btn {
+            background: var(--accent-lime);
+            color: #000;
+            border: none;
+            padding: 0 24px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        .send-btn:hover {
+            opacity: 0.9;
+        }
+
+        .send-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* Inspector Side Panel */
+        .inspector-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            backdrop-filter: blur(16px);
+            overflow-y: auto;
+            max-height: calc(100vh - 120px);
+        }
+
+        .inspector-title {
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 12px;
+        }
+
+        .metric-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 14px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .metric-value {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .tag.intent {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60A5FA;
+        }
+
+        .tag.oos {
+            background: rgba(239, 68, 68, 0.2);
+            color: #F87171;
+        }
+
+        .tag.valid {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34D399;
+        }
+
+        .source-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        .source-item .doc-title {
+            font-weight: 600;
+            color: var(--accent-lime);
+            margin-bottom: 4px;
+        }
+
+        /* Typing Dots */
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+            padding: 8px;
+        }
+
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            animation: blink 1.4s infinite both;
+        }
+
+        .typing-dots span:nth-child(2) { animation-delay: .2s; }
+        .typing-dots span:nth-child(3) { animation-delay: .4s; }
+
+        @keyframes blink {
+            0% { opacity: .2; }
+            20% { opacity: 1; }
+            100% { opacity: .2; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <span class="logo-badge">RAG</span>
+            <span class="logo-title">ShopWise AI Assistant Tester</span>
+        </div>
+        <div class="status-badge">
+            <div class="status-dot"></div>
+            <span>FastAPI Server: <strong>http://localhost:8000</strong></span>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Chat Interface -->
+        <div class="chat-panel">
+            <div class="chat-header">
+                <span style="font-weight: 600;">Hội thoại Tư vấn RAG</span>
+                <span style="font-size: 12px; color: var(--text-secondary);">POST /chat</span>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai">
+                    <div class="avatar">AI</div>
+                    <div class="bubble">
+                        Xin chào! Em là ShopWise AI Assistant. Quý khách cần tư vấn thông tin sản phẩm công nghệ (Laptop, Điện thoại, Phụ kiện) nào hôm nay ạ?
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Suggestions -->
+            <div class="sample-queries">
+                <button class="sample-btn" onclick="sendSample('Laptop HP Omnibook 5 có tốt không?')">💻 Laptop HP Omnibook 5</button>
+                <button class="sample-btn" onclick="sendSample('So sánh Asus ROG và Dell XPS')">⚔️ So sánh Asus ROG & Dell</button>
+                <button class="sample-btn" onclick="sendSample('Chính sách bảo hành laptop thế nào?')">🛡️ Chính sách bảo hành</button>
+                <button class="sample-btn" onclick="sendSample('Thời tiết Hà Nội hôm nay thế nào?')">🌤️ Test Out-of-Scope</button>
+            </div>
+
+            <!-- Input Bar -->
+            <form class="input-bar" id="chatForm" onsubmit="handleSend(event)">
+                <input type="text" class="chat-input" id="userInput" placeholder="Nhập câu hỏi tư vấn sản phẩm..." autocomplete="off">
+                <button type="submit" class="send-btn" id="sendBtn">Gửi</button>
+            </form>
+        </div>
+
+        <!-- RAG Metadata Inspector -->
+        <div class="inspector-panel">
+            <div class="inspector-title">
+                <span>RAG Pipeline Inspector</span>
+                <span style="font-size: 11px; color: var(--text-secondary);" id="latencyLabel">0ms</span>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">1. NLU INTENT & CONFIDENCE</div>
+                <div class="metric-value" id="nluIntent">Chờ truy vấn...</div>
+                <div style="margin-top: 6px;" id="nluTags"></div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">2. RESPONSE VALIDATION</div>
+                <div class="metric-value" id="validationScore">Faithfulness: -</div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;" id="validationDetails">Chống Hallucination & Số liệu</div>
+            </div>
+
+            <div class="metric-card" style="flex: 1;">
+                <div class="metric-label">3. RETRIEVED SOURCES (DENSE + BM25 + RRF)</div>
+                <div id="sourcesContainer">
+                    <div style="font-size: 12px; color: var(--text-secondary); font-style: italic;">Chưa có tài liệu được retrieve</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:8000/chat";
+
+        function sendSample(text) {
+            document.getElementById('userInput').value = text;
+            handleSend(new Event('submit'));
+        }
+
+        async function handleSend(e) {
+            e.preventDefault();
+            const inputEl = document.getElementById('userInput');
+            const query = inputEl.value.strip ? inputEl.value.strip() : inputEl.value.trim();
+            if (!query) return;
+
+            // Append User Message
+            appendMessage('user', query);
+            inputEl.value = '';
+
+            // Show Typing Indicator
+            const typingId = appendTypingIndicator();
+            const startTime = performance.now();
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query })
+                });
+
+                const duration = Math.round(performance.now() - startTime);
+                document.getElementById('latencyLabel').innerText = `${duration}ms`;
+
+                removeTypingIndicator(typingId);
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    appendMessage('ai', `⚠️ Lỗi Server API: ${err.detail || 'Không thể kết nối'}`);
+                    return;
+                }
+
+                const data = await response.json();
+
+                // Append AI Response
+                appendMessage('ai', data.response);
+
+                // Update Inspector Panel
+                updateInspector(data);
+
+            } catch (err) {
+                removeTypingIndicator(typingId);
+                appendMessage('ai', `⚠️ Lỗi kết nối tới Server FastAPI (localhost:8000). Hãy đảm bảo Uvicorn đang chạy.`);
+                console.error(err);
+            }
+        }
+
+        function appendMessage(role, text) {
+            const container = document.getElementById('chatMessages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${role}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.innerText = role === 'user' ? 'YOU' : 'AI';
+
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            bubble.innerText = text;
+
+            msgDiv.appendChild(avatar);
+            msgDiv.appendChild(bubble);
+            container.appendChild(msgDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function appendTypingIndicator() {
+            const container = document.getElementById('chatMessages');
+            const id = 'typing_' + Date.now();
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message ai';
+            msgDiv.id = id;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.innerText = 'AI';
+
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            bubble.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+
+            msgDiv.appendChild(avatar);
+            msgDiv.appendChild(bubble);
+            container.appendChild(msgDiv);
+            container.scrollTop = container.scrollHeight;
+            return id;
+        }
+
+        function removeTypingIndicator(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        function updateInspector(data) {
+            // NLU Update
+            const nlu = data.nlu_info || {};
+            document.getElementById('nluIntent').innerText = nlu.intent || 'Unknown';
+            
+            const nluTags = document.getElementById('nluTags');
+            nluTags.innerHTML = `
+                <span class="tag intent">Conf: ${Math.round((nlu.confidence || 0) * 100)}%</span>
+                ${nlu.is_out_of_scope ? '<span class="tag oos">Out of Scope</span>' : ''}
+            `;
+
+            // Validation Update
+            const val = data.validation_status || {};
+            document.getElementById('validationScore').innerText = `Faithfulness: ${val.faithfulness_score !== undefined ? (val.faithfulness_score * 100).toFixed(0) + '%' : '-'}`;
+            document.getElementById('validationDetails').innerText = `Numerical Consistency: ${val.numerical_consistency ? '✅ Passed' : '❌ Failed'}`;
+
+            // Sources Update
+            const sourcesContainer = document.getElementById('sourcesContainer');
+            sourcesContainer.innerHTML = '';
+
+            const sources = data.sources || [];
+            if (sources.length === 0) {
+                sourcesContainer.innerHTML = '<div style="font-size: 12px; color: var(--text-secondary); font-style: italic;">Không có nguồn tài liệu (Out of Scope hoặc No Context)</div>';
+                return;
+            }
+
+            sources.forEach((src, idx) => {
+                const pName = (src.metadata && src.metadata.product_name) || (src.metadata && src.metadata.name) || src.id;
+                const cType = (src.metadata && src.metadata.chunk_type) || 'chunk';
+                const div = document.createElement('div');
+                div.className = 'source-item';
+                div.innerHTML = `
+                    <div class="doc-title">#${idx+1} ${pName} <span style="font-size: 10px; color: var(--text-secondary);">[${cType}]</span></div>
+                    <div style="color: var(--text-secondary); margin-bottom: 4px;">Score: ${(src.score || 0).toFixed(4)}</div>
+                    <div>${src.text.length > 120 ? src.text.substring(0, 120) + '...' : src.text}</div>
+                `;
+                sourcesContainer.appendChild(div);
+            });
+        }
+    </script>
+</body>
+</html>
