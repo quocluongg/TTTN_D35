@@ -142,3 +142,102 @@ def fetch_product_by_id(product_id: str) -> dict | None:
     except Exception as e:
         logger.error(f"Failed to fetch product {product_id}: {e}")
         return None
+
+
+def save_chunks_to_supabase(chunks: list) -> int:
+    """Save chunks with embeddings to Supabase product_chunks table."""
+    if not chunks:
+        return 0
+
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+
+        saved = 0
+        for chunk in chunks:
+            if chunk.embedding is None:
+                continue
+
+            # Convert embedding to string format for pgvector
+            embedding_str = '[' + ','.join(str(x) for x in chunk.embedding) + ']'
+
+            cur.execute("""
+                INSERT INTO product_chunks (id, product_id, chunk_type, chunk_text, product_name, category, price, embedding, content)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s::vector, %s)
+                ON CONFLICT (id) DO UPDATE SET
+                    chunk_text = EXCLUDED.chunk_text,
+                    embedding = EXCLUDED.embedding,
+                    updated_at = NOW()
+            """, (
+                chunk.id,
+                chunk.product_id,
+                chunk.chunk_type,
+                chunk.text[:1000],  # Truncate for chunk_text
+                chunk.metadata.get('product_name', ''),
+                chunk.metadata.get('category', ''),
+                chunk.metadata.get('price', 0),
+                embedding_str,
+                chunk.text,  # Full text in content
+            ))
+            saved += 1
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        logger.info(f"Saved {saved} chunks to Supabase")
+        return saved
+
+    except Exception as e:
+        logger.error(f"Failed to save chunks to Supabase: {e}")
+        return 0
+
+
+def delete_chunks_by_product(product_id: str) -> int:
+    """Delete all chunks for a product from Supabase."""
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+
+        cur.execute("DELETE FROM product_chunks WHERE product_id = %s", (product_id,))
+        deleted = cur.rowcount
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        logger.info(f"Deleted {deleted} chunks for product {product_id}")
+        return deleted
+
+    except Exception as e:
+        logger.error(f"Failed to delete chunks: {e}")
+        return 0
+
+
+def search_chunks_supabase(query_embedding: list, top_k: int = 5) -> list[dict]:
+    """Search chunks using pgvector cosine similarity."""
+    try:
+        conn = get_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+
+        embedding_str = '[' + ','.join(str(x) for x in query_embedding) + ']'
+
+        cur.execute("""
+            SELECT id, product_id, chunk_type, chunk_text, product_name, price,
+                   1 - (embedding <=> %s::vector) as similarity
+            FROM product_chunks
+            WHERE embedding IS NOT NULL
+            ORDER BY embedding <=> %s::vector
+            LIMIT %s
+        """, (embedding_str, embedding_str, top_k))
+
+        results = cur.fetchall()
+
+        cur.close()
+        conn.close()
+
+        return [dict(r) for r in results]
+
+    except Exception as e:
+        logger.error(f"Failed to search Supabase: {e}")
+        return []

@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import APIKeyHeader
 from config import get_settings
 from core import chunker, embedder, retriever
-from db.supabase_client import fetch_product_by_id
+from db.supabase_client import fetch_product_by_id, save_chunks_to_supabase, delete_chunks_by_product
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -48,13 +48,17 @@ async def sync_product(product_id: str, api_key: str = Depends(verify_api_key)):
     for chunk, emb in zip(chunks, embeddings):
         chunk.embedding = emb.tolist()
 
-    # Index
+    # Index to FAISS + BM25
     retriever.index_chunks(chunks)
+
+    # Also save to Supabase pgvector
+    saved_to_supabase = save_chunks_to_supabase(chunks)
 
     return {
         "status": "synced",
         "product_id": product_id,
         "chunks_created": len(chunks),
+        "saved_to_supabase": saved_to_supabase,
     }
 
 
@@ -62,6 +66,7 @@ async def sync_product(product_id: str, api_key: str = Depends(verify_api_key)):
 async def delete_product(product_id: str, api_key: str = Depends(verify_api_key)):
     """Remove product from index."""
     retriever.remove_product_chunks(product_id)
+    delete_chunks_by_product(product_id)
     return {"status": "deleted", "product_id": product_id}
 
 
@@ -98,8 +103,11 @@ async def _reindex_products(products: list[dict]):
     for chunk, emb in zip(all_chunks, embeddings):
         chunk.embedding = emb.tolist()
 
-    # Clear and reindex
+    # Clear and reindex to FAISS + BM25
     retriever.load_index()  # Reset
     retriever.index_chunks(all_chunks)
 
-    logger.info(f"Reindex completed: {len(all_chunks)} chunks from {len(products)} products")
+    # Also save to Supabase pgvector
+    saved = save_chunks_to_supabase(all_chunks)
+
+    logger.info(f"Reindex completed: {len(all_chunks)} chunks from {len(products)} products, saved {saved} to Supabase")
