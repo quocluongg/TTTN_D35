@@ -411,11 +411,26 @@
                 `;
             }
 
+            let entitiesHtml = '';
+            if (data && data.entities && data.entities.length > 0) {
+                entitiesHtml = `
+                    <div class="sources">
+                        <div class="sources-title">🏷️ Thực thể nhận diện:</div>
+                        ${data.entities.map(e => `
+                            <div class="source-item">
+                                <strong>${e.type}:</strong> ${e.text}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
             let metaHtml = '';
             if (data) {
+                const intentDisplay = data.intent_display || data.intent;
                 metaHtml = `
                     <div class="message-meta">
-                        Intent: ${data.intent} | Confidence: ${(data.confidence * 100).toFixed(0)}% | Sources: ${data.sources?.length || 0}
+                        Intent: ${intentDisplay} | Confidence: ${(data.confidence * 100).toFixed(0)}% | Sources: ${data.sources?.length || 0}
                     </div>
                 `;
             }
@@ -423,6 +438,7 @@
             messageDiv.innerHTML = `
                 <div class="message-bubble">
                     ${text.replace(/\n/g, '<br>')}
+                    ${entitiesHtml}
                     ${sourcesHtml}
                     ${metaHtml}
                 </div>

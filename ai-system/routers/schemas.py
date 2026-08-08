@@ -14,6 +14,8 @@ class ChatResponse(BaseModel):
     intent: str
     confidence: float
     sources: list[dict]
+    entities: list[dict] = Field(default_factory=list)
+    intent_display: str = ""
 
 
 class SyncResponse(BaseModel):
