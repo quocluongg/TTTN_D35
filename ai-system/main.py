@@ -16,6 +16,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from config import get_settings
 from routers import chat, sync, admin, health
 
@@ -57,6 +59,14 @@ app.include_router(health.router)
 app.include_router(chat.router)
 app.include_router(sync.router)
 app.include_router(admin.router)
+
+
+# Serve test UI
+@app.get("/test")
+async def test_ui():
+    """Serve the test chat UI."""
+    html_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_chat.html")
+    return FileResponse(html_path, media_type="text/html")
 
 
 if __name__ == "__main__":

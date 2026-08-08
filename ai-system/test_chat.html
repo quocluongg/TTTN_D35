@@ -3,575 +3,438 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShopWise AI Chatbot — RAG Interactive Test Suite</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>ShopWise RAG Chatbot - Test</title>
     <style>
-        :root {
-            --bg-dark: #0B0F19;
-            --card-bg: rgba(22, 31, 49, 0.75);
-            --card-border: rgba(255, 255, 255, 0.08);
-            --accent-lime: #C5FA1F;
-            --accent-blue: #3B82F6;
-            --accent-purple: #8B5CF6;
-            --text-primary: #F3F4F6;
-            --text-secondary: #9CA3AF;
-            --user-bubble: #1E293B;
-            --ai-bubble: #111827;
-            --radius-lg: 16px;
-            --radius-md: 10px;
-        }
-
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(197, 250, 31, 0.08) 0px, transparent 50%);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
 
-        header {
-            padding: 20px 32px;
-            border-bottom: 1px solid var(--card-border);
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(11, 15, 25, 0.8);
-            backdrop-filter: blur(12px);
         }
 
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo-badge {
-            background: var(--accent-lime);
-            color: #000;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        .logo-title {
-            font-size: 18px;
+        .header h1 {
+            font-size: 24px;
             font-weight: 600;
         }
 
-        .status-badge {
+        .status {
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 13px;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 6px 14px;
-            border-radius: 20px;
-            border: 1px solid var(--card-border);
+            font-size: 14px;
         }
 
         .status-dot {
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
+            background: #4ade80;
             border-radius: 50%;
-            background: #10B981;
-            box-shadow: 0 0 10px #10B981;
+            animation: pulse 2s infinite;
         }
 
-        .main-container {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 24px;
-            padding: 24px 32px;
-            max-width: 1600px;
-            margin: 0 auto;
-            width: 100%;
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
-        /* Chat Panel */
-        .chat-panel {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: var(--radius-lg);
+        .stats-bar {
+            background: #f8fafc;
+            padding: 15px 30px;
             display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            backdrop-filter: blur(16px);
+            justify-content: space-around;
+            border-bottom: 1px solid #e2e8f0;
         }
 
-        .chat-header {
-            padding: 16px 24px;
-            border-bottom: 1px solid var(--card-border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .stat-item {
+            text-align: center;
         }
 
-        .chat-messages {
-            flex: 1;
-            padding: 24px;
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .chat-container {
+            height: 500px;
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            max-height: calc(100vh - 280px);
+            padding: 20px;
+            background: #f8fafc;
         }
 
         .message {
+            margin-bottom: 20px;
             display: flex;
-            gap: 14px;
-            max-width: 85%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .message.user {
-            align-self: flex-end;
-            flex-direction: row-reverse;
+            justify-content: flex-end;
         }
 
-        .avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 16px;
             font-size: 14px;
-            flex-shrink: 0;
+            line-height: 1.5;
         }
 
-        .message.ai .avatar {
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-            color: #fff;
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
         }
 
-        .message.user .avatar {
-            background: var(--accent-lime);
-            color: #000;
+        .message.bot .message-bubble {
+            background: white;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+            border-bottom-left-radius: 4px;
         }
 
-        .bubble {
-            padding: 14px 18px;
-            border-radius: 14px;
-            font-size: 14px;
-            line-height: 1.6;
-            position: relative;
+        .message-meta {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 6px;
         }
 
-        .message.ai .bubble {
-            background: var(--ai-bubble);
-            border: 1px solid var(--card-border);
-            border-top-left-radius: 4px;
+        .message.user .message-meta {
+            text-align: right;
         }
 
-        .message.user .bubble {
-            background: var(--user-bubble);
-            border-top-right-radius: 4px;
+        .sources {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e2e8f0;
         }
 
-        /* Suggestions */
-        .sample-queries {
-            padding: 12px 24px;
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            border-top: 1px solid var(--card-border);
-            background: rgba(0, 0, 0, 0.2);
+        .sources-title {
+            font-size: 11px;
+            color: #64748b;
+            margin-bottom: 6px;
         }
 
-        .sample-btn {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--card-border);
-            color: var(--text-secondary);
-            padding: 6px 14px;
-            border-radius: 20px;
+        .source-item {
             font-size: 12px;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s;
+            color: #667eea;
+            margin-bottom: 4px;
+            padding: 4px 8px;
+            background: #f1f5f9;
+            border-radius: 6px;
         }
 
-        .sample-btn:hover {
-            background: rgba(197, 250, 31, 0.15);
-            color: var(--accent-lime);
-            border-color: var(--accent-lime);
+        .input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
         }
 
-        /* Input Bar */
-        .input-bar {
-            padding: 16px 24px;
+        .input-wrapper {
             display: flex;
-            gap: 12px;
-            background: rgba(11, 15, 25, 0.6);
+            gap: 10px;
         }
 
-        .chat-input {
+        .input-wrapper input {
             flex: 1;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--card-border);
-            padding: 14px 18px;
-            border-radius: var(--radius-md);
-            color: #fff;
-            font-family: inherit;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
             font-size: 14px;
             outline: none;
             transition: border-color 0.2s;
         }
 
-        .chat-input:focus {
-            border-color: var(--accent-blue);
+        .input-wrapper input:focus {
+            border-color: #667eea;
         }
 
-        .send-btn {
-            background: var(--accent-lime);
-            color: #000;
+        .input-wrapper button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             border: none;
-            padding: 0 24px;
-            border-radius: var(--radius-md);
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.1s, opacity 0.2s;
-        }
-
-        .send-btn:hover {
-            opacity: 0.9;
-        }
-
-        .send-btn:active {
-            transform: scale(0.97);
-        }
-
-        /* Inspector Side Panel */
-        .inspector-panel {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: var(--radius-lg);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            backdrop-filter: blur(16px);
-            overflow-y: auto;
-            max-height: calc(100vh - 120px);
-        }
-
-        .inspector-title {
-            font-size: 15px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--card-border);
-            padding-bottom: 12px;
-        }
-
-        .metric-card {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--card-border);
-            border-radius: var(--radius-md);
-            padding: 14px;
-        }
-
-        .metric-label {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-bottom: 6px;
-        }
-
-        .metric-value {
+            border-radius: 12px;
             font-size: 14px;
             font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .tag {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
+        .input-wrapper button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
-        .tag.intent {
-            background: rgba(59, 130, 246, 0.2);
-            color: #60A5FA;
+        .input-wrapper button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
-        .tag.oos {
-            background: rgba(239, 68, 68, 0.2);
-            color: #F87171;
-        }
-
-        .tag.valid {
-            background: rgba(16, 185, 129, 0.2);
-            color: #34D399;
-        }
-
-        .source-item {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--card-border);
-            border-radius: 8px;
-            padding: 10px;
-            margin-top: 8px;
-            font-size: 12px;
-        }
-
-        .source-item .doc-title {
-            font-weight: 600;
-            color: var(--accent-lime);
-            margin-bottom: 4px;
-        }
-
-        /* Typing Dots */
-        .typing-dots {
+        .quick-questions {
             display: flex;
-            gap: 4px;
-            padding: 8px;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
         }
 
-        .typing-dots span {
-            width: 6px;
-            height: 6px;
-            background: var(--text-secondary);
+        .quick-btn {
+            padding: 6px 12px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+            max-width: 70px;
+        }
+
+        .typing-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #94a3b8;
             border-radius: 50%;
-            animation: blink 1.4s infinite both;
+            margin-right: 4px;
+            animation: typing 1.4s infinite;
         }
 
-        .typing-dots span:nth-child(2) { animation-delay: .2s; }
-        .typing-dots span:nth-child(3) { animation-delay: .4s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
 
-        @keyframes blink {
-            0% { opacity: .2; }
-            20% { opacity: 1; }
-            100% { opacity: .2; }
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
         }
     </style>
 </head>
 <body>
-
-    <header>
-        <div class="logo-area">
-            <span class="logo-badge">RAG</span>
-            <span class="logo-title">ShopWise AI Assistant Tester</span>
-        </div>
-        <div class="status-badge">
-            <div class="status-dot"></div>
-            <span>FastAPI Server: <strong>http://localhost:8000</strong></span>
-        </div>
-    </header>
-
-    <div class="main-container">
-        <!-- Chat Interface -->
-        <div class="chat-panel">
-            <div class="chat-header">
-                <span style="font-weight: 600;">Hội thoại Tư vấn RAG</span>
-                <span style="font-size: 12px; color: var(--text-secondary);">POST /chat</span>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 ShopWise RAG Chatbot</h1>
+            <div class="status">
+                <div class="status-dot"></div>
+                <span>Connected</span>
             </div>
+        </div>
 
-            <div class="chat-messages" id="chatMessages">
-                <div class="message ai">
-                    <div class="avatar">AI</div>
-                    <div class="bubble">
-                        Xin chào! Em là ShopWise AI Assistant. Quý khách cần tư vấn thông tin sản phẩm công nghệ (Laptop, Điện thoại, Phụ kiện) nào hôm nay ạ?
-                    </div>
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-value" id="totalProducts">-</div>
+                <div class="stat-label">Products</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalChunks">-</div>
+                <div class="stat-label">Chunks</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="faissVectors">-</div>
+                <div class="stat-label">FAISS Vectors</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="geminiStatus">-</div>
+                <div class="stat-label">Gemini</div>
+            </div>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="message bot">
+                <div class="message-bubble">
+                    Xin chào! 👋 Tôi là trợ lý AI tư vấn sản phẩm của ShopWise. Bạn muốn hỏi về sản phẩm nào?
                 </div>
             </div>
-
-            <!-- Quick Suggestions -->
-            <div class="sample-queries">
-                <button class="sample-btn" onclick="sendSample('Laptop HP Omnibook 5 có tốt không?')">💻 Laptop HP Omnibook 5</button>
-                <button class="sample-btn" onclick="sendSample('So sánh Asus ROG và Dell XPS')">⚔️ So sánh Asus ROG & Dell</button>
-                <button class="sample-btn" onclick="sendSample('Chính sách bảo hành laptop thế nào?')">🛡️ Chính sách bảo hành</button>
-                <button class="sample-btn" onclick="sendSample('Thời tiết Hà Nội hôm nay thế nào?')">🌤️ Test Out-of-Scope</button>
-            </div>
-
-            <!-- Input Bar -->
-            <form class="input-bar" id="chatForm" onsubmit="handleSend(event)">
-                <input type="text" class="chat-input" id="userInput" placeholder="Nhập câu hỏi tư vấn sản phẩm..." autocomplete="off">
-                <button type="submit" class="send-btn" id="sendBtn">Gửi</button>
-            </form>
         </div>
 
-        <!-- RAG Metadata Inspector -->
-        <div class="inspector-panel">
-            <div class="inspector-title">
-                <span>RAG Pipeline Inspector</span>
-                <span style="font-size: 11px; color: var(--text-secondary);" id="latencyLabel">0ms</span>
+        <div class="input-container">
+            <div class="input-wrapper">
+                <input type="text" id="userInput" placeholder="Nhập câu hỏi của bạn..." autocomplete="off">
+                <button id="sendBtn" onclick="sendMessage()">Gửi</button>
             </div>
-
-            <div class="metric-card">
-                <div class="metric-label">1. NLU INTENT & CONFIDENCE</div>
-                <div class="metric-value" id="nluIntent">Chờ truy vấn...</div>
-                <div style="margin-top: 6px;" id="nluTags"></div>
-            </div>
-
-            <div class="metric-card">
-                <div class="metric-label">2. RESPONSE VALIDATION</div>
-                <div class="metric-value" id="validationScore">Faithfulness: -</div>
-                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;" id="validationDetails">Chống Hallucination & Số liệu</div>
-            </div>
-
-            <div class="metric-card" style="flex: 1;">
-                <div class="metric-label">3. RETRIEVED SOURCES (DENSE + BM25 + RRF)</div>
-                <div id="sourcesContainer">
-                    <div style="font-size: 12px; color: var(--text-secondary); font-style: italic;">Chưa có tài liệu được retrieve</div>
-                </div>
+            <div class="quick-questions">
+                <button class="quick-btn" onclick="askQuick('Laptop HP RAM bao nhiêu?')">Laptop HP RAM?</button>
+                <button class="quick-btn" onclick="askQuick('Giá laptop HP bao nhiêu?')">Giá laptop HP?</button>
+                <button class="quick-btn" onclick="askQuick('Laptop nào phù hợp cho làm việc?')">Laptop làm việc?</button>
+                <button class="quick-btn" onclick="askQuick('Bảo hành laptop HP?')">Bảo hành?</button>
+                <button class="quick-btn" onclick="askQuick('Laptop HP có tốt không?')">HP có tốt?</button>
             </div>
         </div>
     </div>
 
     <script>
-        const API_URL = "http://localhost:8000/chat";
+        const API_URL = 'http://localhost:8001';
+        const chatContainer = document.getElementById('chatContainer');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
 
-        function sendSample(text) {
-            document.getElementById('userInput').value = text;
-            handleSend(new Event('submit'));
+        // Load stats on startup
+        loadStats();
+
+        // Enter key to send
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_URL}/admin/stats`);
+                const data = await response.json();
+                document.getElementById('totalProducts').textContent = data.total_products;
+                document.getElementById('totalChunks').textContent = data.total_chunks;
+                document.getElementById('faissVectors').textContent = data.faiss_vectors;
+                document.getElementById('geminiStatus').textContent = data.gemini_status === 'connected' ? '✅' : '❌';
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
         }
 
-        async function handleSend(e) {
-            e.preventDefault();
-            const inputEl = document.getElementById('userInput');
-            const query = inputEl.value.strip ? inputEl.value.strip() : inputEl.value.trim();
+        async function sendMessage() {
+            const query = userInput.value.trim();
             if (!query) return;
 
-            // Append User Message
-            appendMessage('user', query);
-            inputEl.value = '';
+            // Add user message
+            addMessage(query, 'user');
+            userInput.value = '';
+            sendBtn.disabled = true;
 
-            // Show Typing Indicator
-            const typingId = appendTypingIndicator();
-            const startTime = performance.now();
+            // Show typing indicator
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.innerHTML = `
+                <div class="typing-indicator" style="display: block;">
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                </div>
+            `;
+            chatContainer.appendChild(typingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
 
             try {
-                const response = await fetch(API_URL, {
+                const response = await fetch(`${API_URL}/chat`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query: query })
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query }),
                 });
-
-                const duration = Math.round(performance.now() - startTime);
-                document.getElementById('latencyLabel').innerText = `${duration}ms`;
-
-                removeTypingIndicator(typingId);
-
-                if (!response.ok) {
-                    const err = await response.json();
-                    appendMessage('ai', `⚠️ Lỗi Server API: ${err.detail || 'Không thể kết nối'}`);
-                    return;
-                }
 
                 const data = await response.json();
 
-                // Append AI Response
-                appendMessage('ai', data.response);
+                // Remove typing indicator
+                chatContainer.removeChild(typingDiv);
 
-                // Update Inspector Panel
-                updateInspector(data);
-
-            } catch (err) {
-                removeTypingIndicator(typingId);
-                appendMessage('ai', `⚠️ Lỗi kết nối tới Server FastAPI (localhost:8000). Hãy đảm bảo Uvicorn đang chạy.`);
-                console.error(err);
+                // Add bot response
+                addMessage(data.response, 'bot', data);
+            } catch (error) {
+                chatContainer.removeChild(typingDiv);
+                addMessage('Xin lỗi, có lỗi xảy ra. Vui lòng thử lại.', 'bot');
+                console.error('Error:', error);
+            } finally {
+                sendBtn.disabled = false;
+                userInput.focus();
             }
         }
 
-        function appendMessage(role, text) {
-            const container = document.getElementById('chatMessages');
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${role}`;
+        function addMessage(text, type, data = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
 
-            const avatar = document.createElement('div');
-            avatar.className = 'avatar';
-            avatar.innerText = role === 'user' ? 'YOU' : 'AI';
+            let sourcesHtml = '';
+            if (data && data.sources && data.sources.length > 0) {
+                sourcesHtml = `
+                    <div class="sources">
+                        <div class="sources-title">📚 Nguồn tham khảo:</div>
+                        ${data.sources.map(s => `
+                            <div class="source-item">
+                                ${s.text}... (score: ${s.score})
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
 
-            const bubble = document.createElement('div');
-            bubble.className = 'bubble';
-            bubble.innerText = text;
+            let metaHtml = '';
+            if (data) {
+                metaHtml = `
+                    <div class="message-meta">
+                        Intent: ${data.intent} | Confidence: ${(data.confidence * 100).toFixed(0)}% | Sources: ${data.sources?.length || 0}
+                    </div>
+                `;
+            }
 
-            msgDiv.appendChild(avatar);
-            msgDiv.appendChild(bubble);
-            container.appendChild(msgDiv);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function appendTypingIndicator() {
-            const container = document.getElementById('chatMessages');
-            const id = 'typing_' + Date.now();
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'message ai';
-            msgDiv.id = id;
-
-            const avatar = document.createElement('div');
-            avatar.className = 'avatar';
-            avatar.innerText = 'AI';
-
-            const bubble = document.createElement('div');
-            bubble.className = 'bubble';
-            bubble.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
-
-            msgDiv.appendChild(avatar);
-            msgDiv.appendChild(bubble);
-            container.appendChild(msgDiv);
-            container.scrollTop = container.scrollHeight;
-            return id;
-        }
-
-        function removeTypingIndicator(id) {
-            const el = document.getElementById(id);
-            if (el) el.remove();
-        }
-
-        function updateInspector(data) {
-            // NLU Update
-            const nlu = data.nlu_info || {};
-            document.getElementById('nluIntent').innerText = nlu.intent || 'Unknown';
-            
-            const nluTags = document.getElementById('nluTags');
-            nluTags.innerHTML = `
-                <span class="tag intent">Conf: ${Math.round((nlu.confidence || 0) * 100)}%</span>
-                ${nlu.is_out_of_scope ? '<span class="tag oos">Out of Scope</span>' : ''}
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    ${text.replace(/\n/g, '<br>')}
+                    ${sourcesHtml}
+                    ${metaHtml}
+                </div>
             `;
 
-            // Validation Update
-            const val = data.validation_status || {};
-            document.getElementById('validationScore').innerText = `Faithfulness: ${val.faithfulness_score !== undefined ? (val.faithfulness_score * 100).toFixed(0) + '%' : '-'}`;
-            document.getElementById('validationDetails').innerText = `Numerical Consistency: ${val.numerical_consistency ? '✅ Passed' : '❌ Failed'}`;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
 
-            // Sources Update
-            const sourcesContainer = document.getElementById('sourcesContainer');
-            sourcesContainer.innerHTML = '';
-
-            const sources = data.sources || [];
-            if (sources.length === 0) {
-                sourcesContainer.innerHTML = '<div style="font-size: 12px; color: var(--text-secondary); font-style: italic;">Không có nguồn tài liệu (Out of Scope hoặc No Context)</div>';
-                return;
-            }
-
-            sources.forEach((src, idx) => {
-                const pName = (src.metadata && src.metadata.product_name) || (src.metadata && src.metadata.name) || src.id;
-                const cType = (src.metadata && src.metadata.chunk_type) || 'chunk';
-                const div = document.createElement('div');
-                div.className = 'source-item';
-                div.innerHTML = `
-                    <div class="doc-title">#${idx+1} ${pName} <span style="font-size: 10px; color: var(--text-secondary);">[${cType}]</span></div>
-                    <div style="color: var(--text-secondary); margin-bottom: 4px;">Score: ${(src.score || 0).toFixed(4)}</div>
-                    <div>${src.text.length > 120 ? src.text.substring(0, 120) + '...' : src.text}</div>
-                `;
-                sourcesContainer.appendChild(div);
-            });
+        function askQuick(question) {
+            userInput.value = question;
+            sendMessage();
         }
     </script>
 </body>
