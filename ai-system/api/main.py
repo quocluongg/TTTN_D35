@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config.settings import get_settings
-from api.routers import admin_products, chat, stage_testing, sync
+from api.routers import admin_products, chat, stage_testing, sync, admin_stats
 
 settings = get_settings()
 
@@ -29,6 +29,7 @@ app.include_router(admin_products.router)
 app.include_router(chat.router)
 app.include_router(stage_testing.router)
 app.include_router(sync.router)
+app.include_router(admin_stats.router)
 
 
 
