@@ -9,15 +9,26 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config import get_settings
 
 logger = logging.getLogger(__name__)
-settings = get_settings()
 
 # Configure Gemini
 try:
     import google.generativeai as genai
-    genai.configure(api_key=settings.GEMINI_API_KEY)
 except ImportError:
     logger.warning("google-generativeai not installed. Install with: pip install google-generativeai")
     genai = None
+
+
+def _configure_genai():
+    """Configure Gemini with current settings."""
+    if genai is not None:
+        settings = get_settings()
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        return True
+    return False
+
+
+# Configure on import
+_configure_genai()
 
 
 async def generate_response(prompt: str) -> str:
@@ -29,6 +40,7 @@ async def generate_response(prompt: str) -> str:
         return "Gemini API không khả dụng. Vui lòng cài đặt google-generativeai."
 
     try:
+        settings = get_settings()
         model = genai.GenerativeModel(settings.GEMINI_MODEL)
 
         # Run in executor to avoid blocking
@@ -55,6 +67,8 @@ def test_connection() -> bool:
         return False
 
     try:
+        _configure_genai()  # Reconfigure with latest settings
+        settings = get_settings()
         model = genai.GenerativeModel(settings.GEMINI_MODEL)
         response = model.generate_content("Say OK")
         return "ok" in response.text.lower()
