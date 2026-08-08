@@ -59,6 +59,9 @@ class Settings:
     LLM_API_KEY: str = os.getenv("LLM_API_KEY", "")
     LLM_TEMPERATURE: float = float(os.getenv("LLM_TEMPERATURE", "0.2"))
 
+    # ---- Security ----
+    RAG_SYNC_API_KEY: str = os.getenv("RAG_SYNC_API_KEY", "default-dev-key")
+
     # ---- App ----
     APP_ENV: str = os.getenv("APP_ENV", "development")
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
