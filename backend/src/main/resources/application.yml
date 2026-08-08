@@ -82,3 +82,6 @@ service:
       hash-secret: ${VNPAY_HASH_SECRET:}
       pay-url: ${VNPAY_PAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
       return-url: ${VNPAY_RETURN_URL:http://localhost:8080/payments/vnpay/return}
+  rag:
+    api-url: ${RAG_API_URL:http://localhost:8000}
+    api-key: ${RAG_API_KEY:}
