@@ -1,6 +1,7 @@
 """Chat router - RAG pipeline with PhoBERT NLU."""
 import sys
 import os
+import time
 import logging
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -17,6 +18,7 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 @router.post("", response_model=ChatResponse)
 async def chat_endpoint(payload: ChatRequest):
     """Process chat query through RAG pipeline with NLU."""
+    start_time = time.time()
     query = payload.query.strip()
     if not query:
         raise HTTPException(400, "Query cannot be empty")
@@ -49,13 +51,25 @@ async def chat_endpoint(payload: ChatRequest):
     prompt = _build_prompt(query, context, nlu_result)
     response = await llm_client.generate_response(prompt)
 
+    # Build response
+    sources = [{"id": r["id"], "text": r["text"][:100], "score": round(r["score"], 2)} for r in search_results[:3]]
+    entities = [{"text": e.text, "type": e.entity_type} for e in nlu_result.entities]
+
+    # Log interaction
+    latency_ms = int((time.time() - start_time) * 1000)
+    try:
+        from routers.rag_admin import log_chat
+        log_chat(query, nlu_result.intent, nlu_result.confidence, response, sources, latency_ms)
+    except:
+        pass
+
     return ChatResponse(
         query=query,
         response=response,
         intent=nlu_result.intent,
         confidence=nlu_result.confidence,
-        sources=[{"id": r["id"], "text": r["text"][:100], "score": round(r["score"], 2)} for r in search_results[:3]],
-        entities=[{"text": e.text, "type": e.entity_type} for e in nlu_result.entities],
+        sources=sources,
+        entities=entities,
         intent_display=nlu_result.intent_display,
     )
 
