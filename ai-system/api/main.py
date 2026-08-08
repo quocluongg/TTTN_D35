@@ -4,8 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config.settings import get_settings
-# pyrefly: ignore [missing-import]
-from api.routers import admin_products, chat, stage_testing
+from api.routers import admin_products, chat, stage_testing, sync
 
 settings = get_settings()
 
@@ -29,6 +28,7 @@ app.add_middleware(
 app.include_router(admin_products.router)
 app.include_router(chat.router)
 app.include_router(stage_testing.router)
+app.include_router(sync.router)
 
 
 
@@ -36,4 +36,12 @@ app.include_router(stage_testing.router)
 
 @app.get("/health")
 async def health_check():
+    """
+    IPO Model:
+    - Input: None (HTTP GET request)
+    - Process: Kiểm tra trạng thái hoạt động của hệ thống FastAPI server
+    - Output: Dict {"status": "ok"}
+    """
+    # Step 1: Trả về dictionary xác nhận server đang chạy bình thường
     return {"status": "ok"}
+
