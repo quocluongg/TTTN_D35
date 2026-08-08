@@ -42,6 +42,7 @@ import ptithcm.tttnd35backend.repository.spec.ProductSpecifications;
 import ptithcm.tttnd35backend.service.ICategoryService;
 import ptithcm.tttnd35backend.service.IProductService;
 import ptithcm.tttnd35backend.service.IStorageService;
+import ptithcm.tttnd35backend.service.ISyncService;
 import ptithcm.tttnd35backend.util.helper.CustomTabJsonUtil;
 import ptithcm.tttnd35backend.util.helper.PageResponseHelper;
 import ptithcm.tttnd35backend.util.helper.SlugUtils;
@@ -71,6 +72,7 @@ public class ProductServiceImpl implements IProductService {
 
     private final ICategoryService categoryService;
     private final IStorageService storageService;
+    private final ISyncService syncService;
 
     // ===== Đọc (public + admin) =====
 
@@ -196,6 +198,7 @@ public class ProductServiceImpl implements IProductService {
             saveNewVariant(product, category, variantRequest);
         }
 
+        syncService.syncProductToRAG(product.getId());
         return buildDetailResponse(product);
     }
 
@@ -211,7 +214,9 @@ public class ProductServiceImpl implements IProductService {
         product.setCategory(category);
         product.setCustomTabs(CustomTabJsonUtil.buildFromRequests(request.getCustomTabs()));
 
-        return buildDetailResponse(productRepository.save(product));
+        ProductDetailResponse response = buildDetailResponse(productRepository.save(product));
+        syncService.syncProductToRAG(id);
+        return response;
     }
 
     @Override
@@ -220,7 +225,15 @@ public class ProductServiceImpl implements IProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm"));
         product.setActive(active);
-        return buildDetailResponse(productRepository.save(product));
+        ProductDetailResponse response = buildDetailResponse(productRepository.save(product));
+
+        if (active) {
+            syncService.syncProductToRAG(id);
+        } else {
+            syncService.deleteProductFromRAG(id);
+        }
+
+        return response;
     }
 
     // ===== Ảnh =====
