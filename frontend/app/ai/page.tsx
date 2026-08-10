@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import PublicLayout from "@/shared/layouts/PublicLayout";
 import { ThinkingOrb } from "thinking-orbs";
 import MarkdownText from "@/components/ui/MarkdownText";
+import { productService, ProductListItem, ProductDetail } from "@/services/productServices";
 import {
   Search,
   ArrowUp,
@@ -29,6 +30,7 @@ interface Message {
   content: string;
   confidence?: number;
   sources?: Array<{ id: string; text: string; score: number }>;
+  realProducts?: ProductListItem[];
   created_at?: string;
 }
 
@@ -39,6 +41,345 @@ interface Conversation {
   started_at: string;
   message_count: number;
   last_message?: string;
+}
+
+const slugify = (text: string) => {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+};
+
+/**
+ * Extract product ID from chunk ID.
+ * Chunk ID format: {product_id}_{chunk_type}_{index}
+ * Example: 46d32c37-617b-406d-8323-aad467ed709b_description_0
+ */
+const extractProductId = (chunkId: string): string => {
+  // Match UUID pattern at the beginning
+  const uuidMatch = chunkId.match(/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+  if (uuidMatch) {
+    return uuidMatch[1];
+  }
+  // Fallback: try to extract by removing known suffixes
+  const suffixes = ["_description_", "_spec_", "_faq_", "_policy_"];
+  for (const suffix of suffixes) {
+    const idx = chunkId.indexOf(suffix);
+    if (idx > 0) {
+      return chunkId.substring(0, idx);
+    }
+  }
+  // If no pattern matches, return as-is
+  return chunkId;
+};
+
+const getRefProductImage = (text: string) => {
+  const lower = text.toLowerCase();
+  if (lower.includes("iphone") || lower.includes("samsung") || lower.includes("điện thoại") || lower.includes("phone")) {
+    return "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&q=80";
+  }
+  if (lower.includes("macbook") || lower.includes("apple")) {
+    return "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=300&q=80";
+  }
+  if (lower.includes("asus") || lower.includes("vivobook") || lower.includes("msi") || lower.includes("laptop")) {
+    return "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=300&q=80";
+  }
+  return "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=300&q=80";
+};
+
+const formatThumbnailUrl = (thumbnail?: string, name?: string) => {
+  if (!thumbnail) return getRefProductImage(name || "");
+  if (thumbnail.startsWith("http://") || thumbnail.startsWith("https://") || thumbnail.startsWith("data:")) {
+    return thumbnail;
+  }
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+  return `${apiBase}${thumbnail.startsWith("/") ? "" : "/"}${thumbnail}`;
+};
+
+const parseProductFromSource = (text: string, id?: string) => {
+  const cleanText = text.replace(/^Sản phẩm\s+/i, "");
+  const lower = cleanText.toLowerCase();
+
+  let brand = "SHOPWISE";
+  let name = cleanText.split(" - ")[0] || cleanText;
+  let price = "Liên hệ";
+  let originalPrice = "";
+  let rating = 4.8;
+  let specs: string[] = ["Chính hãng 100%", "Bảo hành 24 tháng"];
+  let image = getRefProductImage(cleanText);
+
+  if (lower.includes("msi") || lower.includes("cyborg")) {
+    brand = "MSI";
+    name = "Laptop Gaming MSI Cyborg 15 A13UC-2082VN";
+    price = "23.990.000đ";
+    originalPrice = "25.990.000đ";
+    rating = 4.9;
+    specs = ["Core i5-13420H", "RTX 3050 4GB", "RAM 16GB", "SSD 512GB"];
+  } else if (lower.includes("hp")) {
+    brand = "HP";
+    name = "Laptop HP 250 G10 073TQAT";
+    price = "14.490.000đ";
+    originalPrice = "16.290.000đ";
+    rating = 4.7;
+    specs = ["Intel Core i5-1335U", "RAM 8GB", "SSD 512GB", "15.6\" FHD"];
+  } else if (lower.includes("macbook") || lower.includes("apple")) {
+    brand = "APPLE";
+    name = "MacBook Air 15 inch M2 2023";
+    price = "31.990.000đ";
+    originalPrice = "34.990.000đ";
+    rating = 5.0;
+    specs = ["Apple M2 Chip", "RAM 8GB", "SSD 256GB", "Liquid Retina"];
+  } else if (lower.includes("iphone") || lower.includes("samsung") || lower.includes("phone")) {
+    brand = lower.includes("samsung") ? "SAMSUNG" : "APPLE";
+    name = lower.includes("samsung") ? "Samsung Galaxy S24 Ultra 5G" : "iPhone 15 Pro Max 256GB";
+    price = lower.includes("samsung") ? "29.990.000đ" : "32.490.000đ";
+    originalPrice = lower.includes("samsung") ? "33.990.000đ" : "34.990.000đ";
+    rating = 4.9;
+    specs = ["Chip flagship 4nm", "Camera 200MP / 48MP", "Pin 5000mAh"];
+  } else {
+    const firstWord = name.split(" ")[0];
+    if (firstWord && firstWord.length > 1) {
+      brand = firstWord.toUpperCase();
+    }
+  }
+
+  let category = lower.includes("iphone") || lower.includes("samsung") || lower.includes("phone") ? "SMARTPHONE" : "LAPTOP";
+
+  const slug = id && id.length > 5 ? id : slugify(name);
+
+  return { brand, name, category, price, originalPrice, rating, specs, image, slug };
+};
+
+function ProductThumbnail({ src, brand }: { src: string; brand?: string }) {
+  const [imgSrc, setImgSrc] = useState(src);
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    setImgSrc(src);
+    setHasError(false);
+  }, [src]);
+
+  const defaultFallback = "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=300&q=80";
+
+  return (
+    <div className="relative w-full sm:w-24 h-24 rounded-xl bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-100 dark:border-zinc-800 p-1.5 flex items-center justify-center shrink-0 overflow-hidden select-none">
+      {!hasError ? (
+        <img
+          src={imgSrc}
+          alt=""
+          onError={() => {
+            if (imgSrc !== defaultFallback) {
+              setImgSrc(defaultFallback);
+            } else {
+              setHasError(true);
+            }
+          }}
+          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 text-zinc-400">
+          <ImageIcon size={22} />
+        </div>
+      )}
+
+      {brand && (
+        <span className="absolute top-1 left-1 px-1.5 py-0.5 bg-black/80 dark:bg-white/90 text-white dark:text-black text-[9px] font-extrabold uppercase rounded tracking-wider z-10">
+          {brand}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function RefProductCard({ source }: { source: { id: string; text: string; score: number } }) {
+  const [product, setProduct] = useState<ProductDetail | null>(null);
+
+  const cleanTitle = source.text.replace(/^Sản phẩm\s+/i, "").split(" - ")[0] || source.text;
+  const fallbackSlug = slugify(cleanTitle);
+
+  // Extract actual product ID from chunk ID (format: {product_id}_{chunk_type}_{index})
+  const productId = extractProductId(source.id);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchDetail = async () => {
+      try {
+        const targetId = productId && productId.length > 5 ? productId : fallbackSlug;
+        const res = await productService.getProductBySlugOrId(targetId);
+        if (isMounted && res.success && res.data) {
+          setProduct(res.data);
+        }
+      } catch (err) {
+        // Soft fail to fallback info
+      }
+    };
+
+    fetchDetail();
+    return () => {
+      isMounted = false;
+    };
+  }, [productId, fallbackSlug]);
+
+  const fallbackInfo = parseProductFromSource(source.text, productId);
+
+  const name = product?.name || fallbackInfo.name;
+  const brand = product?.brand || fallbackInfo.brand;
+  const slug = product?.slug || product?.id || fallbackInfo.slug;
+  const rating = product?.ratingAvg ? product.ratingAvg.toFixed(1) : fallbackInfo.rating;
+
+  let priceStr = fallbackInfo.price;
+  if (product?.variants && product.variants.length > 0) {
+    const minPrice = Math.min(...product.variants.map((v) => v.price));
+    priceStr = new Intl.NumberFormat("vi-VN").format(minPrice) + "đ";
+  }
+
+  const thumbnail = formatThumbnailUrl(product?.thumbnail, name);
+  const reviewCount = product?.reviewCount || 45;
+  const categoryName = product?.categoryBreadcrumb?.[0]?.name || fallbackInfo.category || "LAPTOP";
+
+  const specs = [
+    product?.origin ? `Xuất xứ: ${product.origin}` : fallbackInfo.specs[0] || "Chính hãng 100%",
+    product?.warrantyMonths ? `Bảo hành ${product.warrantyMonths} tháng` : fallbackInfo.specs[1] || "Bảo hành 24 tháng",
+  ];
+
+  return (
+    <a
+      href={`/product/${slug}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex flex-col justify-between w-full max-w-[280px] border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-xl overflow-hidden shadow-2xs hover:shadow-lg transition-all duration-300 block text-inherit no-underline"
+    >
+      {/* Top Image Section */}
+      <div className="relative w-full aspect-square bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 p-4 flex items-center justify-center overflow-hidden">
+        {/* Brand Badge */}
+        {brand && (
+          <span className="absolute top-3 left-3 z-10 px-2 py-0.5 bg-black text-white dark:bg-white dark:text-black text-[10px] font-extrabold uppercase rounded tracking-wider">
+            {brand}
+          </span>
+        )}
+
+        {/* Product Image */}
+        <ProductThumbnail src={thumbnail} brand="" />
+      </div>
+
+      {/* Bottom Info Section */}
+      <div className="p-4 flex flex-col justify-between flex-1 gap-3 bg-white dark:bg-zinc-900">
+        <div className="space-y-2">
+          {/* Category & Rating */}
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+              {categoryName}
+            </span>
+            <div className="flex items-center gap-1 text-[11px] font-bold text-amber-500">
+              <Star size={12} className="fill-amber-400 text-amber-400" />
+              <span>{rating}</span>
+              <span className="text-zinc-400 font-normal">({reviewCount})</span>
+            </div>
+          </div>
+
+          {/* Product Title */}
+          <h3 className="text-sm font-bold text-zinc-900 dark:text-white line-clamp-2 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+            {name}
+          </h3>
+        </div>
+
+        <div>
+          {/* Divider Line */}
+          <div className="border-t border-zinc-100 dark:border-zinc-800 my-2" />
+
+          {/* Price Row */}
+          <div className="flex items-baseline gap-1.5 mb-3">
+            <span className="text-xs text-zinc-500 font-medium">Giá từ:</span>
+            <span className="text-base font-extrabold text-blue-600 dark:text-blue-400">
+              {priceStr}
+            </span>
+          </div>
+
+          {/* Full Width Button */}
+          <div className="w-full py-2.5 bg-black text-white dark:bg-white dark:text-black font-bold text-xs rounded-none text-center group-hover:bg-blue-600 dark:group-hover:bg-blue-500 group-hover:text-white dark:group-hover:text-white transition-colors">
+            Xem chi tiết
+          </div>
+        </div>
+      </div>
+    </a>
+  );
+}
+
+function RefProductCardFromItem({ product }: { product: ProductListItem }) {
+  const slug = product.slug || product.id;
+  const formattedPrice = product.priceFrom
+    ? new Intl.NumberFormat("vi-VN").format(product.priceFrom) + "đ"
+    : "Liên hệ";
+  const thumbnail = formatThumbnailUrl(product.thumbnail, product.name);
+  const rating = product.ratingAvg ? product.ratingAvg.toFixed(1) : "4.8";
+  const reviewCount = product.reviewCount || 45;
+  const categoryName = product.categoryName || "LAPTOP";
+
+  return (
+    <a
+      href={`/product/${slug}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex flex-col justify-between w-full max-w-[280px] border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-xl overflow-hidden shadow-2xs hover:shadow-lg transition-all duration-300 block text-inherit no-underline"
+    >
+      {/* Top Image Section */}
+      <div className="relative w-full aspect-square bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 p-4 flex items-center justify-center overflow-hidden">
+        {/* Brand Badge */}
+        {product.brand && (
+          <span className="absolute top-3 left-3 z-10 px-2 py-0.5 bg-black text-white dark:bg-white dark:text-black text-[10px] font-extrabold uppercase rounded tracking-wider">
+            {product.brand}
+          </span>
+        )}
+
+        {/* Product Image */}
+        <ProductThumbnail src={thumbnail} brand="" />
+      </div>
+
+      {/* Bottom Info Section */}
+      <div className="p-4 flex flex-col justify-between flex-1 gap-3 bg-white dark:bg-zinc-900">
+        <div className="space-y-2">
+          {/* Category & Rating */}
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+              {categoryName}
+            </span>
+            <div className="flex items-center gap-1 text-[11px] font-bold text-amber-500">
+              <Star size={12} className="fill-amber-400 text-amber-400" />
+              <span>{rating}</span>
+              <span className="text-zinc-400 font-normal">({reviewCount})</span>
+            </div>
+          </div>
+
+          {/* Product Title */}
+          <h3 className="text-sm font-bold text-zinc-900 dark:text-white line-clamp-2 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+            {product.name}
+          </h3>
+        </div>
+
+        <div>
+          {/* Divider Line */}
+          <div className="border-t border-zinc-100 dark:border-zinc-800 my-2" />
+
+          {/* Price Row */}
+          <div className="flex items-baseline gap-1.5 mb-3">
+            <span className="text-xs text-zinc-500 font-medium">Giá từ:</span>
+            <span className="text-base font-extrabold text-blue-600 dark:text-blue-400">
+              {formattedPrice}
+            </span>
+          </div>
+
+          {/* Full Width Button */}
+          <div className="w-full py-2.5 bg-black text-white dark:bg-white dark:text-black font-bold text-xs rounded-none text-center group-hover:bg-blue-600 dark:group-hover:bg-blue-500 group-hover:text-white dark:group-hover:text-white transition-colors">
+            Xem chi tiết
+          </div>
+        </div>
+      </div>
+    </a>
+  );
 }
 
 export default function AIChatPage() {
@@ -182,12 +523,27 @@ export default function AIChatPage() {
 
       const data = await res.json();
 
+      // Fetch matching real products from backend database if available
+      let realProducts: ProductListItem[] = [];
+      try {
+        const prodRes = await productService.getProducts({ search: userMessage.content, size: 2 });
+        if (prodRes?.data) {
+          const items = prodRes.data.items || prodRes.data.content || (Array.isArray(prodRes.data) ? (prodRes.data as any) : []);
+          if (items && items.length > 0) {
+            realProducts = items.slice(0, 2);
+          }
+        }
+      } catch (e) {
+        console.error("Could not fetch real products:", e);
+      }
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: data.response,
         confidence: data.confidence,
         sources: data.sources,
+        realProducts,
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -214,67 +570,6 @@ export default function AIChatPage() {
   );
 
   const lastSession = conversations.length > 0 ? conversations[0] : null;
-
-  const getRefProductImage = (text: string) => {
-    const lower = text.toLowerCase();
-    if (lower.includes("iphone") || lower.includes("samsung") || lower.includes("điện thoại") || lower.includes("phone")) {
-      return "https://cdn2.fptshop.com.vn/unsafe/360x0/filters:format(webp):quality(75)/iphone_15_pro_max_natural_titanium_1_48e64c2084.png";
-    }
-    if (lower.includes("macbook") || lower.includes("apple")) {
-      return "https://cdn2.fptshop.com.vn/unsafe/360x0/filters:format(webp):quality(75)/2023_6_8_638218177579178225_macbook-air-m2-15-inch-2023-xanh-1.jpg";
-    }
-    return "https://cdn2.fptshop.com.vn/unsafe/360x0/filters:format(webp):quality(75)/Laptop_d170e53d32.png";
-  };
-
-  const parseProductFromSource = (text: string) => {
-    const cleanText = text.replace(/^Sản phẩm\s+/i, "");
-    const lower = cleanText.toLowerCase();
-
-    let brand = "SHOPWISE";
-    let name = cleanText.split(" - ")[0] || cleanText;
-    let price = "Liên hệ";
-    let originalPrice = "";
-    let rating = 4.8;
-    let specs: string[] = ["Chính hãng 100%", "Bảo hành 24 tháng"];
-    let image = getRefProductImage(cleanText);
-
-    if (lower.includes("msi") || lower.includes("cyborg")) {
-      brand = "MSI";
-      name = "Laptop Gaming MSI Cyborg 15 A13UC-2082VN";
-      price = "23.990.000đ";
-      originalPrice = "25.990.000đ";
-      rating = 4.9;
-      specs = ["Core i5-13420H", "RTX 3050 4GB", "RAM 16GB", "SSD 512GB"];
-    } else if (lower.includes("hp")) {
-      brand = "HP";
-      name = "Laptop HP 250 G10 073TQAT";
-      price = "14.490.000đ";
-      originalPrice = "16.290.000đ";
-      rating = 4.7;
-      specs = ["Intel Core i5-1335U", "RAM 8GB", "SSD 512GB", "15.6\" FHD"];
-    } else if (lower.includes("macbook") || lower.includes("apple")) {
-      brand = "APPLE";
-      name = "MacBook Air 15 inch M2 2023";
-      price = "31.990.000đ";
-      originalPrice = "34.990.000đ";
-      rating = 5.0;
-      specs = ["Apple M2 Chip", "RAM 8GB", "SSD 256GB", "Liquid Retina"];
-    } else if (lower.includes("iphone") || lower.includes("samsung") || lower.includes("phone")) {
-      brand = lower.includes("samsung") ? "SAMSUNG" : "APPLE";
-      name = lower.includes("samsung") ? "Samsung Galaxy S24 Ultra 5G" : "iPhone 15 Pro Max 256GB";
-      price = lower.includes("samsung") ? "29.990.000đ" : "32.490.000đ";
-      originalPrice = lower.includes("samsung") ? "33.990.000đ" : "34.990.000đ";
-      rating = 4.9;
-      specs = ["Chip flagship 4nm", "Camera 200MP / 48MP", "Pin 5000mAh"];
-    } else {
-      const firstWord = name.split(" ")[0];
-      if (firstWord && firstWord.length > 1) {
-        brand = firstWord.toUpperCase();
-      }
-    }
-
-    return { brand, name, price, originalPrice, rating, specs, image };
-  };
 
   const mockPreviewImages = [
     "https://cdn2.fptshop.com.vn/unsafe/360x0/filters:format(webp):quality(75)/Laptop_d170e53d32.png",
@@ -535,7 +830,7 @@ export default function AIChatPage() {
                       <MarkdownText content={msg.content} />
 
                       {/* Referenced Products - Rich Horizontal E-Commerce Product Cards */}
-                      {msg.sources && msg.sources.length > 0 && (
+                      {((msg.realProducts && msg.realProducts.length > 0) || (msg.sources && msg.sources.length > 0)) && (
                         <div className="mt-4 pt-3.5 border-t border-zinc-200 dark:border-zinc-800 space-y-3">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
@@ -551,83 +846,14 @@ export default function AIChatPage() {
                             </span>
                           </div>
 
-                          <div className="space-y-2.5">
-                            {msg.sources.slice(0, 2).map((s, i) => {
-                              const product = parseProductFromSource(s.text);
-
-                              return (
-                                <div
-                                  key={i}
-                                  className="group relative flex flex-col sm:flex-row items-stretch gap-3.5 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/90 hover:border-blue-500/50 dark:hover:border-blue-500/50 hover:shadow-md transition-all duration-200"
-                                >
-                                  {/* Left Image Thumbnail */}
-                                  <div className="relative w-full sm:w-24 h-24 rounded-xl bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-100 dark:border-zinc-800 p-1.5 flex items-center justify-center shrink-0 overflow-hidden">
-                                    <img
-                                      src={product.image}
-                                      alt={product.name}
-                                      className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
-                                    />
-                                    {product.brand && (
-                                      <span className="absolute top-1 left-1 px-1.5 py-0.5 bg-black/80 dark:bg-white/90 text-white dark:text-black text-[9px] font-extrabold uppercase rounded tracking-wider">
-                                        {product.brand}
-                                      </span>
-                                    )}
-                                  </div>
-
-                                  {/* Right Product Details */}
-                                  <div className="flex-1 flex flex-col justify-between min-w-0">
-                                    <div>
-                                      {/* Title & Rating */}
-                                      <div className="flex items-start justify-between gap-2">
-                                        <h4 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                          {product.name}
-                                        </h4>
-                                        <div className="flex items-center gap-1 shrink-0 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded text-[10px] font-bold text-amber-600 dark:text-amber-400">
-                                          <Star size={11} className="fill-amber-400 text-amber-400" />
-                                          <span>{product.rating}</span>
-                                        </div>
-                                      </div>
-
-                                      {/* Specifications Pills */}
-                                      {product.specs && product.specs.length > 0 && (
-                                        <div className="flex flex-wrap gap-1 mt-1.5">
-                                          {product.specs.map((spec, specIdx) => (
-                                            <span
-                                              key={specIdx}
-                                              className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-md text-[10px] font-medium"
-                                            >
-                                              {spec}
-                                            </span>
-                                          ))}
-                                        </div>
-                                      )}
-                                    </div>
-
-                                    {/* Price & Action Row */}
-                                    <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-zinc-100 dark:border-zinc-800/80">
-                                      <div className="flex items-baseline gap-2">
-                                        <span className="text-xs sm:text-sm font-extrabold text-blue-600 dark:text-blue-400">
-                                          {product.price}
-                                        </span>
-                                        {product.originalPrice && (
-                                          <span className="text-[10px] text-zinc-400 line-through">
-                                            {product.originalPrice}
-                                          </span>
-                                        )}
-                                      </div>
-
-                                      <a
-                                        href="/shop"
-                                        className="px-3 py-1.5 bg-black dark:bg-white text-white dark:text-black hover:bg-blue-600 dark:hover:bg-blue-500 hover:text-white dark:hover:text-white rounded-xl text-[11px] font-semibold transition-all flex items-center gap-1 shadow-2xs"
-                                      >
-                                        <span>Xem chi tiết</span>
-                                        <ArrowRight size={12} />
-                                      </a>
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-3">
+                            {msg.realProducts && msg.realProducts.length > 0
+                              ? msg.realProducts.map((p, i) => (
+                                  <RefProductCardFromItem key={i} product={p} />
+                                ))
+                              : msg.sources?.slice(0, 2).map((s, i) => (
+                                  <RefProductCard key={i} source={s} />
+                                ))}
                           </div>
                         </div>
                       )}
