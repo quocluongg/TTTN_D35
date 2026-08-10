@@ -4,6 +4,11 @@ Config chung cho toàn bộ hệ thống.
 """
 import os
 from functools import lru_cache
+from dotenv import load_dotenv
+
+# Load .env file
+env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+load_dotenv(dotenv_path=env_path, override=True)
 
 # Tự động hướng Hugging Face Cache về ổ D để tránh đầy ổ C
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
@@ -63,11 +68,21 @@ class Settings:
     RAG_SYNC_API_KEY: str = os.getenv("RAG_SYNC_API_KEY", "default-dev-key")
 
     # ---- App ----
+    APP_HOST: str = os.getenv("APP_HOST", "0.0.0.0")
+    APP_PORT: int = int(os.getenv("APP_PORT", "8001"))
     APP_ENV: str = os.getenv("APP_ENV", "development")
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
 
+    # ---- Legacy / Alias Compatibility ----
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", os.getenv("LLM_API_KEY", ""))
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", os.getenv("LLM_MODEL_NAME", "gemini-3.1-flash-lite"))
+    FAISS_INDEX_PATH: str = os.getenv("FAISS_INDEX_PATH", "./faiss_store/index.faiss")
+    BM25_INDEX_PATH: str = os.getenv("BM25_INDEX_PATH", "./faiss_store/bm25.pkl")
+    TOP_K: int = int(os.getenv("TOP_K", "20"))
+    EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", os.getenv("EMBEDDING_MODEL_NAME", "BAAI/bge-m3"))
 
 
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+

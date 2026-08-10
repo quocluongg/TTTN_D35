@@ -2,17 +2,23 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import PublicLayout from "@/shared/layouts/PublicLayout";
+import { ThinkingOrb } from "thinking-orbs";
+import MarkdownText from "@/components/ui/MarkdownText";
 import {
-  Plus,
   Search,
   ArrowUp,
   MessageSquare,
-  Bot,
-  User,
   Trash2,
-  ChevronRight,
   Loader2,
   AlertCircle,
+  X,
+  Image as ImageIcon,
+  Sparkles,
+  Sliders,
+  Edit3,
+  ArrowRight,
+  Star,
+  ShoppingBag,
 } from "lucide-react";
 
 const AI_API_URL = process.env.NEXT_PUBLIC_AI_API_URL || "http://localhost:8001";
@@ -44,6 +50,7 @@ export default function AIChatPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hideLastSessionCard, setHideLastSessionCard] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -206,47 +213,140 @@ export default function AIChatPage() {
     !searchQuery || c.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const lastSession = conversations.length > 0 ? conversations[0] : null;
+
+  const getRefProductImage = (text: string) => {
+    const lower = text.toLowerCase();
+    if (lower.includes("iphone") || lower.includes("samsung") || lower.includes("điện thoại") || lower.includes("phone")) {
+      return "https://cdn2.fptshop.com.vn/unsafe/360x0/filters:format(webp):quality(75)/iphone_15_pro_max_natural_titanium_1_48e64c2084.png";
+    }
+    if (lower.includes("macbook") || lower.includes("apple")) {
+      return "https://cdn2.fptshop.com.vn/unsafe/360x0/filters:format(webp):quality(75)/2023_6_8_638218177579178225_macbook-air-m2-15-inch-2023-xanh-1.jpg";
+    }
+    return "https://cdn2.fptshop.com.vn/unsafe/360x0/filters:format(webp):quality(75)/Laptop_d170e53d32.png";
+  };
+
+  const parseProductFromSource = (text: string) => {
+    const cleanText = text.replace(/^Sản phẩm\s+/i, "");
+    const lower = cleanText.toLowerCase();
+
+    let brand = "SHOPWISE";
+    let name = cleanText.split(" - ")[0] || cleanText;
+    let price = "Liên hệ";
+    let originalPrice = "";
+    let rating = 4.8;
+    let specs: string[] = ["Chính hãng 100%", "Bảo hành 24 tháng"];
+    let image = getRefProductImage(cleanText);
+
+    if (lower.includes("msi") || lower.includes("cyborg")) {
+      brand = "MSI";
+      name = "Laptop Gaming MSI Cyborg 15 A13UC-2082VN";
+      price = "23.990.000đ";
+      originalPrice = "25.990.000đ";
+      rating = 4.9;
+      specs = ["Core i5-13420H", "RTX 3050 4GB", "RAM 16GB", "SSD 512GB"];
+    } else if (lower.includes("hp")) {
+      brand = "HP";
+      name = "Laptop HP 250 G10 073TQAT";
+      price = "14.490.000đ";
+      originalPrice = "16.290.000đ";
+      rating = 4.7;
+      specs = ["Intel Core i5-1335U", "RAM 8GB", "SSD 512GB", "15.6\" FHD"];
+    } else if (lower.includes("macbook") || lower.includes("apple")) {
+      brand = "APPLE";
+      name = "MacBook Air 15 inch M2 2023";
+      price = "31.990.000đ";
+      originalPrice = "34.990.000đ";
+      rating = 5.0;
+      specs = ["Apple M2 Chip", "RAM 8GB", "SSD 256GB", "Liquid Retina"];
+    } else if (lower.includes("iphone") || lower.includes("samsung") || lower.includes("phone")) {
+      brand = lower.includes("samsung") ? "SAMSUNG" : "APPLE";
+      name = lower.includes("samsung") ? "Samsung Galaxy S24 Ultra 5G" : "iPhone 15 Pro Max 256GB";
+      price = lower.includes("samsung") ? "29.990.000đ" : "32.490.000đ";
+      originalPrice = lower.includes("samsung") ? "33.990.000đ" : "34.990.000đ";
+      rating = 4.9;
+      specs = ["Chip flagship 4nm", "Camera 200MP / 48MP", "Pin 5000mAh"];
+    } else {
+      const firstWord = name.split(" ")[0];
+      if (firstWord && firstWord.length > 1) {
+        brand = firstWord.toUpperCase();
+      }
+    }
+
+    return { brand, name, price, originalPrice, rating, specs, image };
+  };
+
+  const mockPreviewImages = [
+    "https://cdn2.fptshop.com.vn/unsafe/360x0/filters:format(webp):quality(75)/Laptop_d170e53d32.png",
+    "https://cdn2.fptshop.com.vn/unsafe/360x0/filters:format(webp):quality(75)/2023_6_8_638218177579178225_macbook-air-m2-15-inch-2023-xanh-1.jpg",
+    "https://cdn2.fptshop.com.vn/unsafe/360x0/filters:format(webp):quality(75)/iphone_15_pro_max_natural_titanium_1_48e64c2084.png",
+  ];
+
   const suggestions = [
-    { text: "Tư vấn laptop gaming", query: "Tư vấn laptop gaming tầm 25 triệu" },
-    { text: "So sánh iPhone và Samsung", query: "So sánh iPhone 16 và Samsung S24" },
-    { text: "Laptop cho sinh viên", query: "Laptop nào phù hợp cho sinh viên?" },
-    { text: "Phụ kiện điện thoại", query: "Gợi ý phụ kiện điện thoại dưới 1 triệu" },
+    {
+      text: "Tư vấn laptop gaming tầm 25 triệu cấu hình mạnh",
+      query: "Tư vấn laptop gaming tầm 25 triệu cấu hình mạnh",
+    },
+    {
+      text: "So sánh iPhone 16 Pro Max và Samsung Galaxy S24 Ultra",
+      query: "So sánh iPhone 16 Pro Max và Samsung Galaxy S24 Ultra",
+    },
+    {
+      text: "Laptop mỏng nhẹ pin trâu dành cho sinh viên IT",
+      query: "Laptop mỏng nhẹ pin trâu dành cho sinh viên IT",
+    },
+    {
+      text: "Gợi ý phụ kiện điện thoại & tai nghe chống ồn dưới 2 triệu",
+      query: "Gợi ý phụ kiện điện thoại & tai nghe chống ồn dưới 2 triệu",
+    },
   ];
 
   return (
     <PublicLayout fullWidth>
-      <div className="flex h-[calc(100vh-60px)] bg-zinc-50">
+      <div className="flex h-[calc(100vh-60px)] bg-zinc-50 dark:bg-zinc-950 font-sans">
         {/* Sidebar */}
-        <div className={`${sidebarOpen ? "w-80" : "w-0"} transition-all duration-300 border-r border-zinc-200 bg-white flex flex-col overflow-hidden`}>
-          {/* Header */}
-          <div className="p-4 border-b border-zinc-200">
+        <div
+          className={`${
+            sidebarOpen ? "w-72 sm:w-80" : "w-0"
+          } transition-all duration-300 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col overflow-hidden shrink-0`}
+        >
+          {/* Top New Chat Action */}
+          <div className="p-3 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
             <button
               onClick={createConversation}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black text-white rounded-lg hover:bg-zinc-800 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors w-full text-left cursor-pointer"
             >
-              <Plus size={18} />
+              <Edit3 size={16} className="text-zinc-600 dark:text-zinc-400" />
               <span>Cuộc trò chuyện mới</span>
             </button>
           </div>
 
-          {/* Search */}
+          {/* Search Chat Input */}
           <div className="p-3">
             <div className="relative">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+              <Search
+                size={15}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"
+              />
               <input
                 type="text"
-                placeholder="Tìm kiếm..."
+                placeholder="Tìm cuộc trò chuyện..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-zinc-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                className="w-full pl-9 pr-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-zinc-400"
               />
             </div>
           </div>
 
+          {/* Group Header: Gần đây */}
+          <div className="px-4 py-2 text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+            Gần đây
+          </div>
+
           {/* Conversation List */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto px-2 space-y-1">
             {filteredConversations.length === 0 ? (
-              <div className="p-4 text-center text-zinc-500 text-sm">
+              <div className="p-4 text-center text-zinc-400 text-xs">
                 Chưa có cuộc trò chuyện nào
               </div>
             ) : (
@@ -254,22 +354,26 @@ export default function AIChatPage() {
                 <div
                   key={conv.id}
                   onClick={() => loadConversation(conv.id)}
-                  className={`group flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-zinc-50 transition-colors ${
-                    currentConversation === conv.id ? "bg-zinc-100" : ""
+                  className={`group flex items-center gap-2.5 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors ${
+                    currentConversation === conv.id
+                      ? "bg-zinc-100 dark:bg-zinc-800 font-semibold"
+                      : ""
                   }`}
                 >
-                  <MessageSquare size={16} className="text-zinc-400 flex-shrink-0" />
+                  <MessageSquare
+                    size={15}
+                    className="text-zinc-400 shrink-0"
+                  />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{conv.title}</p>
-                    <p className="text-xs text-zinc-500">
-                      {conv.message_count} tin nhắn
+                    <p className="text-xs text-zinc-800 dark:text-zinc-200 truncate">
+                      {conv.title}
                     </p>
                   </div>
                   <button
                     onClick={(e) => deleteConversation(conv.id, e)}
                     className="opacity-0 group-hover:opacity-100 p-1 text-zinc-400 hover:text-red-500 transition-all"
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={13} />
                   </button>
                 </div>
               ))
@@ -277,36 +381,122 @@ export default function AIChatPage() {
           </div>
         </div>
 
-        {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col">
-          {/* Header */}
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-200 bg-white">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 hover:bg-zinc-100 rounded-lg"
-            >
-              <ChevronRight size={18} className={`transition-transform ${sidebarOpen ? "rotate-180" : ""}`} />
-            </button>
-            <div className="flex items-center gap-2">
-              <Bot size={20} className="text-blue-600" />
-              <span className="font-medium">ShopWise AI</span>
-            </div>
-          </div>
+        {/* Main Chat Content Area */}
+        <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-zinc-950">
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4">
+          {/* Messages or Welcome View */}
+          <div className="flex-1 overflow-y-auto px-4 py-6">
             {messages.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center">
-                <Bot size={48} className="text-zinc-300 mb-4" />
-                <h2 className="text-xl font-medium text-zinc-600 mb-2">
-                  Chào mừng đến với ShopWise AI
-                </h2>
-                <p className="text-zinc-500 mb-8">
-                  Hỏi tôi bất cứ điều gì về sản phẩm công nghệ
-                </p>
+              <div className="h-full flex flex-col items-center justify-center max-w-2xl mx-auto space-y-6 text-center">
+                {/* Header Welcome Title */}
+                <div className="space-y-1.5">
+                  <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">
+                    ShopWise AI
+                  </span>
+                  <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
+                    Welcome Back
+                  </h1>
+                  <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
+                    Tiếp tục nơi bạn đã dừng lại, hoặc bắt đầu cuộc trò chuyện mới
+                  </p>
+                </div>
 
-                {/* Suggestions */}
-                <div className="grid grid-cols-2 gap-3 max-w-lg">
+                {/* From your last session Card */}
+                {lastSession && !hideLastSessionCard && (
+                  <div className="w-full max-w-xl bg-zinc-50 dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 text-left space-y-4 shadow-sm relative">
+                    <div className="flex items-center justify-between text-xs text-zinc-400 font-medium">
+                      <span>
+                        Từ phiên làm việc trước • {lastSession.message_count || 1} tin nhắn
+                      </span>
+                      <button
+                        onClick={() => setHideLastSessionCard(true)}
+                        className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-full transition-colors text-zinc-400 hover:text-black dark:hover:text-white cursor-pointer"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+
+                    <h3 className="text-base font-bold text-zinc-900 dark:text-white truncate">
+                      {lastSession.title}
+                    </h3>
+
+                    {/* Preview Images Grid */}
+                    <div className="flex items-center gap-2 overflow-x-auto">
+                      {mockPreviewImages.map((src, i) => (
+                        <div
+                          key={i}
+                          className="w-16 h-16 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 p-1 flex items-center justify-center overflow-hidden shrink-0"
+                        >
+                          <img
+                            src={src}
+                            alt="preview"
+                            className="object-contain max-h-full max-w-full"
+                          />
+                        </div>
+                      ))}
+                      <div className="w-16 h-16 rounded-xl bg-zinc-200/60 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-bold text-xs flex items-center justify-center shrink-0">
+                        +17
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        onClick={() => loadConversation(lastSession.id)}
+                        className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <span>Tiếp tục phiên này</span>
+                        <ArrowRight size={14} />
+                      </button>
+                      <button
+                        onClick={createConversation}
+                        className="px-5 py-2.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 rounded-full text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+                      >
+                        Bắt đầu mới
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Central Prominent Input Card */}
+                <div className="w-full max-w-xl bg-white dark:bg-zinc-900 border border-blue-200 dark:border-zinc-800 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 rounded-2xl p-4 shadow-sm text-left space-y-3 transition-all">
+                  <div className="text-xs text-zinc-400 font-medium">
+                    Hoặc nhập nội dung mới...
+                  </div>
+                  <textarea
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    placeholder="Hỏi tôi bất cứ điều gì về sản phẩm công nghệ..."
+                    rows={2}
+                    className="w-full resize-none border-none outline-none text-sm bg-transparent text-black dark:text-white placeholder:text-zinc-400"
+                  />
+                  <div className="flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800 pt-3">
+                    <div className="flex items-center gap-2 text-zinc-400">
+                      <button className="p-1.5 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors cursor-pointer">
+                        <ImageIcon size={18} />
+                      </button>
+                      <button className="p-1.5 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors cursor-pointer">
+                        <Sliders size={18} />
+                      </button>
+                    </div>
+                    <button
+                      onClick={handleSend}
+                      disabled={!input.trim() || loading}
+                      className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 disabled:opacity-40 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all flex items-center justify-center cursor-pointer"
+                    >
+                      {loading ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <ArrowUp size={16} />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Suggestion Prompts List */}
+                <div className="w-full max-w-xl space-y-2 text-left pt-2">
                   {suggestions.map((s, i) => (
                     <button
                       key={i}
@@ -314,44 +504,131 @@ export default function AIChatPage() {
                         setInput(s.query);
                         inputRef.current?.focus();
                       }}
-                      className="p-3 text-left text-sm border border-zinc-200 rounded-lg hover:bg-zinc-50 hover:border-zinc-300 transition-colors"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors group cursor-pointer"
                     >
-                      {s.text}
+                      <Sparkles
+                        size={15}
+                        className="text-zinc-400 group-hover:text-blue-500 transition-colors shrink-0"
+                      />
+                      <span className="truncate">{s.text}</span>
                     </button>
                   ))}
                 </div>
               </div>
             ) : (
+              /* Active Chat Timeline */
               <div className="max-w-3xl mx-auto space-y-6">
                 {messages.map((msg) => (
                   <div
                     key={msg.id}
-                    className={`flex gap-3 ${msg.role === "user" ? "justify-end" : ""}`}
+                    className={`flex gap-3 ${
+                      msg.role === "user" ? "justify-end" : ""
+                    }`}
                   >
-                    {msg.role === "assistant" && (
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                        <Bot size={16} className="text-blue-600" />
-                      </div>
-                    )}
-
                     <div
-                      className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                      className={`max-w-[80%] rounded-2xl px-5 py-3 text-sm leading-relaxed ${
                         msg.role === "user"
-                          ? "bg-black text-white"
-                          : "bg-white border border-zinc-200"
+                          ? "bg-black text-white dark:bg-white dark:text-black"
+                          : "bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100"
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                      <MarkdownText content={msg.content} />
 
-                      {/* Sources */}
+                      {/* Referenced Products - Rich Horizontal E-Commerce Product Cards */}
                       {msg.sources && msg.sources.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-zinc-200">
-                          <p className="text-xs text-zinc-500 mb-2">Nguồn tham khảo:</p>
-                          {msg.sources.slice(0, 2).map((s, i) => (
-                            <p key={i} className="text-xs text-zinc-600 truncate">
-                              • {s.text}
-                            </p>
-                          ))}
+                        <div className="mt-4 pt-3.5 border-t border-zinc-200 dark:border-zinc-800 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="p-1 rounded-md bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
+                                <Sparkles size={13} />
+                              </div>
+                              <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">
+                                Sản phẩm gợi ý cho bạn
+                              </span>
+                            </div>
+                            <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/70 px-2 py-0.5 rounded-full border border-blue-200/60 dark:border-blue-800/60">
+                              Gợi ý tốt nhất
+                            </span>
+                          </div>
+
+                          <div className="space-y-2.5">
+                            {msg.sources.slice(0, 2).map((s, i) => {
+                              const product = parseProductFromSource(s.text);
+
+                              return (
+                                <div
+                                  key={i}
+                                  className="group relative flex flex-col sm:flex-row items-stretch gap-3.5 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/90 hover:border-blue-500/50 dark:hover:border-blue-500/50 hover:shadow-md transition-all duration-200"
+                                >
+                                  {/* Left Image Thumbnail */}
+                                  <div className="relative w-full sm:w-24 h-24 rounded-xl bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-100 dark:border-zinc-800 p-1.5 flex items-center justify-center shrink-0 overflow-hidden">
+                                    <img
+                                      src={product.image}
+                                      alt={product.name}
+                                      className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
+                                    />
+                                    {product.brand && (
+                                      <span className="absolute top-1 left-1 px-1.5 py-0.5 bg-black/80 dark:bg-white/90 text-white dark:text-black text-[9px] font-extrabold uppercase rounded tracking-wider">
+                                        {product.brand}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {/* Right Product Details */}
+                                  <div className="flex-1 flex flex-col justify-between min-w-0">
+                                    <div>
+                                      {/* Title & Rating */}
+                                      <div className="flex items-start justify-between gap-2">
+                                        <h4 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                          {product.name}
+                                        </h4>
+                                        <div className="flex items-center gap-1 shrink-0 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded text-[10px] font-bold text-amber-600 dark:text-amber-400">
+                                          <Star size={11} className="fill-amber-400 text-amber-400" />
+                                          <span>{product.rating}</span>
+                                        </div>
+                                      </div>
+
+                                      {/* Specifications Pills */}
+                                      {product.specs && product.specs.length > 0 && (
+                                        <div className="flex flex-wrap gap-1 mt-1.5">
+                                          {product.specs.map((spec, specIdx) => (
+                                            <span
+                                              key={specIdx}
+                                              className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-md text-[10px] font-medium"
+                                            >
+                                              {spec}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Price & Action Row */}
+                                    <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-zinc-100 dark:border-zinc-800/80">
+                                      <div className="flex items-baseline gap-2">
+                                        <span className="text-xs sm:text-sm font-extrabold text-blue-600 dark:text-blue-400">
+                                          {product.price}
+                                        </span>
+                                        {product.originalPrice && (
+                                          <span className="text-[10px] text-zinc-400 line-through">
+                                            {product.originalPrice}
+                                          </span>
+                                        )}
+                                      </div>
+
+                                      <a
+                                        href="/shop"
+                                        className="px-3 py-1.5 bg-black dark:bg-white text-white dark:text-black hover:bg-blue-600 dark:hover:bg-blue-500 hover:text-white dark:hover:text-white rounded-xl text-[11px] font-semibold transition-all flex items-center gap-1 shadow-2xs"
+                                      >
+                                        <span>Xem chi tiết</span>
+                                        <ArrowRight size={12} />
+                                      </a>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       )}
 
@@ -362,23 +639,17 @@ export default function AIChatPage() {
                         </p>
                       )}
                     </div>
-
-                    {msg.role === "user" && (
-                      <div className="w-8 h-8 rounded-full bg-zinc-200 flex items-center justify-center flex-shrink-0">
-                        <User size={16} className="text-zinc-600" />
-                      </div>
-                    )}
                   </div>
                 ))}
 
-                {/* Loading indicator */}
+                {/* Thinking Orb Loading Indicator */}
                 {loading && (
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                      <Bot size={16} className="text-blue-600" />
-                    </div>
-                    <div className="bg-white border border-zinc-200 rounded-2xl px-4 py-3">
-                      <Loader2 size={16} className="animate-spin text-zinc-400" />
+                  <div className="flex gap-3 items-center">
+                    <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 py-3 flex items-center gap-3 shadow-sm">
+                      <ThinkingOrb state="composing" size={64} speed={1.60} />
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+                        ShopWise AI đang suy nghĩ...
+                      </span>
                     </div>
                   </div>
                 )}
@@ -388,42 +659,44 @@ export default function AIChatPage() {
             )}
           </div>
 
-          {/* Error */}
+          {/* Error Message Display */}
           {error && (
-            <div className="mx-4 mb-2 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-              <AlertCircle size={16} className="text-red-500" />
-              <p className="text-sm text-red-600">{error}</p>
+            <div className="mx-4 mb-2 p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl flex items-center gap-2">
+              <AlertCircle size={16} className="text-red-500 shrink-0" />
+              <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
             </div>
           )}
 
-          {/* Input */}
-          <div className="p-4 border-t border-zinc-200 bg-white">
-            <div className="max-w-3xl mx-auto">
-              <div className="flex items-end gap-3">
-                <textarea
-                  ref={inputRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyPress}
-                  placeholder="Nhập câu hỏi..."
-                  rows={1}
-                  className="flex-1 resize-none rounded-xl border border-zinc-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                  style={{ maxHeight: "120px" }}
-                />
-                <button
-                  onClick={handleSend}
-                  disabled={!input.trim() || loading}
-                  className="p-3 bg-black text-white rounded-xl hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {loading ? (
-                    <Loader2 size={18} className="animate-spin" />
-                  ) : (
-                    <ArrowUp size={18} />
-                  )}
-                </button>
+          {/* Bottom Floating Input Bar when in chat */}
+          {messages.length > 0 && (
+            <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+              <div className="max-w-3xl mx-auto">
+                <div className="bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus-within:border-blue-500 rounded-2xl p-3 flex items-center gap-3 transition-all">
+                  <textarea
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    placeholder="Nhập câu hỏi tiếp theo..."
+                    rows={1}
+                    className="flex-1 resize-none border-none outline-none text-sm bg-transparent text-black dark:text-white placeholder:text-zinc-400"
+                    style={{ maxHeight: "120px" }}
+                  />
+                  <button
+                    onClick={handleSend}
+                    disabled={!input.trim() || loading}
+                    className="w-8 h-8 rounded-full bg-black text-white dark:bg-white dark:text-black hover:bg-blue-600 dark:hover:bg-blue-500 disabled:opacity-40 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+                  >
+                    {loading ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <ArrowUp size={16} />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </PublicLayout>

@@ -3,8 +3,9 @@ import os
 from functools import lru_cache
 from dotenv import load_dotenv
 
-# Load .env file
-load_dotenv()
+# Load .env file from ai-system directory
+env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+load_dotenv(dotenv_path=env_path, override=True)
 
 
 class Settings:

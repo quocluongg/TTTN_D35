@@ -27,7 +27,7 @@ import { useCart } from "@/hooks/useCart";
 
 export default function ProductDetailPage() {
   const params = useParams();
-  const slugOrId = (params.id as string) || "";
+  const slugOrId = (params?.id as string) || "";
   const { addToCart, isAddingToCart } = useCart();
 
   // TanStack Query: Fetch detail product from backend
