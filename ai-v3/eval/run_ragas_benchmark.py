@@ -333,7 +333,7 @@ def generate_testset(products: List[Dict], test_size: int = 50) -> Any:
     # Generate testset
     testset = generator.generate_with_langchain_docs(
         documents=documents,
-        test_size=test_size
+        testset_size=test_size
     )
 
     print(f"[TestsetGen] Generated {len(testset)} test cases successfully!")
