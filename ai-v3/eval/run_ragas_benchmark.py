@@ -328,6 +328,12 @@ def generate_testset(products: List[Dict], test_size: int = 50, max_documents: i
         def embed_query(self, text):
             return embeddings_model.encode([text], normalize_embeddings=True)[0].tolist()
 
+        async def aembed_documents(self, texts):
+            return self.embed_documents(texts)
+
+        async def aembed_query(self, text):
+            return self.embed_query(text)
+
     embeddings = LangChainEmbeddings()
 
     # Create testset generator
@@ -411,6 +417,12 @@ def run_ragas_evaluation(
 
         def embed_query(self, text):
             return embeddings_model.encode([text], normalize_embeddings=True)[0].tolist()
+
+        async def aembed_documents(self, texts):
+            return self.embed_documents(texts)
+
+        async def aembed_query(self, text):
+            return self.embed_query(text)
 
     embeddings = LangChainEmbeddings()
 
