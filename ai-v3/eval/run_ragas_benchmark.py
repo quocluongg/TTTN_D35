@@ -417,5 +417,142 @@ def run_ragas_evaluation(
     return result
 
 
+def generate_report(
+    ragas_result: dict,
+    performance_summary: dict,
+    testset: Any,
+    output_dir: str = None
+) -> Tuple[str, str]:
+    """Generate benchmark report in JSON and Markdown format.
+
+    Args:
+        ragas_result: RAGAS evaluation result
+        performance_summary: PerformanceCollector summary
+        testset: RAGAS testset Dataset
+        output_dir: Output directory (defaults to eval/)
+
+    Returns:
+        Tuple of (json_path, md_path)
+    """
+    from datetime import datetime
+
+    if output_dir is None:
+        output_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Get aggregate scores from RAGAS result
+    result_df = ragas_result.to_pandas()
+
+    aggregate_scores = {
+        "faithfulness": float(result_df["faithfulness"].mean()),
+        "answer_relevancy": float(result_df["answer_relevancy"].mean()),
+        "context_recall": float(result_df["context_recall"].mean()),
+        "context_precision": float(result_df["context_precision"].mean()),
+    }
+    aggregate_scores["ragas_overall"] = float(np.mean(list(aggregate_scores.values())))
+
+    # Build per-sample results
+    per_sample = []
+    for idx, row in result_df.iterrows():
+        sample = {
+            "id": idx,
+            "question": row.get("question", ""),
+            "answer": row.get("answer", ""),
+            "ground_truth": row.get("ground_truth", ""),
+            "contexts": row.get("contexts", []),
+            "scores": {
+                "faithfulness": float(row.get("faithfulness", 0)),
+                "answer_relevancy": float(row.get("answer_relevancy", 0)),
+                "context_recall": float(row.get("context_recall", 0)),
+                "context_precision": float(row.get("context_precision", 0)),
+            }
+        }
+        per_sample.append(sample)
+
+    # Build full result JSON
+    result_json = {
+        "metadata": {
+            "timestamp": datetime.now().isoformat(),
+            "testset_size": len(testset),
+            "ragas_version": "0.2.x",
+            "llm_judge": "gemini-3.1-flash-lite",
+            "system": "ai-v3 RAG Pipeline"
+        },
+        "aggregate_scores": aggregate_scores,
+        "performance": performance_summary,
+        "per_sample": per_sample
+    }
+
+    # Save JSON
+    json_path = os.path.join(output_dir, "ragas_eval_results.json")
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(result_json, f, ensure_ascii=False, indent=2)
+
+    print(f"[Report] Saved JSON results to: {json_path}")
+
+    # Generate Markdown report
+    md_content = f"""# RAGAS Benchmark Report - RAG Chatbot System (ai-v3)
+
+**Time:** {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+**Test cases:** {len(testset)}
+**LLM Judge:** Gemini 3.1 Flash Lite
+**System:** ai-v3 RAG Pipeline
+
+---
+
+## 1. RAGAS Scores (Scale 0.0 - 1.0)
+
+| Metric | Score | Rating |
+|--------|-------|--------|
+| **Faithfulness** | {aggregate_scores["faithfulness"]:.4f} | {"Excellent" if aggregate_scores["faithfulness"] >= 0.9 else "Good" if aggregate_scores["faithfulness"] >= 0.7 else "Needs improvement"} |
+| **Answer Relevancy** | {aggregate_scores["answer_relevancy"]:.4f} | {"Excellent" if aggregate_scores["answer_relevancy"] >= 0.9 else "Good" if aggregate_scores["answer_relevancy"] >= 0.7 else "Needs improvement"} |
+| **Context Recall** | {aggregate_scores["context_recall"]:.4f} | {"Excellent" if aggregate_scores["context_recall"] >= 0.9 else "Good" if aggregate_scores["context_recall"] >= 0.7 else "Needs improvement"} |
+| **Context Precision** | {aggregate_scores["context_precision"]:.4f} | {"Excellent" if aggregate_scores["context_precision"] >= 0.9 else "Good" if aggregate_scores["context_precision"] >= 0.7 else "Needs improvement"} |
+| **OVERALL** | **{aggregate_scores["ragas_overall"]:.4f}** | {"Excellent" if aggregate_scores["ragas_overall"] >= 0.9 else "Good" if aggregate_scores["ragas_overall"] >= 0.7 else "Needs improvement"} |
+
+---
+
+## 2. Performance Metrics
+
+| Metric | Value |
+|--------|-------|
+| **Latency (Mean)** | {performance_summary["latency_mean_ms"]:.2f} ms |
+| **Latency (P95)** | {performance_summary["latency_p95_ms"]:.2f} ms |
+| **Throughput** | {performance_summary["throughput_qps"]:.2f} queries/sec |
+| **Avg Input Tokens** | {performance_summary["avg_input_tokens"]:.0f} |
+| **Avg Output Tokens** | {performance_summary["avg_output_tokens"]:.0f} |
+| **Estimated Cost** | ${performance_summary["estimated_cost_usd"]:.4f} |
+
+---
+
+## 3. Metrics Explanation
+
+- **Faithfulness:** Measures how grounded the answer is in the context (anti-hallucination). Higher = less fabrication.
+- **Answer Relevancy:** Measures how relevant the answer is to the question. Higher = more on-topic.
+- **Context Recall:** Measures how well the context covers the correct answer. Higher = less missed info.
+- **Context Precision:** Measures how accurate the retrieved context is. Higher = less noise.
+
+---
+
+## 4. Improvement Recommendations
+
+{"- High Faithfulness score: strong anti-hallucination system." if aggregate_scores["faithfulness"] >= 0.8 else "- Improve prompts to reduce hallucination."}
+{"- High Answer Relevancy score: answers stay on-topic." if aggregate_scores["answer_relevancy"] >= 0.8 else "- Improve NLU to better understand questions."}
+{"- High Context Recall score: good retrieval coverage." if aggregate_scores["context_recall"] >= 0.8 else "- Improve retrieval to cover more information."}
+{"- High Context Precision score: accurate retrieval." if aggregate_scores["context_precision"] >= 0.8 else "- Improve reranking to filter noise."}
+
+---
+
+**Conclusion:** RAG Chatbot system achieved overall RAGAS score of **{aggregate_scores["ragas_overall"]:.2f}** ({aggregate_scores["ragas_overall"]*100:.1f}%), {"meeting excellent standards for graduation project." if aggregate_scores["ragas_overall"] >= 0.8 else "needs further improvement to meet graduation standards."}
+"""
+
+    md_path = os.path.join(output_dir, "ragas_benchmark_report.md")
+    with open(md_path, "w", encoding="utf-8") as f:
+        f.write(md_content)
+
+    print(f"[Report] Saved Markdown report to: {md_path}")
+
+    return json_path, md_path
+
+
 if __name__ == "__main__":
     run_100_ragas_benchmark()
