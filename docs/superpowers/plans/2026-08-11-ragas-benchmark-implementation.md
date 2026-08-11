@@ -12,7 +12,7 @@
 
 - LLM Judge: `gemini-3.1-flash-lite` via `ChatGoogleGenerativeAI`
 - Embeddings: reuse BGE-M3 from `ai-v3/core/embeddings.py`
-- Test size: 50 test cases
+- Test size: 100 test cases
 - Output directory: `ai-v3/eval/`
 - All Vietnamese text for reports
 - Python encoding: UTF-8 (Windows compatible)

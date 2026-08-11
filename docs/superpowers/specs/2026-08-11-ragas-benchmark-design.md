@@ -104,7 +104,7 @@ Hệ thống RAG Chatbot (ai-v3) hiện có module đánh giá (`ai-v3/eval/`) n
 
 | Parameter | Value | Lý do |
 |-----------|-------|-------|
-| `test_size` | 50 | Đủ cho đồ án TN, không quá tốn API |
+| `test_size` | 100 | Đủ cho đồ án TN, kết quả chính xác hơn |
 | `llm` | Gemini 3.1 Flash Lite | Rẻ, nhanh, user yêu cầu |
 | `embedding` | BGE-M3 (reuse) | Đã có trong project |
 | `query_synthesizers` | default (simple, multi_hop, reasoning) | Đa dạng câu hỏi |
