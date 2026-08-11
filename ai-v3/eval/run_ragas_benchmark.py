@@ -252,7 +252,7 @@ def evaluate_single_sample_llm(
                     )
 
                     evaluator_llm = LangchainLLMWrapper(llm)
-                    hf_emb = HuggingFaceEmbeddings(model_name="BAAI/bge-m3")
+                    hf_emb = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
                     evaluator_embeddings = LangchainEmbeddingsWrapper(hf_emb)
 
                     faithfulness.llm = evaluator_llm
@@ -433,6 +433,7 @@ def run_100_ragas_benchmark():
                         "ground_truth": gt,
                         "answer": answer,
                         "retrieved_contexts": contexts,
+                        "retrieved_products": retrieved_products,
                         "latency_ms": latency_ms,
                         "input_tokens": input_tokens,
                         "output_tokens": output_tokens,
@@ -473,7 +474,8 @@ def run_100_ragas_benchmark():
                 scores = cached.get("ragas_scores", {})
                 source = "cached"
             else:
-                retrieved_products = []  # not needed for LLM eval
+                cached_p1 = checkpoint_mgr.get_item(item_id) or {}
+                retrieved_products = cached_p1.get("retrieved_products", [])
                 scores, source = evaluate_single_sample_llm(
                     question=q,
                     answer=answer,
