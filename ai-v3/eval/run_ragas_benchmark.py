@@ -268,26 +268,34 @@ def run_100_ragas_benchmark():
     print(f"\n✅ Đã xuất Báo cáo RAGAS Benchmark 100 câu hỏi ra file: {report_path}")
 
 
-def generate_testset(products: List[Dict], test_size: int = 50) -> Any:
+def generate_testset(products: List[Dict], test_size: int = 50, max_documents: int = 120) -> Any:
     """Generate eval testset using RAGAS TestsetGen.
 
     Args:
         products: List of product dictionaries
         test_size: Number of test cases to generate
+        max_documents: Maximum number of documents to use for TestsetGen
 
     Returns:
         HuggingFace Dataset with columns: question, ground_truth, contexts
     """
     from langchain_core.documents import Document
     from ragas.testset import TestsetGenerator
-    from langchain_openai import ChatOpenAI
+    from langchain_google_genai import ChatGoogleGenerativeAI
     from sentence_transformers import SentenceTransformer
 
-    print(f"[TestsetGen] Preparing {len(products)} products as documents...")
+    # Random sample documents if too many
+    if len(products) > max_documents:
+        print(f"[TestsetGen] Sampling {max_documents} documents from {len(products)} products...")
+        sampled_products = random.sample(products, max_documents)
+    else:
+        sampled_products = products
+
+    print(f"[TestsetGen] Preparing {len(sampled_products)} products as documents...")
 
     # Convert products to LangChain Documents
     documents = []
-    for product in products:
+    for product in sampled_products:
         doc_text = product_to_document(product)
         doc = Document(
             page_content=doc_text,
@@ -300,13 +308,13 @@ def generate_testset(products: List[Dict], test_size: int = 50) -> Any:
         )
         documents.append(doc)
 
-    print(f"[TestsetGen] Initializing RAGAS TestsetGen with Mimo API...")
+    print(f"[TestsetGen] Initializing RAGAS TestsetGen with Gemma 4 31B...")
 
-    # Initialize LLM for testset generation (Mimo API via OpenAI-compatible endpoint)
-    llm = ChatOpenAI(
-        model="mimo-v2.5-pro",
-        api_key=os.getenv("MIMO_API_KEY", ""),
-        base_url="https://token-plan-sgp.xiaomimimo.com/v1"
+    # Initialize LLM for testset generation (Gemma 4 31B via Google AI API)
+    llm = ChatGoogleGenerativeAI(
+        model="gemma-4-31b-it",
+        google_api_key=os.getenv("GEMINI_API_KEY", ""),
+        temperature=0.3
     )
 
     # Initialize embeddings (reuse BGE-M3)
@@ -384,36 +392,13 @@ def run_ragas_evaluation(
     print("[RAGAS Evaluation] Initializing LLM judge (Mimo v2.5 Pro)...")
 
     # Custom wrapper to remove unsupported 'n' parameter for Mimo API
-    from langchain_core.messages import BaseMessage
-    from langchain_openai.chat_models.base import BaseChatOpenAI
+    # Initialize LLM judge (Gemma 4 31B via Google AI API)
+    from langchain_google_genai import ChatGoogleGenerativeAI
 
-    class MimoChatOpenAI(ChatOpenAI):
-        """Wrapper that strips 'n' parameter which Mimo API doesn't support."""
-        def _generate(
-            self,
-            messages: list[BaseMessage],
-            stop: list[str] | None = None,
-            run_manager: Any | None = None,
-            **kwargs: Any,
-        ) -> Any:
-            kwargs.pop("n", None)
-            return super()._generate(messages, stop=stop, run_manager=run_manager, **kwargs)
-
-        async def _agenerate(
-            self,
-            messages: list[BaseMessage],
-            stop: list[str] | None = None,
-            run_manager: Any | None = None,
-            **kwargs: Any,
-        ) -> Any:
-            kwargs.pop("n", None)
-            return await super()._agenerate(messages, stop=stop, run_manager=run_manager, **kwargs)
-
-    # Initialize LLM judge
-    llm = MimoChatOpenAI(
-        model="mimo-v2.5-pro",
-        api_key=os.getenv("MIMO_API_KEY", ""),
-        base_url="https://token-plan-sgp.xiaomimimo.com/v1"
+    llm = ChatGoogleGenerativeAI(
+        model="gemma-4-31b-it",
+        google_api_key=os.getenv("GEMINI_API_KEY", ""),
+        temperature=0.3
     )
 
     # Initialize embeddings
@@ -695,12 +680,12 @@ def generate_dataset_from_catalog(products: List[Dict], test_size: int = 50) -> 
     }
 
 
-def run_ragas_benchmark(test_size: int = 50, use_fast_dataset: bool = True):
+def run_ragas_benchmark(test_size: int = 50, max_documents: int = 120):
     """Main function to run complete RAGAS benchmark.
 
     Args:
         test_size: Number of test cases to generate
-        use_fast_dataset: If True, use fast dataset generation (skip TestsetGen)
+        max_documents: Maximum number of documents for TestsetGen
     """
     print("=" * 80)
     print("RAGAS BENCHMARK - Hệ Thống RAG Chatbot (ai-v3)")
@@ -714,15 +699,9 @@ def run_ragas_benchmark(test_size: int = 50, use_fast_dataset: bool = True):
         return
     print(f"Loaded {len(products)} products")
 
-    # Step 2: Generate testset
-    if use_fast_dataset:
-        print(f"\n[Step 2/5] Generating fast testset ({test_size} test cases)...")
-        testset_dict = generate_dataset_from_catalog(products, test_size=test_size)
-        from datasets import Dataset
-        testset = Dataset.from_dict(testset_dict)
-    else:
-        print(f"\n[Step 2/5] Generating testset with RAGAS TestsetGen ({test_size} test cases)...")
-        testset = generate_testset(products, test_size=test_size)
+    # Step 2: Generate testset with RAGAS TestsetGen
+    print(f"\n[Step 2/5] Generating testset with RAGAS TestsetGen ({test_size} test cases, max {max_documents} docs)...")
+    testset = generate_testset(products, test_size=test_size, max_documents=max_documents)
     print(f"Generated {len(testset)} test cases")
 
     # Step 3: Run RAG pipeline
@@ -772,4 +751,4 @@ def run_ragas_benchmark(test_size: int = 50, use_fast_dataset: bool = True):
 
 
 if __name__ == "__main__":
-    run_ragas_benchmark(test_size=50)
+    run_ragas_benchmark(test_size=50, max_documents=120)
