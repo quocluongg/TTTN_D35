@@ -11,7 +11,7 @@ import time
 import json
 import random
 import numpy as np
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -19,6 +19,7 @@ from core.pineline import RAGChatbotPipeline
 from eval.metrics import evaluate_rankings
 from eval.significance import paired_ttest, confidence_interval_95
 from eval.document_helper import product_to_document
+from eval.performance_collector import PerformanceCollector
 
 TEMPLATES = [
     ("PURCHASE_CONSULTATION", "Tư vấn cho mình {product_type} {brand} {spec_key} giá tầm {budget} triệu"),
@@ -109,6 +110,70 @@ def evaluate_ragas_metrics(retrieved_context: List[Dict], answer: str, question:
         "faithfulness": round(faithfulness, 4),
         "answer_relevance": round(answer_relevance, 4)
     }
+
+
+def run_rag_pipeline(
+    questions: List[str],
+    pipeline: Any = None,
+    top_k: int = 5
+) -> Tuple[List[str], List[List[str]], PerformanceCollector]:
+    """Run RAG pipeline on list of questions and collect results.
+
+    Args:
+        questions: List of question strings
+        pipeline: RAGChatbotPipeline instance (created if None)
+        top_k: Number of top results to retrieve
+
+    Returns:
+        Tuple of (answers, retrieved_contexts, performance_collector)
+    """
+    if pipeline is None:
+        print("[RAG Pipeline] Initializing RAG Chatbot Pipeline...")
+        pipeline = RAGChatbotPipeline()
+
+    collector = PerformanceCollector()
+    answers = []
+    retrieved_contexts = []
+
+    print(f"[RAG Pipeline] Running {len(questions)} questions through pipeline...")
+
+    for idx, question in enumerate(questions, 1):
+        # Measure latency
+        t0 = time.perf_counter()
+        result = pipeline.process_query(query=question, top_k=top_k)
+        t1 = time.perf_counter()
+
+        latency_ms = (t1 - t0) * 1000
+
+        # Extract answer and contexts
+        answer = result.get("answer", "")
+        products = result.get("retrieved_products", [])
+
+        # Convert products to context strings for RAGAS
+        contexts = []
+        for p in products:
+            context_text = product_to_document(p)
+            contexts.append(context_text)
+
+        answers.append(answer)
+        retrieved_contexts.append(contexts)
+
+        # Estimate tokens (rough approximation)
+        input_tokens = len(question.split()) * 2  # rough estimate
+        output_tokens = len(answer.split()) * 2   # rough estimate
+
+        collector.record(
+            latency_ms=latency_ms,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens
+        )
+
+        if idx % 10 == 0 or idx == len(questions):
+            print(f"  └─ Processed {idx}/{len(questions)} questions...")
+
+    print(f"[RAG Pipeline] Completed! Average latency: {collector.summary()['latency_mean_ms']:.2f}ms")
+
+    return answers, retrieved_contexts, collector
 
 
 def run_100_ragas_benchmark():
