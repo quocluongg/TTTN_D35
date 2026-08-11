@@ -384,11 +384,30 @@ def run_ragas_evaluation(
     print("[RAGAS Evaluation] Initializing LLM judge (Mimo v2.5 Pro)...")
 
     # Custom wrapper to remove unsupported 'n' parameter for Mimo API
+    from langchain_core.messages import BaseMessage
+    from langchain_openai.chat_models.base import BaseChatOpenAI
+
     class MimoChatOpenAI(ChatOpenAI):
-        def _default_params(self):
-            params = super()._default_params()
-            params.pop("n", None)  # Remove unsupported 'n' parameter
-            return params
+        """Wrapper that strips 'n' parameter which Mimo API doesn't support."""
+        def _generate(
+            self,
+            messages: list[BaseMessage],
+            stop: list[str] | None = None,
+            run_manager: Any | None = None,
+            **kwargs: Any,
+        ) -> Any:
+            kwargs.pop("n", None)
+            return super()._generate(messages, stop=stop, run_manager=run_manager, **kwargs)
+
+        async def _agenerate(
+            self,
+            messages: list[BaseMessage],
+            stop: list[str] | None = None,
+            run_manager: Any | None = None,
+            **kwargs: Any,
+        ) -> Any:
+            kwargs.pop("n", None)
+            return await super()._agenerate(messages, stop=stop, run_manager=run_manager, **kwargs)
 
     # Initialize LLM judge
     llm = MimoChatOpenAI(
