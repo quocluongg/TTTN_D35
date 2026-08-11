@@ -244,7 +244,7 @@ def evaluate_single_sample_llm(
                             kwargs.pop("n", None)
                             return await super()._agenerate(messages, stop=stop, run_manager=run_manager, **kwargs)
 
-                    model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+                    model_name = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
                     llm = GeminiChatGoogleGenerativeAI(
                         model=model_name,
                         google_api_key=gemini_key,
@@ -576,7 +576,7 @@ def generate_report_from_checkpoint(
             "timestamp": datetime.now().isoformat(),
             "testset_size": len(dataset),
             "ragas_version": "0.2.x",
-            "llm_judge": os.getenv("GEMINI_MODEL", "gemini-1.5-flash"),
+            "llm_judge": os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite"),
             "system": "ai-v3 RAG Pipeline"
         },
         "aggregate_scores": {
@@ -614,7 +614,7 @@ def generate_report_from_checkpoint(
 **Hệ thống:** ai-v3 RAG Pipeline
 **Thời gian:** {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 **Tổng câu hỏi:** {len(dataset)}
-**LLM Judge:** `{os.getenv("GEMINI_MODEL", "gemini-1.5-flash")}`
+**LLM Judge:** `{os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")}`
 
 ---
 
