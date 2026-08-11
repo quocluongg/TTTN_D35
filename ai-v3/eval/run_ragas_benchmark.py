@@ -341,5 +341,81 @@ def generate_testset(products: List[Dict], test_size: int = 50) -> Any:
     return testset
 
 
+def run_ragas_evaluation(
+    questions: List[str],
+    answers: List[str],
+    retrieved_contexts: List[List[str]],
+    ground_truths: List[str]
+) -> dict:
+    """Run RAGAS evaluation on the generated answers.
+
+    Args:
+        questions: List of questions
+        answers: List of generated answers
+        retrieved_contexts: List of context lists (one per question)
+        ground_truths: List of reference answers
+
+    Returns:
+        Dictionary with evaluation results
+    """
+    from datasets import Dataset
+    from ragas import evaluate
+    from ragas.metrics import faithfulness, answer_relevancy, context_recall, context_precision
+    from langchain_openai import ChatOpenAI
+    from sentence_transformers import SentenceTransformer
+
+    print("[RAGAS Evaluation] Preparing dataset...")
+
+    # Prepare dataset in RAGAS format
+    dataset_dict = {
+        "question": questions,
+        "answer": answers,
+        "contexts": retrieved_contexts,
+        "ground_truth": ground_truths
+    }
+
+    dataset = Dataset.from_dict(dataset_dict)
+
+    print("[RAGAS Evaluation] Initializing LLM judge (Mimo v2.5 Pro)...")
+
+    # Initialize LLM judge
+    llm = ChatOpenAI(
+        model="mimo-v2.5-pro",
+        api_key=os.getenv("MIMO_API_KEY", ""),
+        base_url="https://token-plan-sgp.xiaomimimo.com/v1"
+    )
+
+    # Initialize embeddings
+    embeddings_model = SentenceTransformer("BAAI/bge-m3")
+
+    class LangChainEmbeddings:
+        """Wrapper to make SentenceTransformer compatible with LangChain."""
+        def embed_documents(self, texts):
+            return embeddings_model.encode(texts, normalize_embeddings=True).tolist()
+
+        def embed_query(self, text):
+            return embeddings_model.encode([text], normalize_embeddings=True)[0].tolist()
+
+    embeddings = LangChainEmbeddings()
+
+    print("[RAGAS Evaluation] Running evaluation with 4 metrics...")
+    print("  - Faithfulness")
+    print("  - Answer Relevancy")
+    print("  - Context Recall")
+    print("  - Context Precision")
+
+    # Run evaluation
+    result = evaluate(
+        dataset=dataset,
+        metrics=[faithfulness, answer_relevancy, context_recall, context_precision],
+        llm=llm,
+        embeddings=embeddings
+    )
+
+    print("[RAGAS Evaluation] Evaluation complete!")
+
+    return result
+
+
 if __name__ == "__main__":
     run_100_ragas_benchmark()
