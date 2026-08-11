@@ -319,7 +319,7 @@ def get_chunk_embeddings_by_product_ids(product_ids: list[str]) -> dict[str, lis
         cur.execute("""
             SELECT product_id, embedding
             FROM product_chunks
-            WHERE product_id = ANY(%s) AND embedding IS NOT NULL
+            WHERE product_id = ANY(%s::uuid[]) AND embedding IS NOT NULL
         """, (product_ids,))
         rows = cur.fetchall()
         cur.close()
