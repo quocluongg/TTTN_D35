@@ -564,11 +564,117 @@ def generate_report(
     return json_path, md_path
 
 
-def run_ragas_benchmark(test_size: int = 50):
+def generate_dataset_from_catalog(products: List[Dict], test_size: int = 50) -> Dict[str, List]:
+    """Generate eval dataset directly from product catalog with ground_truth.
+
+    This is a faster alternative to RAGAS TestsetGen - generates questions
+    and ground_truth answers directly from product data.
+
+    Args:
+        products: List of product dictionaries
+        test_size: Number of test cases to generate
+
+    Returns:
+        Dictionary with 'question', 'ground_truth', 'contexts' lists
+    """
+    from datasets import Dataset
+
+    print(f"[Dataset] Generating {test_size} test cases from {len(products)} products...")
+
+    # Templates for different intents
+    templates = [
+        {
+            "intent": "ASK_SPECS",
+            "question": "Cấu hình của {product_name} như thế nào?",
+            "ground_truth": "Sản phẩm {product_name} có cấu hình: {specs}. Giá bán: {price}."
+        },
+        {
+            "intent": "ASK_PRICE",
+            "question": "{product_name} giá bao nhiêu?",
+            "ground_truth": "Sản phẩm {product_name} hiện có giá {price}."
+        },
+        {
+            "intent": "PURCHASE_CONSULTATION",
+            "question": "Tư vấn cho mình laptop {brand} dùng để học tập?",
+            "ground_truth": "Bạn nên tham khảo {product_name} của {brand}. Sản phẩm có {specs}, giá {price}, phù hợp cho học tập."
+        },
+        {
+            "intent": "COMPARE_PRODUCTS",
+            "question": "So sánh {product_name} với các sản phẩm cùng loại?",
+            "ground_truth": "{product_name} là sản phẩm {category} của {brand} với {specs}, giá {price}. Sản phẩm được đánh giá {rating}/5 sao."
+        },
+        {
+            "intent": "ASK_WARRANTY",
+            "question": "Chính sách bảo hành của {product_name} như thế nào?",
+            "ground_truth": "Sản phẩm {product_name} của {brand} được bảo hành chính hãng. Vui lòng liên hệ cửa hàng để biết chi tiết."
+        }
+    ]
+
+    questions = []
+    ground_truths = []
+    contexts_list = []
+
+    # Sample products for test cases
+    sample_size = min(test_size, len(products))
+    sampled_products = random.sample(products, sample_size)
+
+    for i, product in enumerate(sampled_products):
+        # Select template
+        template = templates[i % len(templates)]
+
+        # Get product info
+        name = product.get("name", "Sản phẩm")
+        brand = product.get("brand", "")
+        category = product.get("category", "")
+        price = product.get("price", 0)
+        price_str = f"{price:,.0f} VNĐ" if isinstance(price, (int, float)) and price > 0 else "Liên hệ"
+        specs = product.get("specs", "")
+        if not specs:
+            specs_dict = product.get("specifications", {})
+            if isinstance(specs_dict, dict):
+                specs = ", ".join(f"{k}: {v}" for k, v in specs_dict.items())
+            else:
+                specs = "chưa có thông tin chi tiết"
+        rating = product.get("rating", 4.8)
+
+        # Generate question and ground_truth
+        question = template["question"].format(
+            product_name=name,
+            brand=brand,
+            category=category
+        )
+
+        ground_truth = template["ground_truth"].format(
+            product_name=name,
+            brand=brand,
+            category=category,
+            specs=specs,
+            price=price_str,
+            rating=rating
+        )
+
+        # Create context from product
+        context = product_to_document(product)
+
+        questions.append(question)
+        ground_truths.append(ground_truth)
+        contexts_list.append([context])
+
+    print(f"[Dataset] Generated {len(questions)} test cases successfully!")
+
+    return {
+        "question": questions,
+        "ground_truth": ground_truths,
+        "contexts": contexts_list
+    }
+
+
+def run_ragas_benchmark(test_size: int = 50, use_fast_dataset: bool = True):
     """Main function to run complete RAGAS benchmark.
 
     Args:
         test_size: Number of test cases to generate
+        use_fast_dataset: If True, use fast dataset generation (skip TestsetGen)
     """
     print("=" * 80)
     print("RAGAS BENCHMARK - Hệ Thống RAG Chatbot (ai-v3)")
@@ -583,8 +689,14 @@ def run_ragas_benchmark(test_size: int = 50):
     print(f"Loaded {len(products)} products")
 
     # Step 2: Generate testset
-    print(f"\n[Step 2/5] Generating testset ({test_size} test cases)...")
-    testset = generate_testset(products, test_size=test_size)
+    if use_fast_dataset:
+        print(f"\n[Step 2/5] Generating fast testset ({test_size} test cases)...")
+        testset_dict = generate_dataset_from_catalog(products, test_size=test_size)
+        from datasets import Dataset
+        testset = Dataset.from_dict(testset_dict)
+    else:
+        print(f"\n[Step 2/5] Generating testset with RAGAS TestsetGen ({test_size} test cases)...")
+        testset = generate_testset(products, test_size=test_size)
     print(f"Generated {len(testset)} test cases")
 
     # Step 3: Run RAG pipeline
