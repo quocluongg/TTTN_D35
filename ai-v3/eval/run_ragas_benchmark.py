@@ -18,6 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from core.pineline import RAGChatbotPipeline
 from eval.metrics import evaluate_rankings
 from eval.significance import paired_ttest, confidence_interval_95
+from eval.document_helper import product_to_document
 
 TEMPLATES = [
     ("PURCHASE_CONSULTATION", "Tư vấn cho mình {product_type} {brand} {spec_key} giá tầm {budget} triệu"),
@@ -200,6 +201,79 @@ def run_100_ragas_benchmark():
 
     print(report_md)
     print(f"\n✅ Đã xuất Báo cáo RAGAS Benchmark 100 câu hỏi ra file: {report_path}")
+
+
+def generate_testset(products: List[Dict], test_size: int = 50) -> Any:
+    """Generate eval testset using RAGAS TestsetGen.
+
+    Args:
+        products: List of product dictionaries
+        test_size: Number of test cases to generate
+
+    Returns:
+        HuggingFace Dataset with columns: question, ground_truth, contexts
+    """
+    from langchain_core.documents import Document
+    from ragas.testset import TestsetGenerator
+    from langchain_openai import ChatOpenAI
+    from sentence_transformers import SentenceTransformer
+
+    print(f"[TestsetGen] Preparing {len(products)} products as documents...")
+
+    # Convert products to LangChain Documents
+    documents = []
+    for product in products:
+        doc_text = product_to_document(product)
+        doc = Document(
+            page_content=doc_text,
+            metadata={
+                "product_id": str(product.get("id", "")),
+                "product_name": product.get("name", ""),
+                "brand": product.get("brand", ""),
+                "category": product.get("category", "")
+            }
+        )
+        documents.append(doc)
+
+    print(f"[TestsetGen] Initializing RAGAS TestsetGen with Mimo API...")
+
+    # Initialize LLM for testset generation (Mimo API via OpenAI-compatible endpoint)
+    llm = ChatOpenAI(
+        model="mimo-v2.5-pro",
+        api_key=os.getenv("MIMO_API_KEY", ""),
+        base_url="https://token-plan-sgp.xiaomimimo.com/v1"
+    )
+
+    # Initialize embeddings (reuse BGE-M3)
+    embeddings_model = SentenceTransformer("BAAI/bge-m3")
+
+    class LangChainEmbeddings:
+        """Wrapper to make SentenceTransformer compatible with LangChain."""
+        def embed_documents(self, texts):
+            return embeddings_model.encode(texts, normalize_embeddings=True).tolist()
+
+        def embed_query(self, text):
+            return embeddings_model.encode([text], normalize_embeddings=True)[0].tolist()
+
+    embeddings = LangChainEmbeddings()
+
+    # Create testset generator
+    generator = TestsetGenerator.from_langchain(
+        llm=llm,
+        embedding_model=embeddings
+    )
+
+    print(f"[TestsetGen] Generating {test_size} test cases...")
+
+    # Generate testset
+    testset = generator.generate_with_langchain_docs(
+        documents=documents,
+        test_size=test_size
+    )
+
+    print(f"[TestsetGen] Generated {len(testset)} test cases successfully!")
+
+    return testset
 
 
 if __name__ == "__main__":
