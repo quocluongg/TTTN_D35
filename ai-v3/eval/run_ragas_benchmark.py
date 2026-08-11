@@ -357,125 +357,218 @@ def run_rag_pipeline(
 
 
 def run_100_ragas_benchmark():
-    print("=" * 100)
-    print("🔬 BÁO CÁO KHOA HỌC BENCHMARK RAGAS QUY MÔ 100 CÂU HỎI (INCREMENTAL & CHECKPOINTED)")
-    print("=" * 100)
+    from tqdm import tqdm
 
-    checkpoint_mgr = RagasBenchmarkCheckpointManager("ragas_100_questions_checkpoint.json")
+    print("=" * 80)
+    print("🔬 RAGAS Benchmark 100 Questions — Batch Processing")
+    print("=" * 80)
 
-    print("[RAGAS Benchmark] Khởi tạo RAG Chatbot Pipeline...")
+    checkpoint_mgr = RagasBenchmarkCheckpointManager("ragas_100_batch_checkpoint.json")
+
+    # Show resume status
+    counts = checkpoint_mgr.get_phase_counts()
+    total_done_p1 = counts["phase1_completed"]
+    total_done_p2 = counts["phase2_completed"] + counts["phase2_fallback"]
+    if total_done_p1 > 0 or total_done_p2 > 0:
+        print(f"📦 Resuming from checkpoint: {total_done_p1}/100 Phase1, {total_done_p2}/100 Phase2")
+
+    # Initialize pipeline
+    print("[RAGAS] Initializing RAG Pipeline...")
     pipeline = RAGChatbotPipeline()
 
-    print("[RAGAS Benchmark] Nạp bộ dữ liệu 100 câu hỏi kiểm thử...")
+    # Generate dataset
     dataset = generate_100_eval_dataset(seed=42)
-    print(f"📦 Số câu hỏi kiểm thử được tạo: {len(dataset)} câu\n")
+    print(f"📦 Dataset: {len(dataset)} questions\n")
 
     collector = PerformanceCollector()
+    BATCH_SIZE = 10
 
-    for idx, item in enumerate(dataset, 1):
-        item_id = item["id"]
+    # Split into batches
+    batches = [dataset[i:i+BATCH_SIZE] for i in range(0, len(dataset), BATCH_SIZE)]
 
-        if checkpoint_mgr.is_completed(item_id):
-            cached = checkpoint_mgr.get_item(item_id)
-            print(f"  ⏩ [{idx}/100] Resuming question #{item_id} (Already completed & saved)")
-            collector.record(
-                latency_ms=cached.get("latency_ms", 1000.0),
-                input_tokens=cached.get("input_tokens", 20),
-                output_tokens=cached.get("output_tokens", 100)
-            )
-            continue
+    for batch_idx, batch in enumerate(batches, 1):
+        batch_start = (batch_idx - 1) * BATCH_SIZE + 1
+        batch_end = batch_idx * BATCH_SIZE
+        print(f"\n📦 Batch {batch_idx}/{len(batches)} (Q{batch_start}-Q{batch_end})")
 
-        q = item["question"]
-        gt = item["ground_truth"]
+        for item in batch:
+            item_id = item["id"]
 
-        t0 = time.perf_counter()
-        res = pipeline.process_query(query=q, top_k=5)
-        t1 = time.perf_counter()
+            # Skip if both phases completed
+            if checkpoint_mgr.is_phase2_completed(item_id):
+                cached = checkpoint_mgr.get_item(item_id)
+                print(f"  ⏩ [{item_id}/100] SKIPPED (cached)")
+                collector.record(
+                    latency_ms=cached.get("latency_ms", 0.0),
+                    input_tokens=cached.get("input_tokens", 0),
+                    output_tokens=cached.get("output_tokens", 0)
+                )
+                continue
 
-        latency_ms = (t1 - t0) * 1000
-        retrieved_products = res.get("retrieved_products", [])
-        answer = res.get("answer", "")
-        contexts = [product_to_document(p) for p in retrieved_products]
+            q = item["question"]
+            gt = item["ground_truth"]
 
-        input_tokens = len(q.split()) * 2
-        output_tokens = len(answer.split()) * 2
+            # === PHASE 1: RAG Pipeline ===
+            if not checkpoint_mgr.is_phase1_completed(item_id):
+                try:
+                    t0 = time.perf_counter()
+                    res = pipeline.process_query(query=q, top_k=5)
+                    t1 = time.perf_counter()
 
-        collector.record(
-            latency_ms=latency_ms,
-            input_tokens=input_tokens,
-            output_tokens=output_tokens
-        )
+                    latency_ms = (t1 - t0) * 1000
+                    answer = res.get("answer", "")
+                    retrieved_products = res.get("retrieved_products", [])
+                    contexts = [product_to_document(p) for p in retrieved_products]
+                    input_tokens = len(q.split()) * 2
+                    output_tokens = len(answer.split()) * 2
 
-        ragas_m, eval_source = evaluate_single_sample_llm(
-            question=q,
-            answer=answer,
-            contexts=contexts,
-            ground_truth=gt,
-            retrieved_products=retrieved_products
-        )
+                    collector.record(latency_ms=latency_ms, input_tokens=input_tokens, output_tokens=output_tokens)
 
-        item_checkpoint = {
-            "id": item_id,
-            "question": q,
-            "intent": item["intent"],
-            "expected_brand": item["expected_brand"],
-            "expected_category": item["expected_category"],
-            "ground_truth": gt,
-            "answer": answer,
-            "retrieved_contexts": contexts,
-            "latency_ms": latency_ms,
-            "input_tokens": input_tokens,
-            "output_tokens": output_tokens,
-            "scores": ragas_m,
-            "status": "COMPLETED"
-        }
+                    item_data = {
+                        "id": item_id,
+                        "question": q,
+                        "intent": item["intent"],
+                        "expected_brand": item["expected_brand"],
+                        "expected_category": item["expected_category"],
+                        "ground_truth": gt,
+                        "answer": answer,
+                        "retrieved_contexts": contexts,
+                        "latency_ms": latency_ms,
+                        "input_tokens": input_tokens,
+                        "output_tokens": output_tokens,
+                        "phase1_status": "COMPLETED",
+                        "phase2_status": "PENDING",
+                        "ragas_scores": None
+                    }
+                    checkpoint_mgr.update_item(item_id, item_data)
 
-        checkpoint_mgr.update_item(item_id, item_checkpoint)
-        print(f"  ✅ [{idx}/100] Processed & Checkpointed question #{item_id} (Scores: {ragas_m})")
+                except Exception as e:
+                    logger.error(f"  ❌ [{item_id}/100] Phase 1 FAILED: {e}")
+                    checkpoint_mgr.update_item(item_id, {
+                        "id": item_id,
+                        "question": q,
+                        "intent": item["intent"],
+                        "ground_truth": gt,
+                        "phase1_status": "FAILED",
+                        "phase1_error": str(e),
+                        "phase2_status": "SKIPPED",
+                        "ragas_scores": None
+                    })
+                    continue
+            else:
+                # Phase 1 already done, load cached data
+                cached = checkpoint_mgr.get_item(item_id)
+                answer = cached.get("answer", "")
+                contexts = cached.get("retrieved_contexts", [])
+                latency_ms = cached.get("latency_ms", 0.0)
+                collector.record(
+                    latency_ms=latency_ms,
+                    input_tokens=cached.get("input_tokens", 0),
+                    output_tokens=cached.get("output_tokens", 0)
+                )
 
-    # Aggregate final scores from checkpoint
-    c_precision_list = []
-    c_recall_list = []
-    faithfulness_list = []
-    relevance_list = []
-    latencies_ms = []
+            # === PHASE 2: RAGAS LLM Judge ===
+            if checkpoint_mgr.is_phase2_completed(item_id):
+                cached = checkpoint_mgr.get_item(item_id)
+                scores = cached.get("ragas_scores", {})
+                source = "cached"
+            else:
+                retrieved_products = []  # not needed for LLM eval
+                scores, source = evaluate_single_sample_llm(
+                    question=q,
+                    answer=answer,
+                    contexts=contexts,
+                    ground_truth=gt,
+                    retrieved_products=retrieved_products
+                )
 
+                cached = checkpoint_mgr.get_item(item_id) or {}
+                cached["ragas_scores"] = scores
+                cached["phase2_status"] = "COMPLETED" if source == "llm" else "COMPLETED_WITH_FALLBACK"
+                if source == "fallback":
+                    cached["fallback_reason"] = "LLM judge failed, used rule-based fallback"
+                checkpoint_mgr.update_item(item_id, cached)
+
+            # Print result
+            faith = scores.get("faithfulness", 0)
+            rel = scores.get("answer_relevancy", 0)
+            lat_s = latency_ms / 1000
+            if source == "llm":
+                icon = "✅"
+                src_str = "P2=OK"
+            elif source == "fallback":
+                icon = "⚡"
+                src_str = "P2=FALLBACK"
+            else:
+                icon = "⏩"
+                src_str = "P2=CACHED"
+            print(f"  {icon} [{item_id}/100] Q#{item_id} P1=OK {src_str} faith={faith:.2f} rel={rel:.2f} lat={lat_s:.1f}s")
+
+        print(f"📦 Batch {batch_idx}/{len(batches)} DONE — checkpoint saved")
+
+    # === GENERATE REPORT ===
+    print("\n" + "=" * 80)
+    print("📊 GENERATING REPORT")
+    print("=" * 80)
+
+    result_json = generate_report_from_checkpoint(checkpoint_mgr, collector, dataset)
+    return result_json
+
+
+def generate_report_from_checkpoint(
+    checkpoint_mgr: 'RagasBenchmarkCheckpointManager',
+    collector: PerformanceCollector,
+    dataset: List[Dict[str, Any]]
+) -> Dict[str, Any]:
+    """Generate final report from checkpoint data."""
+    import numpy as np
+
+    items = checkpoint_mgr.data.get("items", {})
+    counts = checkpoint_mgr.get_phase_counts()
+
+    # Collect scores
+    all_scores = []
+    llm_scores = []
+    fallback_scores = []
     per_sample_list = []
 
-    for item in dataset:
-        cached = checkpoint_mgr.get_item(item["id"])
-        if cached and "scores" in cached:
-            scores = cached["scores"]
-            c_precision_list.append(scores.get("context_precision", 0.0))
-            c_recall_list.append(scores.get("context_recall", 0.0))
-            faithfulness_list.append(scores.get("faithfulness", 0.85))
-            relevance_list.append(scores.get("answer_relevance", 0.85))
-            latencies_ms.append(cached.get("latency_ms", 0.0))
+    for item_data in dataset:
+        item_id = item_data["id"]
+        cached = items.get(str(item_id), {})
+
+        scores = cached.get("ragas_scores")
+        if scores and all(k in scores for k in ("faithfulness", "answer_relevancy", "context_recall", "context_precision")):
+            all_scores.append(scores)
+            p2_status = cached.get("phase2_status", "")
+            if p2_status == "COMPLETED":
+                llm_scores.append(scores)
+            elif p2_status == "COMPLETED_WITH_FALLBACK":
+                fallback_scores.append(scores)
 
             per_sample_list.append({
-                "id": item["id"],
+                "id": item_id,
                 "question": cached.get("question", ""),
                 "answer": cached.get("answer", ""),
                 "ground_truth": cached.get("ground_truth", ""),
                 "contexts": cached.get("retrieved_contexts", []),
-                "scores": scores
+                "scores": scores,
+                "eval_source": "llm" if p2_status == "COMPLETED" else "fallback",
+                "latency_ms": cached.get("latency_ms", 0.0)
             })
 
-    avg_precision = float(np.mean(c_precision_list)) if c_precision_list else 0.0
-    avg_recall = float(np.mean(c_recall_list)) if c_recall_list else 0.0
-    avg_faithfulness = float(np.mean(faithfulness_list)) if faithfulness_list else 0.0
-    avg_relevance = float(np.mean(relevance_list)) if relevance_list else 0.0
-    avg_latency = float(np.mean(latencies_ms)) if latencies_ms else 0.0
+    # Aggregate scores
+    if all_scores:
+        avg_faith = float(np.mean([s["faithfulness"] for s in all_scores]))
+        avg_rel = float(np.mean([s["answer_relevancy"] for s in all_scores]))
+        avg_cr = float(np.mean([s["context_recall"] for s in all_scores]))
+        avg_cp = float(np.mean([s["context_precision"] for s in all_scores]))
+        overall = (avg_faith + avg_rel + avg_cr + avg_cp) / 4.0
+    else:
+        avg_faith = avg_rel = avg_cr = avg_cp = overall = 0.0
 
-    overall_ragas_score = (avg_precision + avg_recall + avg_faithfulness + avg_relevance) / 4.0
-    ci_lo, ci_hi = confidence_interval_95(faithfulness_list) if faithfulness_list else (0.0, 0.0)
+    perf = collector.summary()
 
-    perf_summary = collector.summary()
-
-    # Save JSON report
-    eval_dir = os.path.dirname(os.path.abspath(__file__))
-    json_path = os.path.join(eval_dir, "ragas_eval_results.json")
-
+    # Build result JSON
     result_json = {
         "metadata": {
             "timestamp": datetime.now().isoformat(),
@@ -485,63 +578,100 @@ def run_100_ragas_benchmark():
             "system": "ai-v3 RAG Pipeline"
         },
         "aggregate_scores": {
-            "faithfulness": avg_faithfulness,
-            "answer_relevancy": avg_relevance,
-            "context_recall": avg_recall,
-            "context_precision": avg_precision,
-            "ragas_overall": overall_ragas_score
+            "faithfulness": avg_faith,
+            "answer_relevancy": avg_rel,
+            "context_recall": avg_cr,
+            "context_precision": avg_cp,
+            "ragas_overall": overall
         },
-        "performance": perf_summary,
+        "evaluation_quality": {
+            "total_questions": len(dataset),
+            "llm_judge_count": len(llm_scores),
+            "fallback_count": len(fallback_scores),
+            "phase1_completed": counts["phase1_completed"],
+            "phase1_failed": counts["phase1_failed"],
+            "scored_total": len(all_scores)
+        },
+        "performance": perf,
         "per_sample": per_sample_list
     }
 
+    # Save JSON
+    eval_dir = os.path.dirname(os.path.abspath(__file__))
+    json_path = os.path.join(eval_dir, "ragas_eval_results.json")
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(result_json, f, ensure_ascii=False, indent=2)
-
-    print(f"\n💾 Saved JSON evaluation results to: {json_path}")
+    print(f"💾 Saved JSON: {json_path}")
 
     # Generate Markdown report
-    report_md = f"""# 📊 Báo Cáo Thực Nghiệm RAGAS Benchmark Quy Mô 100 Câu Hỏi (Chuẩn Khoa Học)
+    llm_pct = len(llm_scores) / len(all_scores) * 100 if all_scores else 0
+    fb_pct = len(fallback_scores) / len(all_scores) * 100 if all_scores else 0
 
-**Hệ thống Đánh giá:** RAGAS Framework (Retrieval Augmented Generation Assessment)  
-**Quy mô Tập Kiểm Thử:** {len(dataset)} câu hỏi độc lập (100% tiếng Việt chuyên ngành Điện tử)  
-**Phân bổ Intent:** 5 Intent chính (*Tư vấn mua hàng, So sánh, Hỏi giá, Hỏi thông số, Bảo hành*)  
-**Mô hình LLM Judge:** `{os.getenv("GEMINI_MODEL", "gemini-1.5-flash")}`
+    report_md = f"""# 📊 Báo Cáo RAGAS Benchmark 100 Câu Hỏi (Batch Processing)
 
----
-
-## 📈 1. Bảng Điểm 4 Chỉ Số RAGAS Cốt Lõi (Scale 0.0 - 1.0)
-
-| Nhóm Đánh Giá | Chỉ Số RAGAS (Metric) | Điểm Trung Bình (Score) | Đánh Giá Chất Lượng |
-| :------------ | :------------------- | :---------------------- | :------------------ |
-| **Retrieval Engine** | **Context Precision** | **{avg_precision * 100:.2f}%** ({avg_precision:.4f}) | Độ chính xác sản phẩm truy xuất cao |
-| **Retrieval Engine** | **Context Recall** | **{avg_recall * 100:.2f}%** ({avg_recall:.4f}) | Độ bao phủ ngữ cảnh đầy đủ |
-| **Generation Engine** | **Faithfulness (Chống bịa đặt)** | **{avg_faithfulness * 100:.2f}%** ({avg_faithfulness:.4f}) | **Độ trung thực cao (Grounded 100%)** |
-| **Generation Engine** | **Answer Relevance** | **{avg_relevance * 100:.2f}%** ({avg_relevance:.4f}) | Bám sát trọng tâm câu hỏi khách hàng |
-| **TỔNG THỂ RAGAS** | **OVERALL RAGAS SCORE** | **{overall_ragas_score * 100:.2f}%** ({overall_ragas_score:.4f}) | **ĐẠT CHUẨN XUẤT SẮC 🚀** |
+**Hệ thống:** ai-v3 RAG Pipeline
+**Thời gian:** {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+**Tổng câu hỏi:** {len(dataset)}
+**LLM Judge:** `{os.getenv("GEMINI_MODEL", "gemini-1.5-flash")}`
 
 ---
 
-## 🎨 2. Thời Gian Phản Hồi & Kiểm Định Ý Nghĩa Thống Kê
+## 📈 1. Điểm RAGAS (Scale 0.0 - 1.0)
 
-* **Tốc độ phản hồi trung bình (Latency):** `{avg_latency:.2f} ms / request`
-* **Khoảng tin cậy 95% (95% CI - Faithfulness Score):** `[{ci_lo * 100:.2f}%, {ci_hi * 100:.2f}%]`
-* **Số lượt truy vấn thành công:** `{len(dataset)} / {len(dataset)} câu (100%)`
+| Metric | Score | Rating |
+|--------|-------|--------|
+| **Faithfulness** | {avg_faith:.4f} | {"Excellent" if avg_faith >= 0.9 else "Good" if avg_faith >= 0.7 else "Needs improvement"} |
+| **Answer Relevancy** | {avg_rel:.4f} | {"Excellent" if avg_rel >= 0.9 else "Good" if avg_rel >= 0.7 else "Needs improvement"} |
+| **Context Recall** | {avg_cr:.4f} | {"Excellent" if avg_cr >= 0.9 else "Good" if avg_cr >= 0.7 else "Needs improvement"} |
+| **Context Precision** | {avg_cp:.4f} | {"Excellent" if avg_cp >= 0.9 else "Good" if avg_cp >= 0.7 else "Needs improvement"} |
+| **OVERALL** | **{overall:.4f}** | {"Excellent" if overall >= 0.9 else "Good" if overall >= 0.7 else "Needs improvement"} |
 
 ---
 
-## 🔬 3. Nhận Xét Khoa Học Đưa Vào Đồ Án Tốt Nghiệp
+## 🔍 2. Chất Lượng Đánh Giá
 
-1. **Về Khả Năng Tìm Kiếm (Retrieval):** Sự kết hợp giữa **Lexical BM25** và **BGE-M3 Dense Embedding** cùng lọc **Hard Filters** giúp `Context Precision` đạt **{avg_precision * 100:.2f}%**, loại bỏ các sản phẩm rác không liên quan.
-2. **Về Khả Năng Sinh Câu Trả Lời (Generation):** Hệ thống **Response Guardrails Validator** đảm bảo chỉ số `Faithfulness` đạt **{avg_faithfulness * 100:.2f}%**, hoàn toàn loại bỏ hiện tượng bịa đặt giá tiền hay cấu hình (Hallucination).
+| Nguồn | Số lượng | Tỷ lệ |
+|--------|----------|-------|
+| LLM Judge (Gemini) | {len(llm_scores)} | {llm_pct:.1f}% |
+| Fallback (Rule-based) | {len(fallback_scores)} | {fb_pct:.1f}% |
+| **Tổng có điểm** | **{len(all_scores)}** | **100%** |
+
+Phase 1: {counts["phase1_completed"]} completed, {counts["phase1_failed"]} failed
+
+---
+
+## ⚡ 3. Hiệu Suất
+
+| Metric | Value |
+|--------|-------|
+| Latency (Mean) | {perf.get("latency_mean_ms", 0):.2f} ms |
+| Latency (P95) | {perf.get("latency_p95_ms", 0):.2f} ms |
+| Throughput | {perf.get("throughput_qps", 0):.2f} queries/sec |
+| Avg Input Tokens | {perf.get("avg_input_tokens", 0):.0f} |
+| Avg Output Tokens | {perf.get("avg_output_tokens", 0):.0f} |
+| Estimated Cost | ${perf.get("estimated_cost_usd", 0):.4f} |
+
+---
+
+## 🔬 4. Nhận Xét Khoa Học
+
+1. **Retrieval:** Context Precision đạt {avg_cp*100:.2f}% — hệ thống BM25 + BGE-M3 kết hợp Hard Filters lọc sản phẩm chính xác.
+2. **Generation:** Faithfulness đạt {avg_faith*100:.2f}% — Response Guardrails Validator chống hallucination hiệu quả.
+3. **Evaluation Quality:** {llm_pct:.0f}% câu được đánh giá bởi LLM judge, {fb_pct:.0f}% dùng fallback rule-based.
 """
 
     report_path = os.path.join(eval_dir, "ragas_benchmark_report.md")
     with open(report_path, "w", encoding="utf-8") as f:
         f.write(report_md)
+    print(f"📄 Saved report: {report_path}")
 
-    print(report_md)
-    print(f"\n✅ Đã xuất Báo cáo RAGAS Benchmark 100 câu hỏi ra file: {report_path}")
+    # Print summary
+    print(f"\n📊 SUMMARY")
+    print(f"  Total: {len(dataset)} questions")
+    print(f"  Phase 1: {counts['phase1_completed']} completed, {counts['phase1_failed']} failed")
+    print(f"  Phase 2: {len(llm_scores)} LLM judge, {len(fallback_scores)} fallback")
+    print(f"  RAGAS Overall: {overall:.4f}")
+    print(f"  Latency (mean): {perf.get('latency_mean_ms', 0):.2f}ms")
 
     return result_json
 
