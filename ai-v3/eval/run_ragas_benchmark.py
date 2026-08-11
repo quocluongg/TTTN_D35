@@ -329,7 +329,7 @@ def generate_testset(products: List[Dict], test_size: int = 50, max_documents: i
 
     # Initialize LLM for testset generation (Gemma 4 31B via Google AI API)
     llm = ChatGoogleGenerativeAI(
-        model="gemma-4-31b-it",
+        model="gemini-3.1-flash-lite",
         google_api_key=os.getenv("GEMINI_API_KEY", ""),
         temperature=0.3
     )
@@ -434,7 +434,7 @@ def run_ragas_evaluation(
     from langchain_google_genai import ChatGoogleGenerativeAI
 
     llm = ChatGoogleGenerativeAI(
-        model="gemma-4-31b-it",
+        model="gemini-3.1-flash-lite",
         google_api_key=os.getenv("GEMINI_API_KEY", ""),
         temperature=0.3
     )
