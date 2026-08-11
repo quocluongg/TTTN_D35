@@ -383,8 +383,15 @@ def run_ragas_evaluation(
 
     print("[RAGAS Evaluation] Initializing LLM judge (Mimo v2.5 Pro)...")
 
+    # Custom wrapper to remove unsupported 'n' parameter for Mimo API
+    class MimoChatOpenAI(ChatOpenAI):
+        def _default_params(self):
+            params = super()._default_params()
+            params.pop("n", None)  # Remove unsupported 'n' parameter
+            return params
+
     # Initialize LLM judge
-    llm = ChatOpenAI(
+    llm = MimoChatOpenAI(
         model="mimo-v2.5-pro",
         api_key=os.getenv("MIMO_API_KEY", ""),
         base_url="https://token-plan-sgp.xiaomimimo.com/v1"
