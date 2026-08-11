@@ -328,12 +328,17 @@ def generate_testset(products: List[Dict], test_size: int = 50) -> Any:
         embedding_model=embeddings
     )
 
-    print(f"[TestsetGen] Generating {test_size} test cases...")
+    # Configure parallel processing
+    from ragas.run_config import RunConfig
+    run_config = RunConfig(max_workers=8, timeout=120, max_retries=3)
 
-    # Generate testset
+    print(f"[TestsetGen] Generating {test_size} test cases with parallel processing (max_workers=8)...")
+
+    # Generate testset with parallel processing
     testset = generator.generate_with_langchain_docs(
         documents=documents,
-        testset_size=test_size
+        testset_size=test_size,
+        run_config=run_config
     )
 
     print(f"[TestsetGen] Generated {len(testset)} test cases successfully!")
@@ -404,12 +409,17 @@ def run_ragas_evaluation(
     print("  - Context Recall")
     print("  - Context Precision")
 
-    # Run evaluation
+    # Configure parallel processing for evaluation
+    from ragas.run_config import RunConfig
+    run_config = RunConfig(max_workers=8, timeout=120, max_retries=3)
+
+    # Run evaluation with parallel processing
     result = evaluate(
         dataset=dataset,
         metrics=[faithfulness, answer_relevancy, context_recall, context_precision],
         llm=llm,
-        embeddings=embeddings
+        embeddings=embeddings,
+        run_config=run_config
     )
 
     print("[RAGAS Evaluation] Evaluation complete!")
