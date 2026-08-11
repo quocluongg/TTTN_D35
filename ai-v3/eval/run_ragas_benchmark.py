@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from core.pineline import RAGChatbotPipeline
 from eval.metrics import evaluate_rankings
 from eval.significance import paired_ttest, confidence_interval_95
-from eval.document_helper import product_to_document
+from eval.document_helper import product_to_document, load_products
 from eval.performance_collector import PerformanceCollector
 
 TEMPLATES = [
@@ -554,5 +554,74 @@ def generate_report(
     return json_path, md_path
 
 
+def run_ragas_benchmark(test_size: int = 50):
+    """Main function to run complete RAGAS benchmark.
+
+    Args:
+        test_size: Number of test cases to generate
+    """
+    print("=" * 80)
+    print("RAGAS BENCHMARK - Hệ Thống RAG Chatbot (ai-v3)")
+    print("=" * 80)
+
+    # Step 1: Load products
+    print("\n[Step 1/5] Loading product catalog...")
+    products = load_products()
+    if not products:
+        print("Error: No products found. Cannot run benchmark.")
+        return
+    print(f"Loaded {len(products)} products")
+
+    # Step 2: Generate testset
+    print(f"\n[Step 2/5] Generating testset ({test_size} test cases)...")
+    testset = generate_testset(products, test_size=test_size)
+    print(f"Generated {len(testset)} test cases")
+
+    # Step 3: Run RAG pipeline
+    print("\n[Step 3/5] Running RAG pipeline on test questions...")
+    questions = testset["question"]
+    ground_truths = testset["ground_truth"]
+    answers, retrieved_contexts, perf_collector = run_rag_pipeline(questions)
+    print(f"Completed {len(questions)} queries")
+
+    # Step 4: Run RAGAS evaluation
+    print("\n[Step 4/5] Running RAGAS evaluation (LLM judge)...")
+    ragas_result = run_ragas_evaluation(
+        questions=questions,
+        answers=answers,
+        retrieved_contexts=retrieved_contexts,
+        ground_truths=ground_truths
+    )
+    print("RAGAS evaluation complete")
+
+    # Step 5: Generate report
+    print("\n[Step 5/5] Generating report...")
+    json_path, md_path = generate_report(
+        ragas_result=ragas_result,
+        performance_summary=perf_collector.summary(),
+        testset=testset
+    )
+
+    # Print summary
+    print("\n" + "=" * 80)
+    print("KẾT QUẢ RAGAS BENCHMARK")
+    print("=" * 80)
+
+    result_df = ragas_result.to_pandas()
+    print(f"Faithfulness:      {result_df['faithfulness'].mean():.4f}")
+    print(f"Answer Relevancy:  {result_df['answer_relevancy'].mean():.4f}")
+    print(f"Context Recall:    {result_df['context_recall'].mean():.4f}")
+    print(f"Context Precision: {result_df['context_precision'].mean():.4f}")
+    print(f"\nOverall RAGAS:    {result_df[['faithfulness','answer_relevancy','context_recall','context_precision']].mean().mean():.4f}")
+    print(f"\nAvg Latency:      {perf_collector.summary()['latency_mean_ms']:.2f} ms")
+    print(f"Estimated Cost:   ${perf_collector.summary()['estimated_cost_usd']:.4f}")
+
+    print(f"\nReports saved to:")
+    print(f"   JSON: {json_path}")
+    print(f"   MD:   {md_path}")
+
+    return ragas_result, perf_collector
+
+
 if __name__ == "__main__":
-    run_100_ragas_benchmark()
+    run_ragas_benchmark(test_size=50)
