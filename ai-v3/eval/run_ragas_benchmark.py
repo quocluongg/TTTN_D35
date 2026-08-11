@@ -268,13 +268,14 @@ def run_100_ragas_benchmark():
     print(f"\n✅ Đã xuất Báo cáo RAGAS Benchmark 100 câu hỏi ra file: {report_path}")
 
 
-def generate_testset(products: List[Dict], test_size: int = 50, max_documents: int = 120) -> Any:
+def generate_testset(products: List[Dict], test_size: int = 50, max_documents: int = 120, cache_dir: str = None) -> Any:
     """Generate eval testset using RAGAS TestsetGen.
 
     Args:
         products: List of product dictionaries
         test_size: Number of test cases to generate
         max_documents: Maximum number of documents to use for TestsetGen
+        cache_dir: Directory to cache testset (default: ai-v3/eval/cache)
 
     Returns:
         HuggingFace Dataset with columns: question, ground_truth, contexts
@@ -283,6 +284,22 @@ def generate_testset(products: List[Dict], test_size: int = 50, max_documents: i
     from ragas.testset import TestsetGenerator
     from langchain_google_genai import ChatGoogleGenerativeAI
     from sentence_transformers import SentenceTransformer
+    from datasets import Dataset
+
+    # Setup cache directory
+    if cache_dir is None:
+        cache_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
+    os.makedirs(cache_dir, exist_ok=True)
+    cache_file = os.path.join(cache_dir, f"testset_{test_size}_{max_documents}.json")
+
+    # Check if cached testset exists
+    if os.path.exists(cache_file):
+        print(f"[TestsetGen] Loading cached testset from {cache_file}...")
+        with open(cache_file, "r", encoding="utf-8") as f:
+            cached_data = json.load(f)
+        testset = Dataset.from_dict(cached_data)
+        print(f"[TestsetGen] Loaded {len(testset)} cached test cases!")
+        return testset
 
     # Random sample documents if too many
     if len(products) > max_documents:
@@ -356,6 +373,21 @@ def generate_testset(products: List[Dict], test_size: int = 50, max_documents: i
     )
 
     print(f"[TestsetGen] Generated {len(testset)} test cases successfully!")
+
+    # Cache the testset
+    print(f"[TestsetGen] Caching testset to {cache_file}...")
+    try:
+        # Convert to HuggingFace Dataset for caching
+        testset_dict = {
+            "question": testset.to_pandas()["question"].tolist(),
+            "ground_truth": testset.to_pandas()["ground_truth"].tolist(),
+            "contexts": testset.to_pandas()["contexts"].tolist()
+        }
+        with open(cache_file, "w", encoding="utf-8") as f:
+            json.dump(testset_dict, f, ensure_ascii=False, indent=2)
+        print(f"[TestsetGen] Testset cached successfully!")
+    except Exception as e:
+        print(f"[TestsetGen] Warning: Could not cache testset: {e}")
 
     return testset
 
