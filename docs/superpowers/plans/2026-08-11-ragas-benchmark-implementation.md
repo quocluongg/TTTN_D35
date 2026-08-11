@@ -6,11 +6,11 @@
 
 **Architecture:** Single-file rewrite of `run_ragas_benchmark.py` that uses RAGAS TestsetGen to auto-generate eval dataset from product catalog, runs RAGAS `evaluate()` with 4 core metrics, collects performance metrics, and outputs JSON + Markdown reports.
 
-**Tech Stack:** Python 3.10+, ragas>=0.2.0, langchain-google-genai, datasets, google-generativeai, sentence-transformers (BGE-M3)
+**Tech Stack:** Python 3.10+, ragas>=0.2.0, langchain-openai, datasets, sentence-transformers (BGE-M3)
 
 ## Global Constraints
 
-- LLM Judge: `gemini-3.1-flash-lite` via `ChatGoogleGenerativeAI`
+- LLM Judge: `mimo-v2.5-pro` via `ChatOpenAI` (OpenAI-compatible, base_url: https://token-plan-sgp.xiaomimimo.com/v1)
 - Embeddings: reuse BGE-M3 from `ai-v3/core/embeddings.py`
 - Test size: 100 test cases
 - Output directory: `ai-v3/eval/`
@@ -25,7 +25,7 @@
 - Modify: `ai-v3/requirements.txt`
 
 **Interfaces:**
-- Produces: Updated `requirements.txt` with ragas, langchain-google-genai, datasets
+- Produces: Updated `requirements.txt` with ragas, langchain-openai, datasets
 
 - [ ] **Step 1: Read current requirements.txt**
 
@@ -38,13 +38,13 @@ Append to `ai-v3/requirements.txt`:
 ```txt
 # RAGAS Benchmark
 ragas>=0.2.0
-langchain-google-genai>=2.0.0
+langchain-openai>=0.2.0
 datasets>=2.14.0
 ```
 
 - [ ] **Step 3: Install dependencies**
 
-Run: `cd ai-v3 && pip install ragas langchain-google-genai datasets`
+Run: `cd ai-v3 && pip install ragas langchain-openai datasets`
 
 Expected: Successfully installed packages
 
@@ -185,7 +185,7 @@ from typing import List
 class PerformanceCollector:
     """Collects and summarizes performance metrics during benchmark execution."""
     
-    # Gemini 3.1 Flash Lite pricing (per 1K tokens)
+    # Mimo v2.5 Pro pricing (per 1K tokens, estimated)
     INPUT_COST_PER_1K = 0.000015
     OUTPUT_COST_PER_1K = 0.00006
     
@@ -484,7 +484,7 @@ def generate_testset(products: List[Dict], test_size: int = 50) -> Any:
     """
     from langchain_core.documents import Document
     from ragas.testset import TestsetGenerator
-    from langchain_google_genai import ChatGoogleGenerativeAI
+    from langchain_openai import ChatOpenAI
     from sentence_transformers import SentenceTransformer
     
     print(f"[TestsetGen] Preparing {len(products)} products as documents...")
@@ -507,7 +507,11 @@ def generate_testset(products: List[Dict], test_size: int = 50) -> Any:
     print(f"[TestsetGen] Initializing RAGAS TestsetGen with Gemini...")
     
     # Initialize LLM for testset generation
-    llm = ChatGoogleGenerativeAI(model="gemini-3.1-flash-lite")
+    llm = ChatOpenAI(
+        model="mimo-v2.5-pro",
+        api_key=os.getenv("MIMO_API_KEY", ""),
+        base_url="https://token-plan-sgp.xiaomimimo.com/v1"
+    )
     
     # Initialize embeddings (reuse BGE-M3)
     embeddings_model = SentenceTransformer("BAAI/bge-m3")
@@ -687,7 +691,7 @@ def run_ragas_evaluation(
     from datasets import Dataset
     from ragas import evaluate
     from ragas.metrics import faithfulness, answer_relevancy, context_recall, context_precision
-    from langchain_google_genai import ChatGoogleGenerativeAI
+    from langchain_openai import ChatOpenAI
     from sentence_transformers import SentenceTransformer
     
     print("[RAGAS Evaluation] Preparing dataset...")
@@ -705,7 +709,11 @@ def run_ragas_evaluation(
     print("[RAGAS Evaluation] Initializing LLM judge (Gemini 3.1 Flash Lite)...")
     
     # Initialize LLM judge
-    llm = ChatGoogleGenerativeAI(model="gemini-3.1-flash-lite")
+    llm = ChatOpenAI(
+        model="mimo-v2.5-pro",
+        api_key=os.getenv("MIMO_API_KEY", ""),
+        base_url="https://token-plan-sgp.xiaomimimo.com/v1"
+    )
     
     # Initialize embeddings
     embeddings_model = SentenceTransformer("BAAI/bge-m3")

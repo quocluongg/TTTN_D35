@@ -14,7 +14,7 @@ Hệ thống RAG Chatbot (ai-v3) hiện có module đánh giá (`ai-v3/eval/`) n
 
 ### 1.2 Goals
 
-- Sử dụng official RAGAS library (`pip install ragas`) với Gemini 3.1 Flash Lite làm LLM judge
+- Sử dụng official RAGAS library (`pip install ragas`) với Mimo v2.5 Pro làm LLM judge (OpenAI-compatible API)
 - Tự动生成 eval dataset bằng RAGAS TestsetGen từ product catalog
 - Đánh giá 4 core RAGAS metrics: Faithfulness, Answer Relevancy, Context Recall, Context Precision
 - Thu thập performance metrics: Latency, Throughput, Token Usage, Cost
@@ -105,7 +105,7 @@ Hệ thống RAG Chatbot (ai-v3) hiện có module đánh giá (`ai-v3/eval/`) n
 | Parameter | Value | Lý do |
 |-----------|-------|-------|
 | `test_size` | 100 | Đủ cho đồ án TN, kết quả chính xác hơn |
-| `llm` | Gemini 3.1 Flash Lite | Rẻ, nhanh, user yêu cầu |
+| `llm` | Mimo v2.5 Pro | OpenAI-compatible, user yêu cầu |
 | `embedding` | BGE-M3 (reuse) | Đã có trong project |
 | `query_synthesizers` | default (simple, multi_hop, reasoning) | Đa dạng câu hỏi |
 
@@ -153,7 +153,7 @@ RAGAS TestsetGen trả về HuggingFace Dataset với columns:
 
 | Parameter | Value |
 |-----------|-------|
-| `llm` | `ChatGoogleGenerativeAI(model="gemini-3.1-flash-lite")` |
+| `llm` | `ChatOpenAI(model="mimo-v2.5-pro", base_url="https://token-plan-sgp.xiaomimimo.com/v1")` |
 | `embeddings` | BGE-M3 (reuse từ `ai-v3/core/embeddings.py`) |
 | `timeout` | 60s per call |
 | `max_retries` | 3 |
