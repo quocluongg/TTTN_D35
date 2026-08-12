@@ -14,7 +14,7 @@ if os.getenv("GEMINI_API_KEY"):
     os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY")
 
 # Force model — đảm bảo không bị override bởi môi trường Colab
-os.environ["GEMINI_MODEL"] = "gemini-3.1-flash-lite"
+os.environ["GEMINI_MODEL"] = "gemini-3.1-flash"
 
 import time
 import json
@@ -59,7 +59,7 @@ def generate_100_eval_dataset(seed: int = 42) -> List[Dict[str, Any]]:
     random.seed(seed)
     dataset = []
     
-    for i in range(1, 101):
+    for i in range(1, 51):
         intent, tmpl = random.choice(TEMPLATES)
         brand = random.choice(BRANDS)
         brand2 = random.choice([b for b in BRANDS if b != brand])
@@ -103,7 +103,7 @@ class RagasBenchmarkCheckpointManager:
         self.data: Dict[str, Any] = {
             "metadata": {
                 "system": "ai-v3 RAG Pipeline",
-                "total": 100,
+                "total": 50,
                 "phase1_completed": 0,
                 "phase2_completed": 0,
                 "phase2_fallback": 0,
@@ -365,17 +365,17 @@ def run_100_ragas_benchmark():
     from tqdm import tqdm
 
     print("=" * 80)
-    print("🔬 RAGAS Benchmark 100 Questions — Batch Processing")
+    print("🔬 RAGAS Benchmark 50 Questions — Batch Processing")
     print("=" * 80)
 
-    checkpoint_mgr = RagasBenchmarkCheckpointManager("ragas_100_batch_checkpoint.json")
+    checkpoint_mgr = RagasBenchmarkCheckpointManager("ragas_50_batch_checkpoint.json")
 
     # Show resume status
     counts = checkpoint_mgr.get_phase_counts()
     total_done_p1 = counts["phase1_completed"]
     total_done_p2 = counts["phase2_completed"] + counts["phase2_fallback"]
     if total_done_p1 > 0 or total_done_p2 > 0:
-        print(f"📦 Resuming from checkpoint: {total_done_p1}/100 Phase1, {total_done_p2}/100 Phase2")
+        print(f"📦 Resuming from checkpoint: {total_done_p1}/50 Phase1, {total_done_p2}/50 Phase2")
 
     # Initialize pipeline
     print("[RAGAS] Initializing RAG Pipeline...")
@@ -402,7 +402,7 @@ def run_100_ragas_benchmark():
             # Skip if both phases completed
             if checkpoint_mgr.is_phase2_completed(item_id):
                 cached = checkpoint_mgr.get_item(item_id)
-                print(f"  ⏩ [{item_id}/100] SKIPPED (cached)")
+                print(f"  ⏩ [{item_id}/50] SKIPPED (cached)")
                 collector.record(
                     latency_ms=cached.get("latency_ms", 0.0),
                     input_tokens=cached.get("input_tokens", 0),
@@ -449,7 +449,7 @@ def run_100_ragas_benchmark():
                     checkpoint_mgr.update_item(item_id, item_data)
 
                 except Exception as e:
-                    logger.error(f"  ❌ [{item_id}/100] Phase 1 FAILED: {e}")
+                    logger.error(f"  ❌ [{item_id}/50] Phase 1 FAILED: {e}")
                     checkpoint_mgr.update_item(item_id, {
                         "id": item_id,
                         "question": q,
@@ -509,7 +509,7 @@ def run_100_ragas_benchmark():
             else:
                 icon = "⏩"
                 src_str = "P2=CACHED"
-            print(f"  {icon} [{item_id}/100] Q#{item_id} P1=OK {src_str} faith={faith:.2f} rel={rel:.2f} lat={lat_s:.1f}s")
+            print(f"  {icon} [{item_id}/50] Q#{item_id} P1=OK {src_str} faith={faith:.2f} rel={rel:.2f} lat={lat_s:.1f}s")
 
         print(f"📦 Batch {batch_idx}/{len(batches)} DONE — checkpoint saved")
 
@@ -581,7 +581,7 @@ def generate_report_from_checkpoint(
             "timestamp": datetime.now().isoformat(),
             "testset_size": len(dataset),
             "ragas_version": "0.2.x",
-            "llm_judge": "gemini-3.1-flash-lite",
+            "llm_judge": "gemini-3.1-flash",
             "system": "ai-v3 RAG Pipeline"
         },
         "aggregate_scores": {
@@ -614,12 +614,12 @@ def generate_report_from_checkpoint(
     llm_pct = len(llm_scores) / len(all_scores) * 100 if all_scores else 0
     fb_pct = len(fallback_scores) / len(all_scores) * 100 if all_scores else 0
 
-    report_md = f"""# 📊 Báo Cáo RAGAS Benchmark 100 Câu Hỏi (Batch Processing)
+    report_md = f"""# 📊 Báo Cáo RAGAS Benchmark 50 Câu Hỏi (Batch Processing)
 
 **Hệ thống:** ai-v3 RAG Pipeline
 **Thời gian:** {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 **Tổng câu hỏi:** {len(dataset)}
-**LLM Judge:** `gemini-3.1-flash-lite`
+**LLM Judge:** `gemini-3.1-flash`
 
 ---
 
