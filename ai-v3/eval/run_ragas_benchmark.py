@@ -273,7 +273,9 @@ def evaluate_single_sample_llm(
 
                     res = evaluate(
                         dataset=ds,
-                        metrics=[faithfulness, answer_relevancy, context_recall, context_precision]
+                        metrics=[faithfulness, answer_relevancy, context_recall, context_precision],
+                        llm=evaluator_llm,
+                        embeddings=evaluator_embeddings
                     )
 
                     res_df = res.to_pandas()
