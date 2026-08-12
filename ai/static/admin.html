@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopWise AI Admin Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 240px;
+            background: #1e293b;
+            border-right: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .sidebar-header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sidebar-header p {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #94a3b8;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+        }
+
+        .nav-item:hover { background: #334155; color: #e2e8f0; }
+        .nav-item.active { background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; }
+        .nav-item .icon { font-size: 18px; width: 24px; text-align: center; }
+
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #334155;
+            font-size: 11px;
+            color: #475569;
+        }
+
+        /* Main Content */
+        .main {
+            margin-left: 240px;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            padding: 20px 32px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e293b;
+        }
+
+        .topbar h2 { font-size: 20px; font-weight: 600; }
+
+        .topbar-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
+
+        .btn-secondary {
+            background: #334155;
+            color: #e2e8f0;
+        }
+        .btn-secondary:hover { background: #475569; }
+
+        .btn-danger {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+        .btn-danger:hover { background: #991b1b; }
+
+        .btn-sm { padding: 6px 14px; font-size: 12px; }
+
+        .content {
+            padding: 32px;
+        }
+
+        /* Page sections */
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* Cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .card-label {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .card-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .card-sub {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        /* Tables */
+        .table-container {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h3 { font-size: 16px; font-weight: 600; }
+
+        .table-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .search-input {
+            padding: 8px 14px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 13px;
+            outline: none;
+            width: 220px;
+        }
+
+        .search-input:focus { border-color: #3b82f6; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #334155;
+            background: #0f172a;
+        }
+
+        td {
+            padding: 12px 16px;
+            font-size: 13px;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        tr:hover td { background: #334155; }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-success { background: #14532d; color: #4ade80; }
+        .badge-warning { background: #451a03; color: #fbbf24; }
+        .badge-error { background: #450a0a; color: #fca5a5; }
+        .badge-info { background: #1e3a5f; color: #60a5fa; }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-top: 1px solid #334155;
+        }
+
+        .pagination-info { font-size: 13px; color: #64748b; }
+
+        .pagination-btns {
+            display: flex;
+            gap: 6px;
+        }
+
+        .page-btn {
+            padding: 6px 12px;
+            background: #334155;
+            border: none;
+            border-radius: 6px;
+            color: #e2e8f0;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .page-btn:hover { background: #475569; }
+        .page-btn.active { background: #3b82f6; }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Config form */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input, .form-group select {
+            padding: 10px 14px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .form-group input:focus, .form-group select:focus { border-color: #3b82f6; }
+
+        /* Sync status */
+        .sync-overview {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .sync-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .sync-card .number {
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        .sync-card .label {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #334155;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* Log entry */
+        .log-entry {
+            padding: 10px 16px;
+            border-bottom: 1px solid #1e293b;
+            font-size: 13px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .log-time {
+            color: #64748b;
+            font-size: 11px;
+            min-width: 160px;
+            font-family: monospace;
+        }
+
+        .log-content { flex: 1; color: #e2e8f0; }
+        .log-meta { color: #94a3b8; font-size: 11px; min-width: 100px; text-align: right; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 14px 24px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 1000;
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+            pointer-events: none;
+        }
+
+        .toast-success { background: #14532d; color: #4ade80; border: 1px solid #166534; }
+        .toast-error { background: #450a0a; color: #fca5a5; border: 1px solid #7f1d1d; }
+
+        @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px; height: 16px;
+            border: 2px solid #334155;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+        .empty-state h3 { font-size: 18px; color: #94a3b8; margin-bottom: 8px; }
+        .empty-state p { font-size: 14px; }
+
+        .truncate {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 60px; }
+            .sidebar .nav-text, .sidebar-header p, .sidebar-footer { display: none; }
+            .sidebar-header h1 { font-size: 14px; }
+            .main { margin-left: 60px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>🤖 ShopWise AI</h1>
+            <p>Admin Dashboard v3.0</p>
+        </div>
+        <div class="sidebar-nav">
+            <div class="nav-item active" onclick="showPage('dashboard')">
+                <span class="icon">📊</span><span class="nav-text">Dashboard</span>
+            </div>
+            <div class="nav-item" onclick="showPage('products')">
+                <span class="icon">📦</span><span class="nav-text">Products</span>
+            </div>
+            <div class="nav-item" onclick="showPage('chunks')">
+                <span class="icon">🧩</span><span class="nav-text">Chunks</span>
+            </div>
+            <div class="nav-item" onclick="showPage('sync')">
+                <span class="icon">🔄</span><span class="nav-text">Sync</span>
+            </div>
+            <div class="nav-item" onclick="showPage('config')">
+                <span class="icon">⚙️</span><span class="nav-text">Config</span>
+            </div>
+            <div class="nav-item" onclick="showPage('logs')">
+                <span class="icon">📋</span><span class="nav-text">Logs</span>
+            </div>
+            <div class="nav-item" onclick="showPage('analytics')">
+                <span class="icon">📈</span><span class="nav-text">Analytics</span>
+            </div>
+        </div>
+        <div class="sidebar-footer">
+            ShopWise AI v3.0 &mdash; pgvector
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+        <div class="topbar">
+            <h2 id="pageTitle">Dashboard</h2>
+            <div class="topbar-actions">
+                <button class="btn btn-secondary btn-sm" onclick="loadStats()">🔄 Refresh</button>
+                <a href="/test" class="btn btn-primary btn-sm" style="text-decoration:none">💬 Test Chat</a>
+                <a href="/docs" class="btn btn-secondary btn-sm" style="text-decoration:none">📖 API Docs</a>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Dashboard Page -->
+            <div id="page-dashboard" class="page active">
+                <div class="cards" id="dashboardCards">
+                    <div class="card">
+                        <div class="card-label">Total Products</div>
+                        <div class="card-value" id="dProducts">-</div>
+                        <div class="card-sub">Active in database</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Total Chunks</div>
+                        <div class="card-value" id="dChunks">-</div>
+                        <div class="card-sub">In pgvector</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Synced Products</div>
+                        <div class="card-value" id="dSynced">-</div>
+                        <div class="card-sub" id="dSyncPct">-</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Gemini LLM</div>
+                        <div class="card-value" id="dGemini">-</div>
+                        <div class="card-sub">Connection status</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">PhoBERT NLU</div>
+                        <div class="card-value" id="dPhobert">-</div>
+                        <div class="card-sub">Model status</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Uptime</div>
+                        <div class="card-value" id="dUptime">-</div>
+                        <div class="card-sub">Server running</div>
+                    </div>
+                </div>
+
+                <!-- Chunk type breakdown -->
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Chunk Distribution</h3>
+                    </div>
+                    <div style="padding:20px" id="chunkDistTable">
+                        <div class="empty-state"><div class="spinner"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Page -->
+            <div id="page-products" class="page">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>📦 Products</h3>
+                        <div class="table-actions">
+                            <input type="text" class="search-input" id="productSearch" placeholder="Search by name or brand..." oninput="debounce(loadProducts, 300)()">
+                        </div>
+                    </div>
+                    <div id="productsTable">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Brand</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Rating</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="pagination">
+                        <div class="pagination-info" id="productsInfo">-</div>
+                        <div class="pagination-btns" id="productsPagination"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chunks Page -->
+            <div id="page-chunks" class="page">
+                <div class="cards" style="margin-bottom:24px">
+                    <div class="card">
+                        <div class="card-label">Total Chunks</div>
+                        <div class="card-value" id="cTotal">-</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Synced Products</div>
+                        <div class="card-value" id="cSynced">-</div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>🧩 Chunks</h3>
+                        <div class="table-actions">
+                            <select class="search-input" id="chunkTypeFilter" onchange="loadChunks()" style="width:140px">
+                                <option value="">All Types</option>
+                                <option value="product">Product</option>
+                                <option value="spec">Spec</option>
+                                <option value="faq">FAQ</option>
+                                <option value="description">Description</option>
+                            </select>
+                            <input type="text" class="search-input" id="chunkSearch" placeholder="Search chunks..." oninput="debounce(loadChunks, 300)()">
+                            <button class="btn btn-danger btn-sm" onclick="rebuildIndex()">🔄 Rebuild All</button>
+                        </div>
+                    </div>
+                    <div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Type</th>
+                                    <th>Text Preview</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="chunksBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="pagination">
+                        <div class="pagination-info" id="chunksInfo">-</div>
+                        <div class="pagination-btns" id="chunksPagination"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sync Page -->
+            <div id="page-sync" class="page">
+                <div class="sync-overview">
+                    <div class="sync-card">
+                        <div class="number" id="sTotal" style="color:#3b82f6">-</div>
+                        <div class="label">Total Products</div>
+                    </div>
+                    <div class="sync-card">
+                        <div class="number" id="sSynced" style="color:#4ade80">-</div>
+                        <div class="label">Synced</div>
+                    </div>
+                    <div class="sync-card">
+                        <div class="number" id="sNotSynced" style="color:#fbbf24">-</div>
+                        <div class="label">Not Synced</div>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="syncProgress" style="width:0%"></div>
+                </div>
+                <div style="margin:24px 0; display:flex; gap:10px;">
+                    <button class="btn btn-primary" onclick="syncAll()">🔄 Sync All Products</button>
+                    <button class="btn btn-secondary" onclick="loadSyncStatus()">🔃 Refresh Status</button>
+                </div>
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Sync Status</h3>
+                    </div>
+                    <div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Brand</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Chunks</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="syncBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Config Page -->
+            <div id="page-config" class="page">
+                <div class="card" style="margin-bottom:24px">
+                    <h3 style="margin-bottom:20px; font-size:16px;">⚙️ System Configuration</h3>
+                    <div class="form-grid" id="configForm">
+                        <div class="form-group">
+                            <label>Gemini Model</label>
+                            <input type="text" id="cfgGeminiModel">
+                        </div>
+                        <div class="form-group">
+                            <label>LLM Temperature</label>
+                            <input type="number" id="cfgTemperature" step="0.1" min="0" max="2">
+                        </div>
+                        <div class="form-group">
+                            <label>Top K</label>
+                            <input type="number" id="cfgTopK" min="1" max="50">
+                        </div>
+                        <div class="form-group">
+                            <label>Rerank Top K</label>
+                            <input type="number" id="cfgRerankTopK" min="1" max="20">
+                        </div>
+                        <div class="form-group">
+                            <label>Embedding Model</label>
+                            <input type="text" id="cfgEmbeddingModel" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Embedding Device</label>
+                            <input type="text" id="cfgEmbeddingDevice" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Embedding Batch Size</label>
+                            <input type="number" id="cfgBatchSize" min="1" max="128">
+                        </div>
+                        <div class="form-group">
+                            <label>NLU Confidence Threshold</label>
+                            <input type="number" id="cfgNLUThreshold" step="0.05" min="0" max="1">
+                        </div>
+                        <div class="form-group">
+                            <label>MMR Lambda</label>
+                            <input type="number" id="cfgMMRLambda" step="0.1" min="0" max="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Reranker Model</label>
+                            <input type="text" id="cfgRerankerModel" disabled>
+                        </div>
+                    </div>
+                    <div style="margin-top:24px">
+                        <button class="btn btn-primary" onclick="saveConfig()">💾 Save Configuration</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs Page -->
+            <div id="page-logs" class="page">
+                <div style="display:flex; gap:10px; margin-bottom:20px;">
+                    <button class="btn btn-primary btn-sm" id="logTabChat" onclick="switchLogTab('chat')">💬 Chat Logs</button>
+                    <button class="btn btn-secondary btn-sm" id="logTabSync" onclick="switchLogTab('sync')">🔄 Sync Logs</button>
+                </div>
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 id="logTitle">💬 Chat Logs</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="loadLogs()">🔄 Refresh</button>
+                    </div>
+                    <div id="logContent" style="max-height:500px; overflow-y:auto;">
+                        <div class="empty-state"><p>No logs yet</p></div>
+                    </div>
+                    <div class="pagination">
+                        <div class="pagination-info" id="logsInfo">-</div>
+                        <div class="pagination-btns" id="logsPagination"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Page -->
+            <div id="page-analytics" class="page">
+                <div class="cards" style="margin-bottom:24px">
+                    <div class="card">
+                        <div class="card-label">Total Queries</div>
+                        <div class="card-value" id="aTotalQueries">-</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Avg Latency</div>
+                        <div class="card-value" id="aAvgLatency">-</div>
+                        <div class="card-sub">milliseconds</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Source Hit Rate</div>
+                        <div class="card-value" id="aHitRate">-</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Error Rate</div>
+                        <div class="card-value" id="aErrorRate">-</div>
+                    </div>
+                </div>
+                <div class="table-container" style="margin-bottom:24px">
+                    <div class="table-header"><h3>Intent Distribution</h3></div>
+                    <div id="intentChart" style="padding:20px;">
+                        <div class="empty-state"><p>No data yet. Start chatting to see analytics.</p></div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <div class="table-header"><h3>Top Queried Products</h3></div>
+                    <div id="topProductsChart" style="padding:20px;">
+                        <div class="empty-state"><p>No data yet</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = window.location.origin;
+        let currentPage = 'dashboard';
+        let currentLogTab = 'chat';
+        let statsData = null;
+
+        // Debounce helper
+        function debounce(fn, delay) {
+            let timer;
+            return function(...args) {
+                clearTimeout(timer);
+                timer = setTimeout(() => fn.apply(this, args), delay);
+            };
+        }
+
+        // Toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Navigation
+        function showPage(page) {
+            currentPage = page;
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(`page-${page}`).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            const titles = {
+                dashboard: 'Dashboard',
+                products: 'Products',
+                chunks: 'Chunks',
+                sync: 'Sync Management',
+                config: 'Configuration',
+                logs: 'Logs',
+                analytics: 'Analytics',
+            };
+            document.getElementById('pageTitle').textContent = titles[page] || page;
+
+            // Load data for the page
+            if (page === 'dashboard') loadStats();
+            if (page === 'products') loadProducts();
+            if (page === 'chunks') loadChunks();
+            if (page === 'sync') loadSyncStatus();
+            if (page === 'config') loadConfig();
+            if (page === 'logs') loadLogs();
+            if (page === 'analytics') loadAnalytics();
+        }
+
+        // ============ STATS ============
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API}/admin/stats`);
+                const data = await res.json();
+                statsData = data;
+
+                // Dashboard cards
+                document.getElementById('dProducts').textContent = data.total_products || 0;
+                document.getElementById('dChunks').textContent = data.total_chunks || 0;
+                document.getElementById('dSynced').textContent = data.synced_products || 0;
+                document.getElementById('dSyncPct').textContent = data.total_products ?
+                    `${Math.round((data.synced_products / data.total_products) * 100)}% synced` : '-';
+                document.getElementById('dGemini').textContent = data.gemini_status === 'connected' ? '✅' : '❌';
+                document.getElementById('dPhobert').textContent = data.phobert_status === 'loaded' ? '✅' : '⚠️';
+                document.getElementById('dUptime').textContent = data.uptime || '-';
+
+                // Chunk distribution
+                const byType = data.chunk_by_type || {};
+                const byCategory = data.chunk_by_category || {};
+                let distHtml = '<table><thead><tr><th>Type</th><th>Count</th></tr></thead><tbody>';
+                for (const [type, count] of Object.entries(byType)) {
+                    distHtml += `<tr><td>${type}</td><td>${count}</td></tr>`;
+                }
+                distHtml += '</tbody></table>';
+                if (Object.keys(byType).length === 0) {
+                    distHtml = '<div class="empty-state"><p>No chunks found. Run a sync to populate.</p></div>';
+                }
+                document.getElementById('chunkDistTable').innerHTML = distHtml;
+
+            } catch (e) {
+                console.error('Failed to load stats:', e);
+            }
+        }
+
+        // ============ PRODUCTS ============
+        let productsPage = 1;
+        async function loadProducts() {
+            try {
+                const search = document.getElementById('productSearch')?.value || '';
+                const res = await fetch(`${API}/admin/products?page=${productsPage}&page_size=15&search=${encodeURIComponent(search)}`);
+                const data = await res.json();
+
+                const tbody = document.getElementById('productsBody');
+                tbody.innerHTML = data.products.map(p => `
+                    <tr>
+                        <td><strong>${p.name}</strong></td>
+                        <td>${p.brand}</td>
+                        <td>${p.category || '-'}</td>
+                        <td>${Number(p.price).toLocaleString('vi-VN')}đ</td>
+                        <td>⭐ ${p.rating}</td>
+                        <td><span class="badge badge-success">Active</span></td>
+                    </tr>
+                `).join('');
+
+                document.getElementById('productsInfo').textContent = `Showing ${(data.page-1)*data.page_size+1}-${Math.min(data.page*data.page_size, data.total)} of ${data.total}`;
+                renderPagination('productsPagination', data.page, data.total_pages, (p) => { productsPage = p; loadProducts(); });
+
+            } catch (e) {
+                console.error('Failed to load products:', e);
+            }
+        }
+
+        // ============ CHUNKS ============
+        let chunksPage = 1;
+        async function loadChunks() {
+            try {
+                const search = document.getElementById('chunkSearch')?.value || '';
+                const chunkType = document.getElementById('chunkTypeFilter')?.value || '';
+                const res = await fetch(`${API}/admin/chunks?page=${chunksPage}&page_size=15&search=${encodeURIComponent(search)}&chunk_type=${encodeURIComponent(chunkType)}`);
+                const data = await res.json();
+
+                document.getElementById('cTotal').textContent = data.total || 0;
+
+                const tbody = document.getElementById('chunksBody');
+                if (data.chunks.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#64748b; padding:40px;">No chunks found</td></tr>';
+                } else {
+                    tbody.innerHTML = data.chunks.map(c => `
+                        <tr>
+                            <td class="truncate">${c.product_name}</td>
+                            <td><span class="badge badge-info">${c.chunk_type}</span></td>
+                            <td class="truncate">${c.text_preview}</td>
+                            <td>${c.category || '-'}</td>
+                            <td>${Number(c.price).toLocaleString('vi-VN')}đ</td>
+                            <td><button class="btn btn-danger btn-sm" onclick="deleteChunk('${c.id}')">🗑️</button></td>
+                        </tr>
+                    `).join('');
+                }
+
+                document.getElementById('chunksInfo').textContent = `Page ${data.page} of ${data.total_pages} (${data.total} total)`;
+                renderPagination('chunksPagination', data.page, data.total_pages, (p) => { chunksPage = p; loadChunks(); });
+
+            } catch (e) {
+                console.error('Failed to load chunks:', e);
+            }
+        }
+
+        async function deleteChunk(chunkId) {
+            if (!confirm('Delete this chunk?')) return;
+            try {
+                await fetch(`${API}/admin/chunks/${chunkId}`, { method: 'DELETE' });
+                showToast('Chunk deleted');
+                loadChunks();
+            } catch (e) {
+                showToast('Failed to delete chunk', 'error');
+            }
+        }
+
+        async function rebuildIndex() {
+            if (!confirm('Rebuild all chunks? This will re-embed all products.')) return;
+            try {
+                showToast('Rebuilding index...', 'success');
+                const res = await fetch(`${API}/admin/chunks/rebuild`, { method: 'POST' });
+                const data = await res.json();
+                showToast(`Rebuilt: ${data.chunks_created} chunks for ${data.products} products`);
+                loadChunks();
+                loadStats();
+            } catch (e) {
+                showToast('Rebuild failed', 'error');
+            }
+        }
+
+        // ============ SYNC ============
+        async function loadSyncStatus() {
+            try {
+                const res = await fetch(`${API}/admin/sync/status`);
+                const data = await res.json();
+
+                document.getElementById('sTotal').textContent = data.total_products;
+                document.getElementById('sSynced').textContent = data.synced_count;
+                document.getElementById('sNotSynced').textContent = data.not_synced_count;
+                document.getElementById('syncProgress').style.width = `${data.sync_percentage || 0}%`;
+                document.getElementById('cSynced').textContent = data.synced_count;
+
+                const allItems = [...(data.synced || []), ...(data.not_synced || [])];
+                const tbody = document.getElementById('syncBody');
+                tbody.innerHTML = allItems.map(p => `
+                    <tr>
+                        <td><strong>${p.name}</strong></td>
+                        <td>${p.brand}</td>
+                        <td>${p.category || '-'}</td>
+                        <td>${Number(p.price).toLocaleString('vi-VN')}đ</td>
+                        <td>${p.chunk_count}</td>
+                        <td><span class="badge ${p.status === 'synced' ? 'badge-success' : 'badge-warning'}">${p.status}</span></td>
+                        <td><button class="btn btn-primary btn-sm" onclick="syncProduct('${p.id}')">🔄 Sync</button></td>
+                    </tr>
+                `).join('');
+
+            } catch (e) {
+                console.error('Failed to load sync status:', e);
+            }
+        }
+
+        async function syncProduct(productId) {
+            try {
+                showToast('Syncing product...');
+                const res = await fetch(`${API}/admin/sync/product/${productId}`, { method: 'POST' });
+                const data = await res.json();
+                showToast(`Synced: ${data.product_name} (${data.chunks} chunks)`);
+                loadSyncStatus();
+            } catch (e) {
+                showToast('Sync failed', 'error');
+            }
+        }
+
+        async function syncAll() {
+            if (!confirm('Sync all products? This may take a while.')) return;
+            try {
+                showToast('Starting full sync...');
+                const res = await fetch(`${API}/admin/sync/all`, { method: 'POST' });
+                const data = await res.json();
+                showToast(`Full sync done: ${data.chunks_created} chunks in ${data.duration_ms}ms`);
+                loadSyncStatus();
+                loadStats();
+            } catch (e) {
+                showToast('Full sync failed', 'error');
+            }
+        }
+
+        // ============ CONFIG ============
+        async function loadConfig() {
+            try {
+                const res = await fetch(`${API}/admin/config`);
+                const data = await res.json();
+
+                document.getElementById('cfgGeminiModel').value = data.gemini_model || '';
+                document.getElementById('cfgTemperature').value = data.gemini_temperature || 0.2;
+                document.getElementById('cfgTopK').value = data.top_k || 20;
+                document.getElementById('cfgRerankTopK').value = data.rerank_top_k || 5;
+                document.getElementById('cfgEmbeddingModel').value = data.embedding_model || '';
+                document.getElementById('cfgEmbeddingDevice').value = data.embedding_device || '';
+                document.getElementById('cfgBatchSize').value = data.embedding_batch_size || 16;
+                document.getElementById('cfgNLUThreshold').value = data.nlu_confidence_threshold || 0.45;
+                document.getElementById('cfgMMRLambda').value = data.mmr_lambda || 0.7;
+                document.getElementById('cfgRerankerModel').value = data.reranker_model || '';
+
+            } catch (e) {
+                console.error('Failed to load config:', e);
+            }
+        }
+
+        async function saveConfig() {
+            try {
+                const payload = {
+                    gemini_model: document.getElementById('cfgGeminiModel').value,
+                    gemini_temperature: parseFloat(document.getElementById('cfgTemperature').value),
+                    top_k: parseInt(document.getElementById('cfgTopK').value),
+                    rerank_top_k: parseInt(document.getElementById('cfgRerankTopK').value),
+                    embedding_batch_size: parseInt(document.getElementById('cfgBatchSize').value),
+                    nlu_confidence_threshold: parseFloat(document.getElementById('cfgNLUThreshold').value),
+                    mmr_lambda: parseFloat(document.getElementById('cfgMMRLambda').value),
+                };
+                const res = await fetch(`${API}/admin/config`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                const data = await res.json();
+                showToast(`Config updated: ${Object.keys(data.fields).join(', ')}`);
+            } catch (e) {
+                showToast('Failed to save config', 'error');
+            }
+        }
+
+        // ============ LOGS ============
+        let logsPage = 1;
+        function switchLogTab(tab) {
+            currentLogTab = tab;
+            logsPage = 1;
+            document.getElementById('logTabChat').className = tab === 'chat' ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm';
+            document.getElementById('logTabSync').className = tab === 'sync' ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm';
+            document.getElementById('logTitle').textContent = tab === 'chat' ? '💬 Chat Logs' : '🔄 Sync Logs';
+            loadLogs();
+        }
+
+        async function loadLogs() {
+            try {
+                const endpoint = currentLogTab === 'chat' ? '/admin/logs/chat' : '/admin/logs/sync';
+                const res = await fetch(`${API}${endpoint}?page=${logsPage}&page_size=20`);
+                const data = await res.json();
+
+                const container = document.getElementById('logContent');
+                if (!data.logs || data.logs.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><p>No logs yet</p></div>';
+                } else {
+                    if (currentLogTab === 'chat') {
+                        container.innerHTML = data.logs.map(l => `
+                            <div class="log-entry">
+                                <span class="log-time">${l.timestamp ? new Date(l.timestamp).toLocaleString('vi-VN') : '-'}</span>
+                                <span class="log-content">${l.query || ''}</span>
+                                <span class="log-meta">${l.intent || ''} | ${(l.confidence * 100).toFixed(0)}% | ${l.latency_ms}ms</span>
+                            </div>
+                        `).join('');
+                    } else {
+                        container.innerHTML = data.logs.map(l => `
+                            <div class="log-entry">
+                                <span class="log-time">${l.timestamp ? new Date(l.timestamp).toLocaleString('vi-VN') : '-'}</span>
+                                <span class="log-content">${l.product_name || l.product_id} &mdash; ${l.action}</span>
+                                <span class="log-meta">${l.chunks_created} chunks | ${l.duration_ms}ms | ${l.status}</span>
+                            </div>
+                        `).join('');
+                    }
+                }
+
+                document.getElementById('logsInfo').textContent = `Page ${data.page} of ${data.total_pages} (${data.total} total)`;
+                renderPagination('logsPagination', data.page, data.total_pages, (p) => { logsPage = p; loadLogs(); });
+
+            } catch (e) {
+                console.error('Failed to load logs:', e);
+            }
+        }
+
+        // ============ ANALYTICS ============
+        async function loadAnalytics() {
+            try {
+                const res = await fetch(`${API}/admin/analytics`);
+                const data = await res.json();
+
+                document.getElementById('aTotalQueries').textContent = data.total_queries || 0;
+                document.getElementById('aAvgLatency').textContent = data.avg_latency_ms ? `${data.avg_latency_ms}ms` : '-';
+                document.getElementById('aHitRate').textContent = data.source_hit_rate ? `${(data.source_hit_rate * 100).toFixed(0)}%` : '-';
+                document.getElementById('aErrorRate').textContent = data.error_rate ? `${(data.error_rate * 100).toFixed(1)}%` : '-';
+
+                // Intent distribution chart (simple bar)
+                const intents = data.intent_distribution || {};
+                const intentChart = document.getElementById('intentChart');
+                if (Object.keys(intents).length === 0) {
+                    intentChart.innerHTML = '<div class="empty-state"><p>No data yet. Start chatting to see analytics.</p></div>';
+                } else {
+                    const maxCount = Math.max(...Object.values(intents));
+                    intentChart.innerHTML = Object.entries(intents).sort((a, b) => b[1] - a[1]).map(([intent, count]) => {
+                        const pct = maxCount > 0 ? (count / maxCount * 100) : 0;
+                        return `
+                            <div style="margin-bottom:10px;">
+                                <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">
+                                    <span>${intent}</span>
+                                    <span style="color:#64748b">${count}</span>
+                                </div>
+                                <div style="background:#334155; height:8px; border-radius:4px; overflow:hidden;">
+                                    <div style="background:linear-gradient(90deg,#3b82f6,#8b5cf6); height:100%; width:${pct}%; border-radius:4px;"></div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                // Top products
+                const topProducts = data.top_queried_products || [];
+                const topChart = document.getElementById('topProductsChart');
+                if (topProducts.length === 0) {
+                    topChart.innerHTML = '<div class="empty-state"><p>No data yet</p></div>';
+                } else {
+                    topChart.innerHTML = '<table><thead><tr><th>#</th><th>Product ID</th><th>Query Count</th></tr></thead><tbody>' +
+                        topProducts.map((p, i) => `<tr><td>${i+1}</td><td>${p.product_id}</td><td>${p.count}</td></tr>`).join('') +
+                        '</tbody></table>';
+                }
+
+            } catch (e) {
+                console.error('Failed to load analytics:', e);
+            }
+        }
+
+        // ============ PAGINATION HELPER ============
+        function renderPagination(containerId, currentPage, totalPages, onPageChange) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            let html = '';
+            html += `<button class="page-btn" ${currentPage <= 1 ? 'disabled' : ''} onclick="void(0)">‹</button>`;
+
+            const start = Math.max(1, currentPage - 2);
+            const end = Math.min(totalPages, currentPage + 2);
+
+            for (let i = start; i <= end; i++) {
+                html += `<button class="page-btn ${i === currentPage ? 'active' : ''}">${i}</button>`;
+            }
+
+            html += `<button class="page-btn" ${currentPage >= totalPages ? 'disabled' : ''} onclick="void(0)">›</button>`;
+
+            container.innerHTML = html;
+
+            // Attach event listeners
+            container.querySelectorAll('.page-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const text = btn.textContent.trim();
+                    if (text === '‹') { if (currentPage > 1) onPageChange(currentPage - 1); }
+                    else if (text === '›') { if (currentPage < totalPages) onPageChange(currentPage + 1); }
+                    else { onPageChange(parseInt(text)); }
+                });
+            });
+        }
+
+        // Initial load
+        loadStats();
+    </script>
+</body>
+</html>
