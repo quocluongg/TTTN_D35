@@ -13,6 +13,9 @@ load_dotenv(dotenv_path=env_path, override=True)
 if os.getenv("GEMINI_API_KEY"):
     os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY")
 
+# Force model — đảm bảo không bị override bởi môi trường Colab
+os.environ["GEMINI_MODEL"] = "gemini-3.1-flash-lite"
+
 import time
 import json
 import random
