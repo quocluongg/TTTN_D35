@@ -173,18 +173,21 @@ class PhoBERTElectronicsNLU:
         self._load_transformer_if_available()
 
     def _load_transformer_if_available(self):
-        if os.path.exists(os.path.join(self.model_dir, "config.json")):
-            try:
-                logging.info(f"[PhoBERT NLU] Dang nap trained model checkpoint tu: {self.model_dir}")
-                from transformers import AutoTokenizer, AutoModelForSequenceClassification
-                self.tokenizer = AutoTokenizer.from_pretrained(self.model_dir)
-                self.model = AutoModelForSequenceClassification.from_pretrained(self.model_dir)
-                self.is_transformer_loaded = True
-                logging.info("[PhoBERT NLU] Da nap xong PhoBERT fine-tuned model!")
-            except Exception as e:
-                logging.warning(f"[PhoBERT NLU] Khong the nap PhoBERT model: {e}. Su dung Fallback Rule Engine.")
-        else:
-            logging.info(f"[PhoBERT NLU] Khong co checkpoint tai {self.model_dir} — dang dung Rule Engine.")
+        HF_MODEL_ID = "souta04/phobert-electronics-e-commerce-nlu"
+
+        # Ưu tiên load local checkpoint trước
+        local_ok = os.path.exists(os.path.join(self.model_dir, "config.json"))
+        source = self.model_dir if local_ok else HF_MODEL_ID
+
+        try:
+            logging.info(f"[PhoBERT NLU] Dang nap model tu: {source}")
+            from transformers import AutoTokenizer, AutoModelForSequenceClassification
+            self.tokenizer = AutoTokenizer.from_pretrained(source)
+            self.model = AutoModelForSequenceClassification.from_pretrained(source)
+            self.is_transformer_loaded = True
+            logging.info(f"[PhoBERT NLU] Load thanh cong tu '{source}'!")
+        except Exception as e:
+            logging.warning(f"[PhoBERT NLU] Khong the nap model ({e}). Su dung Fallback Rule Engine.")
 
     def parse(self, text: str) -> NLUResult:
         if self.is_transformer_loaded and self.model and self.tokenizer:
