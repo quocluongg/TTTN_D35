@@ -14,7 +14,7 @@ if os.getenv("GEMINI_API_KEY"):
     os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY")
 
 # Force model — đảm bảo không bị override bởi môi trường Colab
-os.environ["GEMINI_MODEL"] = "gemini-3.1-flash"
+os.environ["GEMINI_MODEL"] = "gemma-4-31b-it"
 
 import time
 import json
@@ -581,7 +581,7 @@ def generate_report_from_checkpoint(
             "timestamp": datetime.now().isoformat(),
             "testset_size": len(dataset),
             "ragas_version": "0.2.x",
-            "llm_judge": "gemini-3.1-flash",
+            "llm_judge": "gemma-4-31b-it",
             "system": "ai-v3 RAG Pipeline"
         },
         "aggregate_scores": {
@@ -619,7 +619,7 @@ def generate_report_from_checkpoint(
 **Hệ thống:** ai-v3 RAG Pipeline
 **Thời gian:** {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 **Tổng câu hỏi:** {len(dataset)}
-**LLM Judge:** `gemini-3.1-flash`
+**LLM Judge:** `gemma-4-31b-it`
 
 ---
 
