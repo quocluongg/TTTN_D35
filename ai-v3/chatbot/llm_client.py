@@ -1,5 +1,5 @@
 """
-Module LLM Client quản lý tương tác với Large Language Models (Google Gemini API / Fallback RAG Engine).
+Module LLM Client quản lý tương tác với Large Language Models (Google GenAI API / Fallback RAG Engine).
 """
 
 import os
@@ -8,7 +8,7 @@ from typing import List, Dict, Any, Optional
 from chatbot.prompts import SYSTEM_PROMPT_ECOMMERCE_RAG, build_rag_user_prompt
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL_NAME = os.getenv("GEMINI_MODEL_NAME", "gemini-1.5-flash")
+GEMINI_MODEL_NAME = os.getenv("GEMINI_MODEL_NAME", "gemma-4-31B-it")
 
 class LLMClient:
     """LLM Client phục vụ sinh câu trả lời RAG Chatbot cho E-Commerce."""
@@ -16,46 +16,48 @@ class LLMClient:
         self.api_key = api_key or GEMINI_API_KEY
         self.model_name = model_name or GEMINI_MODEL_NAME
         self.client = None
-        
+
         if self.api_key:
             try:
-                import google.generativeai as genai
-                genai.configure(api_key=self.api_key)
-                self.client = genai.GenerativeModel(
-                    model_name=self.model_name,
-                    system_instruction=SYSTEM_PROMPT_ECOMMERCE_RAG
-                )
-                logging.info(f"[LLMClient] Khởi tạo Gemini Model '{self.model_name}' thành công!")
+                from google import genai
+                self.client = genai.Client(api_key=self.api_key)
+                logging.info(f"[LLMClient] Khởi tạo google-genai client với model '{self.model_name}' thành công!")
             except Exception as e:
-                logging.warning(f"[LLMClient Warning] Không thể kết nối Gemini API ({e}). Sẽ sử dụng Grounded Template Generator.")
+                logging.warning(f"[LLMClient Warning] Không thể kết nối GenAI API ({e}). Sẽ sử dụng Grounded Template Generator.")
 
     def generate_rag_response(
-        self, 
-        query: str, 
-        intent: str, 
-        entities: List[Dict[str, Any]], 
+        self,
+        query: str,
+        intent: str,
+        entities: List[Dict[str, Any]],
         retrieved_context: List[Dict[str, Any]]
     ) -> str:
         """Sinh câu trả lời RAG từ Ngữ cảnh truy xuất và Ý định NLU."""
-        
+
         user_prompt = build_rag_user_prompt(query, intent, entities, retrieved_context)
-        
-        # 1. Thử sinh qua Gemini API nếu đã khởi tạo
+
+        # 1. Thử sinh qua GenAI API nếu đã khởi tạo
         if self.client:
             try:
-                response = self.client.generate_content(user_prompt)
+                response = self.client.models.generate_content(
+                    model=self.model_name,
+                    contents=user_prompt,
+                    config={
+                        "system_instruction": SYSTEM_PROMPT_ECOMMERCE_RAG,
+                    },
+                )
                 if response and hasattr(response, "text") and response.text.strip():
                     return response.text.strip()
             except Exception as e:
-                logging.error(f"[LLMClient Error] Lỗi khi gọi Gemini API: {e}. Chuyển sang Fallback Generator.")
+                logging.error(f"[LLMClient Error] Lỗi khi gọi GenAI API: {e}. Chuyển sang Fallback Generator.")
 
         # 2. Fallback Generator (Sinh câu trả lời grounded chuẩn xác không cần API key)
         return self._generate_fallback_grounded_response(query, intent, retrieved_context)
 
     def _generate_fallback_grounded_response(
-        self, 
-        query: str, 
-        intent: str, 
+        self,
+        query: str,
+        intent: str,
         retrieved_context: List[Dict[str, Any]]
     ) -> str:
         """Sinh phản hồi tổng hợp grounded chính xác dựa trên danh sách sản phẩm truy xuất."""
