@@ -4,6 +4,14 @@ import os
 import sys
 import threading
 
+# Fix Windows console encoding for Vietnamese
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 # Ensure ai/ is on path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

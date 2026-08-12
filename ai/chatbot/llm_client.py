@@ -1,5 +1,6 @@
-"""LLM Client: Google Gemini API + template-based fallback.
+"""LLM Client: Google Gemini API (google-genai) + template-based fallback.
 
+Uses the new google.genai package (not the deprecated google.generativeai).
 Temperature bug fixed from v3 — actually passed to generate_content().
 Streaming support added.
 """
@@ -21,60 +22,65 @@ class LLMClient:
 
         if self.settings.GEMINI_API_KEY:
             try:
-                import google.generativeai as genai
+                from google import genai
 
-                genai.configure(api_key=self.settings.GEMINI_API_KEY)
-                self.client = genai.GenerativeModel(
-                    model_name=self.settings.GEMINI_MODEL_NAME,
-                    system_instruction=SYSTEM_PROMPT,
-                )
-                logger.info(f"[LLM] Gemini '{self.settings.GEMINI_MODEL_NAME}' initialized.")
+                self.client = genai.Client(api_key=self.settings.GEMINI_API_KEY)
+                self.model_name = self.settings.GEMINI_MODEL_NAME
+                logger.info(f"[LLM] google-genai client initialized with model '{self.model_name}'.")
             except Exception as e:
-                logger.warning(f"[LLM] Cannot init Gemini ({e}). Using template fallback.")
+                logger.warning(f"[LLM] Cannot init google-genai ({e}). Using template fallback.")
+                self.client = None
 
     def generate(
         self, query: str, intent: str, entities: list, context: list, history_text: str = ""
     ) -> str:
-        """Generate RAG response. Falls back to template if Gemini unavailable."""
+        """Generate RAG response. Falls back to template if unavailable."""
         user_prompt = build_rag_user_prompt(query, intent, entities, context, history_text)
 
         if self.client:
             try:
-                response = self.client.generate_content(
-                    user_prompt,
-                    generation_config={"temperature": self.settings.LLM_TEMPERATURE},
+                response = self.client.models.generate_content(
+                    model=self.model_name,
+                    contents=user_prompt,
+                    config={
+                        "system_instruction": SYSTEM_PROMPT,
+                        "temperature": self.settings.LLM_TEMPERATURE,
+                    },
                 )
                 if response and hasattr(response, "text") and response.text.strip():
                     return response.text.strip()
             except Exception as e:
-                logger.error(f"[LLM] Gemini error: {e}. Falling back to template.")
+                logger.error(f"[LLM] API error: {e}. Falling back to template.")
 
         return self._fallback(query, intent, context)
 
     def generate_stream(
         self, query: str, intent: str, entities: list, context: list, history_text: str = ""
     ) -> Generator[str, None, None]:
-        """Stream RAG response chunks. Falls back to single template if unavailable."""
+        """Stream response chunks. Falls back to single template if unavailable."""
         user_prompt = build_rag_user_prompt(query, intent, entities, context, history_text)
 
         if self.client:
             try:
-                stream = self.client.generate_content(
-                    user_prompt,
-                    generation_config={"temperature": self.settings.LLM_TEMPERATURE},
-                    stream=True,
+                stream = self.client.models.generate_content_stream(
+                    model=self.model_name,
+                    contents=user_prompt,
+                    config={
+                        "system_instruction": SYSTEM_PROMPT,
+                        "temperature": self.settings.LLM_TEMPERATURE,
+                    },
                 )
                 for chunk in stream:
                     if chunk.text:
                         yield chunk.text
                 return
             except Exception as e:
-                logger.error(f"[LLM] Gemini stream error: {e}. Falling back to template.")
+                logger.error(f"[LLM] Stream error: {e}. Falling back to template.")
 
         yield self._fallback(query, intent, context)
 
     def _fallback(self, query: str, intent: str, context: list) -> str:
-        """Template-based response when Gemini unavailable."""
+        """Template-based response when LLM unavailable."""
         intent_lower = str(intent).lower()
 
         if "greeting" in intent_lower:

@@ -15,7 +15,7 @@ class Settings:
     def __init__(self):
         # --- LLM ---
         self.GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
-        self.GEMINI_MODEL_NAME: str = os.getenv("GEMINI_MODEL_NAME", "gemini-2.0-flash")
+        self.GEMINI_MODEL_NAME: str = os.getenv("GEMINI_MODEL_NAME") or os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
         self.LLM_TEMPERATURE: float = float(os.getenv("LLM_TEMPERATURE", "0.2"))
 
         # --- Database (Supabase PostgreSQL) ---
