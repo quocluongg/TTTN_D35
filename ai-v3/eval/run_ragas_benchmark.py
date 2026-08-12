@@ -236,23 +236,44 @@ def evaluate_single_sample_llm(
                     from ragas.metrics import faithfulness, answer_relevancy, context_recall, context_precision
                     from ragas.llms import LangchainLLMWrapper
                     from ragas.embeddings import LangchainEmbeddingsWrapper
-                    from langchain_google_genai import ChatGoogleGenerativeAI
                     from langchain_community.embeddings import HuggingFaceEmbeddings
+                    from langchain_core.language_models.chat_models import BaseChatModel
+                    from langchain_core.messages import AIMessage
+                    from langchain_core.outputs import ChatResult, ChatGeneration
+                    from pydantic import Field
 
-                    class GeminiChatGoogleGenerativeAI(ChatGoogleGenerativeAI):
+                    class GenAIChatModel(BaseChatModel):
+                        """Custom LangChain wrapper dùng google.genai SDK trực tiếp — tránh langchain_google_genai dependency."""
+                        model_name: str = Field(default="gemma-4-31b-it")
+                        api_key: str = Field(default="")
+                        temperature: float = Field(default=0.2)
+
+                        @property
+                        def _llm_type(self) -> str:
+                            return "google-genai"
+
                         def _generate(self, messages, stop=None, run_manager=None, **kwargs):
+                            from google import genai
+                            from google.genai import types
                             kwargs.pop("n", None)
-                            return super()._generate(messages, stop=stop, run_manager=run_manager, **kwargs)
+                            client = genai.Client(api_key=self.api_key)
+                            prompt = "\n".join([
+                                f"{'User' if getattr(m, 'type', '') == 'human' else 'Assistant'}: {m.content}"
+                                for m in messages
+                            ])
+                            resp = client.models.generate_content(
+                                model=self.model_name,
+                                contents=prompt,
+                                config=types.GenerateContentConfig(temperature=self.temperature)
+                            )
+                            text = resp.text or ""
+                            return ChatResult(generations=[ChatGeneration(message=AIMessage(content=text))])
+
                         async def _agenerate(self, messages, stop=None, run_manager=None, **kwargs):
-                            kwargs.pop("n", None)
-                            return await super()._agenerate(messages, stop=stop, run_manager=run_manager, **kwargs)
+                            return self._generate(messages, stop=stop, run_manager=run_manager, **kwargs)
 
                     model_name = "gemma-4-31b-it"
-                    llm = GeminiChatGoogleGenerativeAI(
-                        model=model_name,
-                        google_api_key=gemini_key,
-                        temperature=0.2
-                    )
+                    llm = GenAIChatModel(model_name=model_name, api_key=gemini_key, temperature=0.2)
 
                     evaluator_llm = LangchainLLMWrapper(llm)
                     hf_emb = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
