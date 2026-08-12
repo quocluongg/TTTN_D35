@@ -8,7 +8,7 @@ from typing import List, Dict, Any, Optional
 from chatbot.prompts import SYSTEM_PROMPT_ECOMMERCE_RAG, build_rag_user_prompt
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL_NAME = os.getenv("GEMINI_MODEL_NAME", "gemini-1.5-flash")
+GEMINI_MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
 
 class LLMClient:
     """LLM Client phục vụ sinh câu trả lời RAG Chatbot cho E-Commerce."""
