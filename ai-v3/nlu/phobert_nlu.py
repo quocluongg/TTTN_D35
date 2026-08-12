@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+import logging
 from typing import List, Dict, Tuple, Optional
 
 # Đảm bảo import được schema
@@ -174,16 +175,16 @@ class PhoBERTElectronicsNLU:
     def _load_transformer_if_available(self):
         if os.path.exists(os.path.join(self.model_dir, "config.json")):
             try:
-                print(f"[PhoBERT NLU] Dang nap trained model checkpoint tu: {self.model_dir}")
+                logging.info(f"[PhoBERT NLU] Dang nap trained model checkpoint tu: {self.model_dir}")
                 from transformers import AutoTokenizer, AutoModelForSequenceClassification
                 self.tokenizer = AutoTokenizer.from_pretrained(self.model_dir)
                 self.model = AutoModelForSequenceClassification.from_pretrained(self.model_dir)
                 self.is_transformer_loaded = True
-                print("[PhoBERT NLU] Da nap xong PhoBERT fine-tuned model!")
+                logging.info("[PhoBERT NLU] Da nap xong PhoBERT fine-tuned model!")
             except Exception as e:
-                print(f"[PhoBERT NLU] Khong the nap PhoBERT model: {e}. Su dung Fallback Rule Engine.")
+                logging.warning(f"[PhoBERT NLU] Khong the nap PhoBERT model: {e}. Su dung Fallback Rule Engine.")
         else:
-            print(f"[PhoBERT NLU] Chua co trained checkpoint tai {self.model_dir}. Su dung Fallback Rule Engine.")
+            logging.info(f"[PhoBERT NLU] Khong co checkpoint tai {self.model_dir} — dang dung Rule Engine.")
 
     def parse(self, text: str) -> NLUResult:
         if self.is_transformer_loaded and self.model and self.tokenizer:
@@ -208,7 +209,7 @@ class PhoBERTElectronicsNLU:
                     intent_scores={intents_list[i].value: round(probs[i], 4) for i in range(min(len(intents_list), len(probs)))}
                 )
             except Exception as e:
-                print(f"[PhoBERT NLU Error] Inference fail: {e}. Fallback to Rule Engine.")
+                logging.warning(f"[PhoBERT NLU Error] Inference fail: {e}. Fallback to Rule Engine.")
                 return self.fallback_engine.parse(text)
         else:
             return self.fallback_engine.parse(text)
