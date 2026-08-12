@@ -27,4 +27,16 @@ public interface IProfileRepository extends JpaRepository<Profile, UUID>, JpaSpe
             WHERE p.email = :email
             """)
     Optional<Profile> findByEmailWithRoleAndPermissions(String email);
+
+    /**
+     * Dùng cho GET/UPDATE /profile/me: lấy Profile kèm Role, tránh LazyInitializationException
+     * khi mapper đọc profile.getRole().getName() sau khi request đã ra khỏi transaction
+     * (open-in-view: false).
+     */
+    @Query("""
+            SELECT p FROM Profile p
+            JOIN FETCH p.role r
+            WHERE p.id = :id
+            """)
+    Optional<Profile> findByIdWithRole(UUID id);
 }

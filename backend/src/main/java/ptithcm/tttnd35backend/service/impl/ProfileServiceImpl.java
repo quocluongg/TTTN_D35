@@ -51,7 +51,7 @@ public class ProfileServiceImpl implements IProfileService {
     }
 
     private Profile getProfileOrThrow(UUID profileId) {
-        return profileRepository.findById(profileId)
+        return profileRepository.findByIdWithRole(profileId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản"));
     }
 }
