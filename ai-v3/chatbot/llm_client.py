@@ -60,7 +60,7 @@ class LLMClient:
     ) -> str:
         """Sinh phản hồi tổng hợp grounded chính xác dựa trên danh sách sản phẩm truy xuất."""
         if not retrieved_context:
-            return f"Chào bạn! Hiện tại hệ thống chưa tìm thấy sản phẩm trùng khớp với yêu cầu \"{query}\". Bạn có thể cho mình biết thêm khoảng giá hoặc thương hiệu yêu thích để mình hỗ trợ tìm kiếm không ạ?"
+            return f"Dạ em chào anh/chị! Hiện tại hệ thống bên em chưa tìm thấy sản phẩm trùng khớp với yêu cầu \"{query}\". Anh/chị có thể cho em xin thêm khoảng ngân sách hoặc thương hiệu anh/chị đang quan tâm để em hỗ trợ tìm kiếm cho mình không ạ?"
 
         intent_lower = str(intent).lower()
         top_product = retrieved_context[0]
@@ -69,29 +69,33 @@ class LLMClient:
         p_price_str = f"{p_price:,.0f} VNĐ" if isinstance(p_price, (int, float)) and p_price > 0 else "Liên hệ báo giá"
         p_brand = top_product.get("brand", "")
         p_specs = top_product.get("specs", top_product.get("description", ""))
+        p_specs_short = p_specs[:120] + "..." if len(p_specs) > 120 else p_specs
 
         if "compare" in intent_lower and len(retrieved_context) >= 2:
             p2 = retrieved_context[1]
             p2_name = p2.get("name", "Sản phẩm 2")
             p2_price = p2.get("price", 0)
             p2_price_str = f"{p2_price:,.0f} VNĐ" if isinstance(p2_price, (int, float)) and p2_price > 0 else "Liên hệ"
+            p2_specs = p2.get("specs", p2.get("description", ""))
+            p2_specs_short = p2_specs[:100] + "..." if len(p2_specs) > 100 else p2_specs
             
-            res = f"Dạ, mình xin gửi bạn so sánh giữa **{p_name}** và **{p2_name}**:\n\n"
-            res += f"1️⃣ **{p_name}**:\n   • Hãng: {p_brand}\n   • Giá bán: {p_price_str}\n   • Cấu hình: {p_specs}\n\n"
-            res += f"2️⃣ **{p2_name}**:\n   • Hãng: {p2.get('brand', '')}\n   • Giá bán: {p2_price_str}\n   • Cấu hình: {p2.get('specs', '')}\n\n"
-            res += f"👉 Nếu bạn ưu tiên phân khúc {p_brand}, **{p_name}** là lựa chọn rất đáng cân nhắc!"
+            res = f"Dạ em xin gửi anh/chị so sánh nhanh giữa **{p_name}** và **{p2_name}**:\n\n"
+            res += f"1️⃣ **{p_name}**: Giá {p_price_str} ({p_brand}) - {p_specs_short}\n"
+            res += f"2️⃣ **{p2_name}**: Giá {p2_price_str} - {p2_specs_short}\n\n"
+            res += f"👉 **{p_name}** là lựa chọn rất đáng cân nhắc. Anh/chị có muốn em tư vấn chi tiết hơn sản phẩm nào không ạ?"
             return res
 
         elif "ask_price" in intent_lower or "price" in intent_lower:
-            return f"Dạ, sản phẩm **{p_name}** ({p_brand}) đang có giá bán niêm yết là **{p_price_str}** tại cửa hàng ạ. Bạn có muốn đặt mua hay cần tư vấn thêm thông số kỹ thuật không ạ?"
+            return f"Dạ, sản phẩm **{p_name}** ({p_brand}) hiện đang có giá niêm yết là **{p_price_str}** tại cửa hàng em ạ. Anh/chị có muốn em hỗ trợ lên đơn/đặt mua ngay không ạ?"
 
         elif "ask_specs" in intent_lower or "spec" in intent_lower:
-            return f"Dạ, về thông số kỹ thuật của **{p_name}** ({p_brand}):\n• **Giá bán:** {p_price_str}\n• **Thông số nổi bật:** {p_specs}\n• **Đánh giá:** {top_product.get('rating', 4.8)}/5.0 ⭐"
+            return f"Dạ em gửi anh/chị thông số nổi bật của **{p_name}** ({p_brand}):\n• **Giá bán:** {p_price_str}\n• **Cấu hình:** {p_specs_short}\n• **Đánh giá:** {top_product.get('rating', 4.8)}/5.0 ⭐\nAnh/chị cần em hỗ trợ xem thêm chi tiết điểm nào của máy không ạ?"
 
         else:
-            res = f"Dạ, dựa trên yêu cầu \"{query}\", mình xin tư vấn cho bạn sản phẩm phù hợp nhất là **{p_name}**"
-            if p_brand: res += f" đến từ hãng {p_brand}"
-            res += f":\n\n• **Giá bán:** {p_price_str}\n• **Đánh giá:** {top_product.get('rating', 4.8)}/5.0 ⭐\n• **Thông số / Ưu điểm:** {p_specs}\n\n"
+            res = f"Dạ với nhu cầu \"{query}\", em xin tư vấn cho anh/chị sản phẩm **{p_name}**"
+            if p_brand: res += f" ({p_brand})"
+            res += f":\n• **Giá bán:** {p_price_str}\n• **Thông số chính:** {p_specs_short}\n\n"
             if len(retrieved_context) > 1:
-                res += f"Ngoài ra, bạn cũng có thể tham khảo thêm **{retrieved_context[1].get('name')}** (Giá: {retrieved_context[1].get('price', 0):,.0f} VNĐ)."
+                res += f"Ngoài ra anh/chị có thể tham khảo thêm **{retrieved_context[1].get('name')}** (Giá: {retrieved_context[1].get('price', 0):,.0f} VNĐ).\n"
+            res += "Anh/chị có muốn em hỗ trợ tư vấn sâu hơn hoặc đặt hàng không ạ?"
             return res

@@ -1,8 +1,9 @@
-# RAGAS Benchmark Design for RAG Chatbot Evaluation
+# RAGAS Benchmark Design — Batch Processing + Resumable Checkpoint
 
 **Date:** 2026-08-11
 **Author:** KZ | Quoc Luong
-**Status:** Draft
+**Status:** Approved
+**Approach:** 3 — Batch processing + progress bar + resume thông minh
 
 ---
 
@@ -10,381 +11,345 @@
 
 ### 1.1 Problem Statement
 
-Hệ thống RAG Chatbot (ai-v3) hiện có module đánh giá (`ai-v3/eval/`) nhưng sử dụng heuristic tự viết cho RAGAS metrics — không chính xác, không đáng tin cậy cho đồ án tốt nghiệp. Cần thiết kế lại benchmark sử dụng official RAGAS framework với LLM-as-judge để có kết quả chuẩn, defend được khi bảo vệ.
+Benchmark RAGAS cho ai-v3 chạy 100 câu hỏi bị fail liên tục do:
+- Gemini API rate limit (429)
+- API timeout / slow response
+- Script crash → mất toàn bộ progress, phải chạy lại từ đầu
+- Checkpoint hiện tại chỉ lưu 1 file → nếu crash giữa chừng thì dữ liệu không recover được
 
 ### 1.2 Goals
 
-- Sử dụng official RAGAS library (`pip install ragas`) với Mimo v2.5 Pro làm LLM judge (OpenAI-compatible API)
-- Tự动生成 eval dataset bằng RAGAS TestsetGen từ product catalog
-- Đánh giá 4 core RAGAS metrics: Faithfulness, Answer Relevancy, Context Recall, Context Precision
-- Thu thập performance metrics: Latency, Throughput, Token Usage, Cost
-- Xuất báo cáo JSON + Markdown cho đồ án tốt nghiệp
+- Chạy benchmark 100 câu hỏi với RAGAS LLM-as-judge (Gemini)
+- **Save-as-you-go:** mỗi câu hoàn thành → save checkpoint ngay
+- **Resume thông minh:** restart → skip câu đã completed, chạy tiếp câu chưa xong
+- **Batch processing:** chia 10 batch × 10 câu, mỗi batch save riêng
+- **3 tầng error handling:** pipeline → RAGAS eval → fallback rule-based
+- **Progress bar:** thấy rõ tiến độ realtime
 
 ### 1.3 Non-Goals
 
-- Không so sánh A/B với baseline/hệ thống cũ (single system eval only)
-- Không thực hiện human evaluation
-- Không ablation study (với/không có reranker, MMR, etc.)
+- Không so sánh A/B với baseline khác
+- Không human evaluation
+- Không ablation study
 - Không deploy benchmark lên production
 
 ---
 
 ## 2. Architecture
 
-### 2.1 System Architecture
+### 2.1 Two-Phase Pipeline
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    RAGAS BENCHMARK PIPELINE                          │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  ┌──────────────────┐     ┌──────────────────┐                     │
-│  │  Product Catalog  │────▶│  RAGAS TestsetGen │                     │
-│  │  (Supabase DB)    │     │  (KG-based)       │                     │
-│  └──────────────────┘     └────────┬─────────┘                     │
-│                                     │                               │
-│                                     ▼                               │
-│                          ┌──────────────────┐                       │
-│                          │  Eval Dataset     │                       │
-│                          │  (question,       │                       │
-│                          │   ground_truth,   │                       │
-│                          │   contexts)       │                       │
-│                          └────────┬─────────┘                       │
-│                                   │                                 │
-│                    ┌──────────────┼──────────────┐                  │
-│                    ▼                              ▼                  │
-│  ┌─────────────────────────┐    ┌─────────────────────────┐        │
-│  │  RAG Pipeline (ai-v3)   │    │  RAGAS evaluate()       │        │
-│  │  - NLU → Retrieval →    │    │  - Faithfulness         │        │
-│  │    Rerank → LLM →       │    │  - Answer Relevancy     │        │
-│  │    Validate              │    │  - Context Recall       │        │
-│  └──────────┬──────────────┘    │  - Context Precision    │        │
-│             │                   └──────────┬──────────────┘        │
-│             ▼                              ▼                        │
-│  ┌─────────────────────────┐    ┌─────────────────────────┐        │
-│  │  Performance Collector  │    │  RAGAS Results           │        │
-│  │  - Latency              │    │  (per-sample + aggregate)│        │
-│  │  - Token usage          │    └──────────┬──────────────┘        │
-│  │  - Cost estimation      │               │                        │
-│  └──────────┬──────────────┘               │                        │
-│             │                              │                        │
-│             └──────────────┬───────────────┘                        │
-│                            ▼                                        │
-│                 ┌─────────────────────┐                             │
-│                 │  Benchmark Report   │                             │
-│                 │  (Markdown + JSON)  │                             │
-│                 └─────────────────────┘                             │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
+Phase 1: RAG Pipeline (process_query → answer + contexts)
+         ↓ save phase1_status = COMPLETED per item
+Phase 2: RAGAS Evaluation (LLM judge → 4 scores)
+         ↓ save phase2_status = COMPLETED per item
+Report:  Aggregate từ checkpoint → JSON + Markdown
 ```
 
-### 2.2 Data Flow
+### 2.2 Batch Flow
 
-1. **Testset Generation Phase:**
-   - Load product catalog từ Supabase DB
-   - Convert mỗi product thành `Document` object
-   - RAGAS TestsetGen sinh test cases (question + ground_truth + contexts)
-   - Lưu eval dataset ra file JSON/CSV
-
-2. **Evaluation Phase:**
-   - Load eval dataset
-   - Với mỗi question → chạy RAG Pipeline → lấy answer + retrieved_contexts
-   - Thu thập performance metrics (latency, tokens)
-   - RAGAS `evaluate()` đánh giá 4 metrics bằng Gemini judge
-
-3. **Reporting Phase:**
-   - Tổng hợp aggregate scores
-   - Xuất JSON results + Markdown report
-
----
-
-## 3. RAGAS Testset Generation
-
-### 3.1 Configuration
-
-| Parameter | Value | Lý do |
-|-----------|-------|-------|
-| `test_size` | 100 | Đủ cho đồ án TN, kết quả chính xác hơn |
-| `llm` | Mimo v2.5 Pro | OpenAI-compatible, user yêu cầu |
-| `embedding` | BGE-M3 (reuse) | Đã có trong project |
-| `query_synthesizers` | default (simple, multi_hop, reasoning) | Đa dạng câu hỏi |
-
-### 3.2 Document Preparation
-
-Mỗi product từ DB sẽ được convert thành text:
-
-```python
-def product_to_document(product: dict) -> str:
-    """Convert product dict thành text document cho TestsetGen."""
-    parts = [
-        f"Tên sản phẩm: {product['name']}",
-        f"Hãng: {product['brand']}",
-        f"Danh mục: {product['category']}",
-        f"Giá: {product['price']:,} VNĐ",
-        f"Đánh giá: {product.get('rating', 'N/A')}/5.0",
-        f"Thông số: {product.get('specs', '')}",
-        f"Mô tả: {product.get('description', '')}",
-    ]
-    return "\n".join(parts)
+```
+Batch 1 (Q1-Q10)   → run → save checkpoint
+Batch 2 (Q11-Q20)  → run → save checkpoint
+...
+Batch 10 (Q91-Q100) → run → save checkpoint
 ```
 
-### 3.3 Expected Output Format
+Mỗi batch chạy tuần tự 10 câu. Mỗi câu save checkpoint NGAY sau khi hoàn thành.
 
-RAGAS TestsetGen trả về HuggingFace Dataset với columns:
-- `question`: câu hỏi sinh tự động
-- `ground_truth`: câu trả lời đúng (reference answer)
-- `contexts`: list[str] (reference contexts)
-- `metadata`: các thông tin khác (synthesizer type, etc.)
+### 2.3 Per-Question Flow
 
----
-
-## 4. RAGAS Evaluation Metrics
-
-### 4.1 Four Core Metrics
-
-| Metric | Ý nghĩa | Cơ chế LLM Judge |
-|--------|----------|-------------------|
-| **Faithfulness** | Answer có grounded trong context không? | Kiểm tra mỗi claim trong answer có supported bởi context |
-| **Answer Relevancy** | Answer có liên quan đến question không? | Sinh N câu hỏi từ answer, tính cosine similarity với original question |
-| **Context Recall** | Context có bao phủ ground_truth không? | Kiểm tra mỗi claim trong ground_truth có xuất hiện trong context |
-| **Context Precision** | Context có chính xác/relevant không? | Đánh giá ranking của relevant contexts trong retrieved contexts |
-
-### 4.2 LLM Judge Configuration
-
-| Parameter | Value |
-|-----------|-------|
-| `llm` | `ChatOpenAI(model="mimo-v2.5-pro", base_url="https://token-plan-sgp.xiaomimimo.com/v1")` |
-| `embeddings` | BGE-M3 (reuse từ `ai-v3/core/embeddings.py`) |
-| `timeout` | 60s per call |
-| `max_retries` | 3 |
-
-### 4.3 Evaluation Flow
-
-```python
-from ragas import evaluate
-from ragas.metrics import faithfulness, answer_relevancy, context_recall, context_precision
-from langchain_google_genai import ChatGoogleGenerativeAI
-
-# Prepare dataset
-dataset = Dataset.from_dict({
-    "question": questions,           # từ testset
-    "answer": answers,               # từ RAG pipeline
-    "contexts": retrieved_contexts,  # từ RAG pipeline
-    "ground_truth": ground_truths,   # từ testset
-})
-
-# Run evaluation
-result = evaluate(
-    dataset=dataset,
-    metrics=[faithfulness, answer_relevancy, context_recall, context_precision],
-    llm=ChatGoogleGenerativeAI(model="gemini-3.1-flash-lite"),
-    embeddings=embeddings
-)
-
-# result.to_pandas() → DataFrame với per-sample scores
+```
+┌─────────────────────────────────────────────┐
+│ 1. Kiểm tra checkpoint                      │
+│    ├─ phase1 == COMPLETED → skip, dùng cache│
+│    └─ phase1 != COMPLETED → chạy Phase 1    │
+│                                             │
+│ 2. Phase 1: RAG Pipeline                    │
+│    ├─ try: process_query()                  │
+│    │   → answer + contexts + latency        │
+│    ├─ except: phase1_status = "FAILED"      │
+│    └─ save checkpoint                       │
+│                                             │
+│ 3. Phase 2: RAGAS LLM Judge                 │
+│    ├─ Kiểm tra phase2 == COMPLETED → skip   │
+│    ├─ try: evaluate_single_sample_llm()     │
+│    │   ├─ Retry 3 lần, exponential backoff  │
+│    │   ├─ 429 → wait 2s → 4s → 8s          │
+│    │   ├─ timeout → wait 5s → 10s → 15s    │
+│    │   └─ Nếu 3 lần fail → fallback         │
+│    ├─ except: fallback rule-based scores    │
+│    └─ save checkpoint                       │
+│                                             │
+│ 4. Delay 2s trước câu tiếp theo            │
+└─────────────────────────────────────────────┘
 ```
 
 ---
 
-## 5. Performance Metrics
+## 3. Checkpoint Structure
 
-### 5.1 Metrics Collection
-
-| Metric | Cách thu thập | Output |
-|--------|--------------|--------|
-| **Latency (ms)** | `time.perf_counter()` trước/sau mỗi query | Mean, P50, P95, P99 |
-| **Throughput** | Tổng queries / total time | queries/sec |
-| **Token Usage** | Đếm input/output tokens từ Gemini response | Mean tokens/query, total tokens |
-| **Cost Estimation** | Token count × pricing | Total cost, cost/query |
-
-### 5.2 Gemini 3.1 Flash Lite Pricing
-
-| Direction | Price per 1K tokens |
-|-----------|-------------------|
-| Input | ~$0.000015 |
-| Output | ~$0.00006 |
-
-### 5.3 Implementation
-
-```python
-class PerformanceCollector:
-    def __init__(self):
-        self.latencies = []
-        self.input_tokens = []
-        self.output_tokens = []
-    
-    def record(self, latency_ms: float, input_tokens: int, output_tokens: int):
-        self.latencies.append(latency_ms)
-        self.input_tokens.append(input_tokens)
-        self.output_tokens.append(output_tokens)
-    
-    def summary(self) -> dict:
-        return {
-            "latency_mean_ms": float(np.mean(self.latencies)),
-            "latency_p50_ms": float(np.percentile(self.latencies, 50)),
-            "latency_p95_ms": float(np.percentile(self.latencies, 95)),
-            "latency_p99_ms": float(np.percentile(self.latencies, 99)),
-            "throughput_qps": len(self.latencies) / (sum(self.latencies) / 1000),
-            "avg_input_tokens": float(np.mean(self.input_tokens)),
-            "avg_output_tokens": float(np.mean(self.output_tokens)),
-            "total_input_tokens": sum(self.input_tokens),
-            "total_output_tokens": sum(self.output_tokens),
-            "estimated_cost_usd": self._calc_cost()
-        }
-    
-    def _calc_cost(self) -> float:
-        input_cost = sum(self.input_tokens) / 1000 * 0.000015
-        output_cost = sum(self.output_tokens) / 1000 * 0.00006
-        return round(input_cost + output_cost, 6)
-```
-
----
-
-## 6. Output Format
-
-### 6.1 JSON Results (`ragas_eval_results.json`)
+**File:** `ai-v3/eval/cache/ragas_100_batch_checkpoint.json`
 
 ```json
 {
   "metadata": {
-    "timestamp": "2026-08-11T10:30:00Z",
-    "testset_size": 50,
-    "ragas_version": "0.2.x",
-    "llm_judge": "gemini-3.1-flash-lite",
-    "system": "ai-v3 RAG Pipeline"
+    "total": 100,
+    "phase1_completed": 45,
+    "phase2_completed": 30,
+    "phase2_fallback": 5,
+    "last_updated": "2026-08-11T14:00:00"
   },
-  "aggregate_scores": {
-    "faithfulness": 0.87,
-    "answer_relevancy": 0.91,
-    "context_recall": 0.83,
-    "context_precision": 0.89,
-    "ragas_overall": 0.875
-  },
-  "performance": {
-    "latency_mean_ms": 1250,
-    "latency_p95_ms": 2100,
-    "throughput_qps": 0.8,
-    "avg_input_tokens": 1500,
-    "avg_output_tokens": 350,
-    "estimated_cost_usd": 0.12
-  },
-  "per_sample": [
-    {
-      "id": 0,
-      "question": "...",
-      "answer": "...",
-      "ground_truth": "...",
-      "contexts": ["..."],
-      "retrieved_contexts": ["..."],
-      "scores": {
-        "faithfulness": 0.9,
-        "answer_relevancy": 0.85,
-        "context_recall": 0.8,
-        "context_precision": 0.88
+  "items": {
+    "1": {
+      "id": 1,
+      "question": "Tư vấn cho mình Laptop Gaming Asus RAM 16GB SSD 512GB giá tầm 25 triệu",
+      "intent": "PURCHASE_CONSULTATION",
+      "expected_brand": "Asus",
+      "expected_category": "Laptop Gaming",
+      "ground_truth": "Sản phẩm Laptop Gaming của thương hiệu Asus...",
+      "answer": "Dạ, dựa trên yêu cầu...",
+      "retrieved_contexts": ["Tên sản phẩm: ...\nHãng: Asus\n..."],
+      "latency_ms": 8500.0,
+      "input_tokens": 20,
+      "output_tokens": 150,
+      "phase1_status": "COMPLETED",
+      "ragas_scores": {
+        "faithfulness": 0.95,
+        "answer_relevancy": 0.88,
+        "context_recall": 0.75,
+        "context_precision": 0.90
       },
-      "latency_ms": 1100
+      "phase2_status": "COMPLETED"
+    },
+    "2": {
+      "id": 2,
+      "question": "...",
+      "phase1_status": "COMPLETED",
+      "answer": "...",
+      "retrieved_contexts": ["..."],
+      "latency_ms": 9200.0,
+      "phase2_status": "COMPLETED_WITH_FALLBACK",
+      "ragas_scores": {
+        "faithfulness": 0.85,
+        "answer_relevancy": 0.90,
+        "context_recall": 0.70,
+        "context_precision": 0.80
+      },
+      "fallback_reason": "Gemini timeout after 3 retries"
+    },
+    "3": {
+      "id": 3,
+      "phase1_status": "FAILED",
+      "phase1_error": "Pipeline connection error",
+      "phase2_status": "SKIPPED"
     }
-  ]
+  }
 }
 ```
 
-### 6.2 Markdown Report (`ragas_benchmark_report.md`)
+### Status Values
 
-Sections:
-1. **Tổng quan** — mục tiêu, phương pháp, quy mô
-2. **Bảng điểm RAGAS** — 4 metrics + overall score
-3. **Performance Metrics** — latency, throughput, tokens, cost
-4. **Phân tích theo loại câu hỏi** — nếu testset có metadata
-5. **Ví dụ tốt/xấu** — 2-3 ví dụ minh họa
-6. **So sánh với heuristic baseline** — điểm heuristic hiện tại vs RAGAS chính thức
-7. **Recommendations** — cải thiện hệ thống
-
----
-
-## 7. File Structure
-
-```
-ai-v3/eval/
-├── run_ragas_benchmark.py      # REWRITE: official RAGAS benchmark
-├── run_full_benchmark.py       # KEEP: recommender benchmark
-├── benchmark_amazon_dataset.py # KEEP: Amazon scale test
-├── metrics.py                  # KEEP: IR metrics
-├── diversity.py                # KEEP: diversity metrics
-├── significance.py             # KEEP: significance testing
-├── ragas_eval_results.json     # NEW: RAGAS results
-└── ragas_benchmark_report.md   # NEW: RAGAS report
-```
+| Phase | Status | Meaning |
+|-------|--------|---------|
+| phase1 | `PENDING` | Chưa chạy |
+| phase1 | `COMPLETED` | RAG pipeline thành công |
+| phase1 | `FAILED` | Pipeline lỗi |
+| phase2 | `PENDING` | Chưa chạy |
+| phase2 | `COMPLETED` | LLM judge thành công |
+| phase2 | `COMPLETED_WITH_FALLBACK` | LLM fail, dùng rule-based |
+| phase2 | `SKIPPED` | Phase 1 failed nên skip |
+| phase2 | `FAILED` | Cả LLM lẫn fallback đều fail |
 
 ---
 
-## 8. Dependencies
+## 4. Error Handling Strategy
 
-### 8.1 New Dependencies (thêm vào requirements.txt)
+### 4.1 Three-Tier Protection
+
+| Tier | Scope | Strategy |
+|------|-------|----------|
+| **Tier 1** | RAG Pipeline (`process_query`) | try/catch → `phase1_status=FAILED`, skip Phase 2 |
+| **Tier 2** | RAGAS LLM Judge | Retry 3×, exponential backoff |
+| **Tier 3** | Fallback Rule-based | Dùng `evaluate_ragas_metrics()` nếu LLM fail |
+
+### 4.2 Exponential Backoff
+
+```python
+for attempt in range(3):
+    try:
+        # call Gemini LLM judge
+        break
+    except Exception as e:
+        err_str = str(e).lower()
+        if "429" in err_str or "rate" in err_str:
+            wait = 2 ** (attempt + 1)  # 2s, 4s, 8s
+            logger.warning(f"Rate limit, chờ {wait}s...")
+            time.sleep(wait)
+        elif "timeout" in err_str or "deadline" in err_str:
+            wait = 5 * (attempt + 1)  # 5s, 10s, 15s
+            logger.warning(f"Timeout, chờ {wait}s...")
+            time.sleep(wait)
+        else:
+            logger.error(f"Unknown error: {e}")
+            break  # → fallback immediately
+```
+
+### 4.3 Delay Between Calls
+
+- Giữa các câu: **2s** (tăng từ 1s hiện tại)
+- Sau khi gặp rate limit: backoff tự xử lý, không thêm delay extra
+
+---
+
+## 5. Progress Output
+
+### 5.1 Terminal Output
+
+```
+🔬 RAGAS Benchmark 100 Questions — Batch Processing
+=====================================================
+📦 Loaded checkpoint: 45/100 Phase1, 30/100 Phase2
+
+📦 Batch 1/10 (Q1-Q10)
+  ✅ [1/100]  Q#1   P1=OK  P2=OK       faith=0.95 rel=0.88 lat=8.5s
+  ✅ [2/100]  Q#2   P1=OK  P2=OK       faith=0.91 rel=0.85 lat=9.2s
+  ⚡ [3/100]  Q#3   P1=OK  P2=FALLBACK faith=0.85 rel=0.90 lat=8.8s
+  ⏩ [4/100]  Q#4   SKIPPED (cached)
+  ✅ [5/100]  Q#5   P1=OK  P2=OK       faith=0.93 rel=0.90 lat=7.9s
+  ❌ [6/100]  Q#6   P1=FAILED pipeline error
+  ...
+📦 Batch 1/10 DONE — saved checkpoint
+
+📦 Batch 2/10 (Q11-Q20)
+  ...
+
+📊 REPORT
+=====================================================
+Total: 100 questions
+Phase 1: 95 completed, 5 failed
+Phase 2: 80 LLM judge, 15 fallback, 5 skipped
+
+RAGAS Scores (avg):
+  Faithfulness:     0.92
+  Answer Relevancy: 0.88
+  Context Recall:   0.78
+  Context Precision: 0.85
+  OVERALL:          0.86
+
+Performance:
+  Latency (mean): 8500ms
+  Latency (P95):  12000ms
+  Throughput:     0.12 queries/sec
+```
+
+---
+
+## 6. Report Generation
+
+### 6.1 Aggregate Calculation
+
+```python
+# Đọc checkpoint
+items = checkpoint["items"]
+
+# Tính scores
+llm_scores = []      # câu dùng LLM judge
+fallback_scores = [] # câu dùng fallback
+all_scores = []
+
+for item in items.values():
+    if item.get("ragas_scores"):
+        all_scores.append(item["ragas_scores"])
+        if item.get("phase2_status") == "COMPLETED":
+            llm_scores.append(item["ragas_scores"])
+        else:
+            fallback_scores.append(item["ragas_scores"])
+
+# Aggregate
+avg_faithfulness = np.mean([s["faithfulness"] for s in all_scores])
+# ...tương tự cho 3 metrics còn lại
+
+# Thống kê quality
+llm_count = len(llm_scores)
+fallback_count = len(fallback_scores)
+```
+
+### 6.2 Report Sections
+
+1. **Metadata** — timestamp, testset_size, llm_judge model
+2. **RAGAS Scores** — 4 metrics + overall, bảng đánh giá
+3. **Evaluation Quality** — X/100 dùng LLM judge, Y/100 dùng fallback
+4. **Performance** — latency, throughput, tokens, cost
+5. **Per-Intent Breakdown** — scores theo intent (nếu có)
+6. **Scientific Analysis** — nhận xét cho đồ án tốt nghiệp
+
+### 6.3 Output Files
+
+- `ai-v3/eval/ragas_eval_results.json` — full JSON results
+- `ai-v3/eval/ragas_benchmark_report.md` — Markdown report
+- `ai-v3/eval/cache/ragas_100_batch_checkpoint.json` — checkpoint (giữ nguyên để resume)
+
+---
+
+## 7. Implementation Changes
+
+### 7.1 File: `ai-v3/eval/run_ragas_benchmark.py`
+
+**Giữ nguyên:**
+- `generate_100_eval_dataset()` — dataset generation
+- `evaluate_ragas_metrics()` — fallback rule-based
+- `evaluate_single_sample_llm()` — RAGAS LLM judge (thêm backoff)
+- `generate_report()` — report generation
+
+**Thay đổi:**
+- `RagasBenchmarkCheckpointManager` — update schema cho 2-phase
+- `run_100_ragas_benchmark()` — rewrite thành batch processing
+- Thêm `tqdm` import cho progress display
+
+**Thêm mới:**
+- `run_phase1_batch()` — chạy RAG pipeline cho 1 batch
+- `run_phase2_batch()` — chạy RAGAS eval cho 1 batch
+- `generate_interim_report()` — tạo report từ checkpoint bất cứ lúc nào
+
+### 7.2 Dependencies
 
 ```txt
-# RAGAS Benchmark
+# Đã có trong project
 ragas>=0.2.0
 langchain-google-genai>=2.0.0
 datasets>=2.14.0
-```
-
-### 8.2 Existing Dependencies (reuse)
-
-```txt
-# Already in project
-google-generativeai  # Gemini API
-sentence-transformers  # BGE-M3 embeddings
 numpy
 pandas
+
+# Thêm mới
+tqdm  # progress bar
 ```
 
 ---
 
-## 9. Implementation Steps
-
-### Step 1: Setup Dependencies
-- Cài đặt ragas, langchain-google-genai, datasets
-- Verify Gemini API key hoạt động
-
-### Step 2: Rewrite `run_ragas_benchmark.py`
-- Implement TestsetGen flow
-- Implement RAGAS evaluate() flow
-- Implement PerformanceCollector
-- Implement report generation
-
-### Step 3: Run Benchmark
-- Chạy benchmark trên 50 test cases
-- Verify output format
-- Review results
-
-### Step 4: Generate Report
-- Tạo JSON results
-- Tạo Markdown report
-- Commit to repo
-
----
-
-## 10. Success Criteria
+## 8. Success Criteria
 
 | Criteria | Target |
 |----------|--------|
-| RAGAS benchmark chạy thành công | 50/50 test cases |
-| 4 metrics có giá trị hợp lý | 0.0 - 1.0 range |
-| Performance metrics đầy đủ | Latency, throughput, tokens, cost |
-| Report format chuẩn | JSON + Markdown |
-| Thời gian chạy | < 30 phút cho 50 test cases |
+| Benchmark chạy thành công | ≥ 90/100 câu (cả LLM + fallback) |
+| Resume hoạt động | Kill script giữa chừng → restart → chạy tiếp |
+| 4 RAGAS metrics có giá trị | 0.0 - 1.0 range, không NaN |
+| Checkpoint save đúng | Mỗi câu xong → checkpoint update ngay |
+| Thời gian chạy | < 30 phút cho 100 câu |
 | Chi phí API | < $1 USD |
 
 ---
 
-## 11. Risks & Mitigations
+## 9. Risks & Mitigations
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| RAGAS TestsetGen không hỗ trợ tiếng Việt tốt | Medium | Post-process hoặc custom prompt |
-| Gemini API rate limit | Low | Add retry logic, exponential backoff |
-| RAGAS evaluate() quá chậm | Low | Giảm test_size nếu cần |
-| Chi phí API vượt budget | Low | Monitor cost, set limit |
+| Gemini rate limit liên tục | Medium | Exponential backoff + delay 2s giữa câu |
+| Checkpoint file corruption | High | Atomic write (tmp → replace) |
+| Phase 1 fail nhiều | Medium | Log rõ error, có thể debug sau |
+| Fallback scores inflate kết quả | Low | Report tách biệt LLM vs fallback count |
 
 ---
 

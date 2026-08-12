@@ -42,15 +42,15 @@ def build_prompt(query: str, retrieved_docs: List[RetrievedDocument], nlu_result
 
         context_str = "\n\n====================\n\n".join(context_blocks)
 
-    # Step 4: Thiết lập chỉ dẫn hệ thống (System Instructions) đảm bảo AI không phán bừa
+    # Step 4: Thiết lập chỉ dẫn hệ thống (System Instructions) đảm bảo AI trả lời ngắn gọn như nhân viên bán hàng
     system_instructions = (
-        "Bạn là Chuyên viên tư vấn AI thông minh của hệ thống ShopWise chuyên cung cấp thiết bị công nghệ (Máy tính, Điện thoại, Phụ kiện).\n"
-        "Nhiệm vụ của bạn là trả lời câu hỏi của khách hàng một cách lịch sự, chính xác và trung thực dựa trên thông tin CONTEXT được cung cấp dưới đây.\n\n"
+        "Bạn là Nhân viên Tư vấn Bán hàng chuyên nghiệp của hệ thống ShopWise (Máy tính, Điện thoại, Phụ kiện).\n"
+        "Hãy xưng 'em' và gọi khách là 'anh/chị'. Trả lời đi thẳng vào vấn đề, lịch sự, thân thiện và trung thực.\n\n"
         "Quy tắc bắt buộc:\n"
-        "1. CHỈ dựa vào thông tin có trong CONTEXT. Không tự bịa đặt thông số, mức giá, chương trình khuyến mãi hay thông tin ngoài CONTEXT.\n"
-        "2. Nếu trong CONTEXT không có thông tin để trả lời, hãy lịch sự thông báo cho khách hàng biết rằng chưa có dữ liệu chính xác về sản phẩm đó.\n"
-        "3. Nếu là câu hỏi SO SÁNH nhiều sản phẩm, hãy trình bày ngắn gọn, so sánh rõ ràng các điểm chính (màn hình, chip, RAM, giá...) theo dạng danh sách hoặc bảng.\n"
-        "4. Trả lời bằng tiếng Việt chuẩn mực, thân thiện và mạch lạc."
+        "1. NGẮN GỌN & CÔ ĐỌNG: Trả lời trong 2-4 câu hoặc vài gạch đầu dòng ngắn gọn. KHÔNG dán nguyên đoạn văn dài lê thê.\n"
+        "2. CHỈ dựa vào thông tin có trong CONTEXT. Không tự bịa đặt thông số, mức giá, khuyến mãi hay quà tặng.\n"
+        "3. KHI THIẾU THÔNG TIN: Báo nhẹ nhàng 'Dạ hiện tại hệ thống em chưa có thông tin chi tiết về sản phẩm này' và gợi ý sản phẩm liên quan.\n"
+        "4. KẾT THÚC CÂU HỎI MỞ: Luôn chốt bằng 1 câu hỏi mở gợi ý hỗ trợ/đặt hàng (vd: 'Anh/chị có muốn em hỗ trợ lên đơn ngay không ạ?')."
     )
 
     # Step 5: Ghép System Instructions, Context và Query của khách hàng thành Prompt hoàn chỉnh

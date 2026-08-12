@@ -30,3 +30,35 @@
 ## Phase 6: Polish
 - Task 6.1: Admin Stats Endpoint - DONE (commit 2dc0330)
 - Task 6.2: Final Integration Testing - DONE (commit bdba940)
+
+---
+
+# RAGAS Benchmark Implementation Progress
+
+**Base commit:** c2857c9
+**Started:** 2026-08-11
+
+## Tasks
+- Task 1: Add RAGAS Dependencies - DONE (commits c7c7b2c..45c4192, langchain-openai for Mimo)
+- Task 2: Implement PerformanceCollector - DONE (commit 714d3d2, 6/6 tests)
+- Task 3: Implement Document Helper - DONE (commit 8a0e875, 4/4 tests)
+- Task 4: Implement Testset Generation - DONE (commit 94bf8a3)
+- Task 5: Implement RAG Pipeline Runner - DONE (commit 2839456)
+- Task 6: Implement RAGAS Evaluation - DONE (commit b57c318)
+- Task 7: Implement Report Generation - DONE (commit 7e10abd)
+- Task 8: Implement Main Runner - DONE (commit 2d78d83)
+- Task 9: Run Full Benchmark - IN PROGRESS
+
+## Batch Processing + Resumable Checkpoint (2026-08-11)
+
+**Plan:** `docs/superpowers/plans/2026-08-11-ragas-benchmark-batch.md`
+
+- Task 1: Update CheckpointManager for 2-Phase Schema - DONE (commit 2b6e8be)
+- Task 2: Add Exponential Backoff to LLM Judge - DONE (commit 2b6e8be)
+- Task 3: Rewrite run_100_ragas_benchmark as Batch Processing - DONE (commit c54f002)
+- Task 4: Add generate_report_from_checkpoint - DONE (commit c54f002)
+- Task 5: Clean Up Old Functions & Verify - DONE (commit c69cdd9)
+- Task 6: Dry Run Test (5 questions) - DONE (bugs found & fixed in 9ae12b2)
+  - Bug fix: Use lighter embeddings (paraphrase-multilingual-MiniLM-L12-v2) to avoid OOM segfault
+  - Bug fix: Pass retrieved_products to fallback metrics instead of empty list
+- Task 10: Cleanup and Documentation - DONE (commit 40c90d2)
