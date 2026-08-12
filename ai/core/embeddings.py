@@ -21,9 +21,16 @@ class PGVectorSearcher:
             self.model = SentenceTransformer(self.model_name)
             logger.info(f"[Embeddings] Loaded model: {self.model_name}")
         except Exception as e:
-            fallback = "paraphrase-multilingual-MiniLM-L12-v2"
-            logger.warning(f"[Embeddings] Cannot load {self.model_name} ({e}), fallback: {fallback}")
-            self.model = SentenceTransformer(fallback)
+            # Try loading from older cached snapshot
+            import os
+            cache_dir = os.path.expanduser("~/.cache/huggingface/hub/models--BAAI--bge-m3/snapshots/5617a9f61b028005a4858fdac845db406aefb181")
+            try:
+                self.model = SentenceTransformer(cache_dir)
+                logger.info(f"[Embeddings] Loaded BGE-M3 from cache snapshot.")
+            except Exception:
+                fallback = "paraphrase-multilingual-MiniLM-L12-v2"
+                logger.warning(f"[Embeddings] Cannot load {self.model_name} ({e}), fallback: {fallback}")
+                self.model = SentenceTransformer(fallback)
 
     def encode_query(self, query: str) -> List[float]:
         """Encode query string into embedding vector."""
