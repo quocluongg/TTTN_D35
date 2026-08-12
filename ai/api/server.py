@@ -10,7 +10,10 @@ router = APIRouter(prefix="/api")
 def _get_engine():
     """Get engine from app state."""
     from ai.main import app
-    return app.state.engine
+    engine = getattr(app.state, "engine", None)
+    if engine is None:
+        raise RuntimeError("Engine not initialized")
+    return engine
 
 
 # ============ CHAT ============

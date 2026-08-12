@@ -76,12 +76,12 @@ if os.path.exists(_static_dir):
 
 from ai.engine import Engine
 
-app.state.engine = Engine(settings)
-
 
 @app.on_event("startup")
 def startup():
-    """Background warmup."""
+    """Create engine and warmup in background."""
+    app.state.engine = Engine(settings)
+
     def _warmup():
         try:
             app.state.engine._warmup()
