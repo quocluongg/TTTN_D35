@@ -19,13 +19,12 @@ class LLMClient:
         
         if self.api_key:
             try:
-                import google.generativeai as genai
-                genai.configure(api_key=self.api_key)
-                self.client = genai.GenerativeModel(
-                    model_name=self.model_name,
-                    system_instruction=SYSTEM_PROMPT_ECOMMERCE_RAG
-                )
-                logging.info(f"[LLMClient] Khởi tạo Gemini Model '{self.model_name}' thành công!")
+                from google import genai
+                from google.genai import types
+                self._genai = genai
+                self._types = types
+                self.client = genai.Client(api_key=self.api_key)
+                logging.info(f"[LLMClient] Khởi tạo google.genai Client với model '{self.model_name}' thành công!")
             except Exception as e:
                 logging.warning(f"[LLMClient Warning] Không thể kết nối Gemini API ({e}). Sẽ sử dụng Grounded Template Generator.")
 
@@ -43,8 +42,15 @@ class LLMClient:
         # 1. Thử sinh qua Gemini API nếu đã khởi tạo
         if self.client:
             try:
-                response = self.client.generate_content(user_prompt)
-                if response and hasattr(response, "text") and response.text.strip():
+                response = self.client.models.generate_content(
+                    model=self.model_name,
+                    contents=user_prompt,
+                    config=self._types.GenerateContentConfig(
+                        system_instruction=SYSTEM_PROMPT_ECOMMERCE_RAG,
+                        temperature=float(os.getenv("LLM_TEMPERATURE", "0.2")),
+                    )
+                )
+                if response and response.text and response.text.strip():
                     return response.text.strip()
             except Exception as e:
                 logging.error(f"[LLMClient Error] Lỗi khi gọi Gemini API: {e}. Chuyển sang Fallback Generator.")

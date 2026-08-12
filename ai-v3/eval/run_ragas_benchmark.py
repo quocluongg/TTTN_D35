@@ -247,7 +247,7 @@ def evaluate_single_sample_llm(
                             kwargs.pop("n", None)
                             return await super()._agenerate(messages, stop=stop, run_manager=run_manager, **kwargs)
 
-                    model_name = "gemini-3.1-flash-lite"
+                    model_name = "gemma-4-31b-it"
                     llm = GeminiChatGoogleGenerativeAI(
                         model=model_name,
                         google_api_key=gemini_key,
