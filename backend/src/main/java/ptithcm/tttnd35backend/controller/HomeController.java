@@ -7,8 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ptithcm.tttnd35backend.dto.response.ApiResponse;
 import ptithcm.tttnd35backend.dto.response.BrandLogoResponse;
 import ptithcm.tttnd35backend.dto.response.HomeBannerResponse;
-import ptithcm.tttnd35backend.dto.response.HomeFeaturedCategoryResponse;
-import ptithcm.tttnd35backend.service.IHomepageCmsService;
+import ptithcm.tttnd35backend.dto.response.HomeLayoutSectionResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,6 +18,15 @@ import java.util.List;
 public class HomeController {
 
     private final IHomepageCmsService cmsService;
+
+    @GetMapping("/layout")
+    public ApiResponse<List<HomeLayoutSectionResponse>> getLayout() {
+        return ApiResponse.<List<HomeLayoutSectionResponse>>builder()
+                .success(true)
+                .data(cmsService.getPublicLayout())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
 
     @GetMapping("/banners")
     public ApiResponse<List<HomeBannerResponse>> getBanners() {

@@ -31,7 +31,7 @@ SUPABASE_URL = os.getenv("SUPABASE_URL", "https://zzukpubwbntihzztilqy.supabase.
 
 # Supabase Service Role Key — lấy từ Supabase Dashboard > Project Settings > API > service_role
 _SUPABASE_KEY_HARDCODED = ""
-SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", _SUPABASE_KEY_HARDCODED)
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "<YOUR_KEY>")
 SUPABASE_BUCKET = os.getenv("SUPABASE_STORAGE_BUCKET", "product-images")
 
 if not SUPABASE_KEY:
@@ -47,7 +47,7 @@ def get_db_conn():
         port=int(os.getenv("SUPABASE_DB_PORT", "5432")),
         dbname=os.getenv("SUPABASE_DB_NAME", "postgres"),
         user=os.getenv("SUPABASE_DB_USER", "postgres.zzukpubwbntihzztilqy"),
-        password=os.getenv("SUPABASE_DB_PASSWORD", ""),
+        password=os.getenv("SUPABASE_DB_PASSWORD", "agW24oOesftDhJkA"),
     )
     conn.autocommit = True
     return conn

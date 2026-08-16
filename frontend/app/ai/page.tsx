@@ -22,7 +22,7 @@ import {
   ShoppingBag,
 } from "lucide-react";
 
-const AI_API_URL = process.env.NEXT_PUBLIC_AI_API_URL || "http://localhost:8001";
+const AI_API_URL = process.env.NEXT_PUBLIC_AI_API_URL || "http://localhost:8000";
 
 interface Message {
   id: string;
@@ -43,7 +43,8 @@ interface Conversation {
   last_message?: string;
 }
 
-const slugify = (text: string) => {
+const slugify = (text?: string) => {
+  if (!text || typeof text !== "string") return "";
   return text
     .toLowerCase()
     .normalize("NFD")
@@ -59,7 +60,8 @@ const slugify = (text: string) => {
  * Chunk ID format: {product_id}_{chunk_type}_{index}
  * Example: 46d32c37-617b-406d-8323-aad467ed709b_description_0
  */
-const extractProductId = (chunkId: string): string => {
+const extractProductId = (chunkId?: string): string => {
+  if (!chunkId || typeof chunkId !== "string") return "";
   // Match UUID pattern at the beginning
   const uuidMatch = chunkId.match(/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
   if (uuidMatch) {
@@ -77,8 +79,8 @@ const extractProductId = (chunkId: string): string => {
   return chunkId;
 };
 
-const getRefProductImage = (text: string) => {
-  const lower = text.toLowerCase();
+const getRefProductImage = (text?: string) => {
+  const lower = (text || "").toLowerCase();
   if (lower.includes("iphone") || lower.includes("samsung") || lower.includes("điện thoại") || lower.includes("phone")) {
     return "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&q=80";
   }
@@ -100,12 +102,13 @@ const formatThumbnailUrl = (thumbnail?: string, name?: string) => {
   return `${apiBase}${thumbnail.startsWith("/") ? "" : "/"}${thumbnail}`;
 };
 
-const parseProductFromSource = (text: string, id?: string) => {
-  const cleanText = text.replace(/^Sản phẩm\s+/i, "");
+const parseProductFromSource = (text?: string, id?: string) => {
+  const safeText = typeof text === "string" ? text : "";
+  const cleanText = safeText.replace(/^Sản phẩm\s+/i, "");
   const lower = cleanText.toLowerCase();
 
   let brand = "SHOPWISE";
-  let name = cleanText.split(" - ")[0] || cleanText;
+  let name = cleanText.split(" - ")[0] || cleanText || "Sản phẩm gợi ý";
   let price = "Liên hệ";
   let originalPrice = "";
   let rating = 4.8;
@@ -195,20 +198,22 @@ function ProductThumbnail({ src, brand }: { src: string; brand?: string }) {
   );
 }
 
-function RefProductCard({ source }: { source: { id: string; text: string; score: number } }) {
+function RefProductCard({ source }: { source?: { id?: string; text?: string; score?: number } }) {
   const [product, setProduct] = useState<ProductDetail | null>(null);
 
-  const cleanTitle = source.text.replace(/^Sản phẩm\s+/i, "").split(" - ")[0] || source.text;
+  const rawText = typeof source?.text === "string" ? source.text : "";
+  const cleanTitle = rawText ? (rawText.replace(/^Sản phẩm\s+/i, "").split(" - ")[0] || rawText) : "";
   const fallbackSlug = slugify(cleanTitle);
 
   // Extract actual product ID from chunk ID (format: {product_id}_{chunk_type}_{index})
-  const productId = extractProductId(source.id);
+  const productId = extractProductId(source?.id);
 
   useEffect(() => {
     let isMounted = true;
     const fetchDetail = async () => {
       try {
         const targetId = productId && productId.length > 5 ? productId : fallbackSlug;
+        if (!targetId) return;
         const res = await productService.getProductBySlugOrId(targetId);
         if (isMounted && res.success && res.data) {
           setProduct(res.data);
@@ -224,7 +229,7 @@ function RefProductCard({ source }: { source: { id: string; text: string; score:
     };
   }, [productId, fallbackSlug]);
 
-  const fallbackInfo = parseProductFromSource(source.text, productId);
+  const fallbackInfo = parseProductFromSource(rawText, productId);
 
   const name = product?.name || fallbackInfo.name;
   const brand = product?.brand || fallbackInfo.brand;
@@ -310,6 +315,7 @@ function RefProductCard({ source }: { source: { id: string; text: string; score:
 }
 
 function RefProductCardFromItem({ product }: { product: ProductListItem }) {
+  if (!product) return null;
   const slug = product.slug || product.id;
   const formattedPrice = product.priceFrom
     ? new Intl.NumberFormat("vi-VN").format(product.priceFrom) + "đ"
@@ -383,6 +389,7 @@ function RefProductCardFromItem({ product }: { product: ProductListItem }) {
 }
 
 export default function AIChatPage() {
+  const [mounted, setMounted] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
@@ -398,6 +405,10 @@ export default function AIChatPage() {
 
   // Mock user ID (replace with real auth)
   const userId = "mock-user-123";
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -595,6 +606,8 @@ export default function AIChatPage() {
       query: "Gợi ý phụ kiện điện thoại & tai nghe chống ồn dưới 2 triệu",
     },
   ];
+
+  if (!mounted) return null;
 
   return (
     <PublicLayout fullWidth>

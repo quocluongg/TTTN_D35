@@ -37,4 +37,12 @@ public interface IHomepageCmsService {
     // Admin Featured Category Items
     HomeFeaturedCategoryItemResponse addFeaturedCategoryItem(UUID featuredCategoryId, HomeFeaturedCategoryItemRequest request);
     void deleteFeaturedCategoryItem(UUID itemId);
+
+    // Homepage Layout Sections
+    List<HomeLayoutSectionResponse> getPublicLayout();
+    List<HomeLayoutSectionResponse> getAllLayoutSections();
+    HomeLayoutSectionResponse createLayoutSection(HomeLayoutSectionRequest request);
+    HomeLayoutSectionResponse updateLayoutSection(UUID id, HomeLayoutSectionRequest request);
+    void reorderLayoutSections(List<HomeLayoutReorderRequest> requests);
+    void deleteLayoutSection(UUID id);
 }

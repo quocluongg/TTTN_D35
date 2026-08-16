@@ -206,4 +206,62 @@ public class AdminHomeController {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
+
+    // --- Layout Sections ---
+    @GetMapping("/layout")
+    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    public ApiResponse<List<HomeLayoutSectionResponse>> getAllLayoutSections() {
+        return ApiResponse.<List<HomeLayoutSectionResponse>>builder()
+                .success(true)
+                .data(cmsService.getAllLayoutSections())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @PostMapping("/layout")
+    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    public ApiResponse<HomeLayoutSectionResponse> createLayoutSection(@RequestBody @Valid HomeLayoutSectionRequest request) {
+        return ApiResponse.<HomeLayoutSectionResponse>builder()
+                .success(true)
+                .message("Tạo layout section thành công")
+                .data(cmsService.createLayoutSection(request))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @PutMapping("/layout/{id}")
+    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    public ApiResponse<HomeLayoutSectionResponse> updateLayoutSection(
+            @PathVariable UUID id,
+            @RequestBody @Valid HomeLayoutSectionRequest request
+    ) {
+        return ApiResponse.<HomeLayoutSectionResponse>builder()
+                .success(true)
+                .message("Cập nhật layout section thành công")
+                .data(cmsService.updateLayoutSection(id, request))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @PutMapping("/layout/reorder")
+    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    public ApiResponse<Void> reorderLayoutSections(@RequestBody List<HomeLayoutReorderRequest> requests) {
+        cmsService.reorderLayoutSections(requests);
+        return ApiResponse.<Void>builder()
+                .success(true)
+                .message("Cập nhật thứ tự layout thành công")
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @DeleteMapping("/layout/{id}")
+    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    public ApiResponse<Void> deleteLayoutSection(@PathVariable UUID id) {
+        cmsService.deleteLayoutSection(id);
+        return ApiResponse.<Void>builder()
+                .success(true)
+                .message("Xóa layout section thành công")
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
 }

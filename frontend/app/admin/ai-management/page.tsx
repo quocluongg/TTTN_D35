@@ -17,7 +17,7 @@ import {
   Clock,
 } from "lucide-react";
 
-const API_URL = process.env.NEXT_PUBLIC_AI_API_URL || "http://localhost:8001";
+const API_URL = process.env.NEXT_PUBLIC_AI_API_URL || "http://localhost:8000";
 
 interface RAGStats {
   total_products: number;

@@ -6,20 +6,26 @@ import { adminApi } from "@/services/admin";
 import DataTable, { type Column } from "@/components/DataTable";
 import StatusBadge from "@/components/StatusBadge";
 import { notifyError, notifySuccess } from "@/components/Notify";
-import { LayoutTemplate, Plus, Trash2, Edit3, Image as ImageIcon, Link as LinkIcon } from "lucide-react";
+import { LayoutTemplate, Plus, Trash2, Edit3, Image as ImageIcon, Link as LinkIcon, ArrowUp, ArrowDown, Eye, EyeOff } from "lucide-react";
+import { HomeLayoutSection } from "@/types/home";
 
 const unwrap = (x: any) => x?.data ?? x;
 
 export default function CmsPage() {
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<"banners" | "brands" | "featured">("banners");
+  const [activeTab, setActiveTab] = useState<"layout" | "banners" | "brands" | "featured">("layout");
 
   // State for Create/Edit Modal
-  const [modalType, setModalType] = useState<"banner" | "brand" | "featured" | null>(null);
+  const [modalType, setModalType] = useState<"layout" | "banner" | "brand" | "featured" | null>(null);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [formData, setFormData] = useState<any>({});
 
   // Queries
+  const layoutQuery = useQuery({
+    queryKey: ["cms-layout"],
+    queryFn: () => adminApi.home.layout.list(),
+  });
+
   const bannersQuery = useQuery({
     queryKey: ["cms-banners"],
     queryFn: () => adminApi.home.banners.list(),
@@ -35,11 +41,40 @@ export default function CmsPage() {
     queryFn: () => adminApi.home.featuredCategories.list(),
   });
 
+  const layoutSections: HomeLayoutSection[] = unwrap(layoutQuery.data) || [];
   const banners = unwrap(bannersQuery.data) || [];
   const brands = unwrap(brandsQuery.data) || [];
   const featured = unwrap(featuredQuery.data) || [];
 
   // Mutations
+  const saveLayoutMutation = useMutation({
+    mutationFn: (data: any) =>
+      data.id ? adminApi.home.layout.update(data.id, data) : adminApi.home.layout.create(data),
+    onSuccess: () => {
+      notifySuccess("Đã lưu Cấu hình Layout!");
+      queryClient.invalidateQueries({ queryKey: ["cms-layout"] });
+      closeModal();
+    },
+    onError: (err: any) => notifyError(err?.message || "Không thể lưu Cấu hình Layout."),
+  });
+
+  const deleteLayoutMutation = useMutation({
+    mutationFn: (id: string) => adminApi.home.layout.delete(id),
+    onSuccess: () => {
+      notifySuccess("Đã xóa Section khỏi Layout!");
+      queryClient.invalidateQueries({ queryKey: ["cms-layout"] });
+    },
+  });
+
+  const reorderLayoutMutation = useMutation({
+    mutationFn: (items: { id: string; displayOrder: number }[]) => adminApi.home.layout.reorder(items),
+    onSuccess: () => {
+      notifySuccess("Đã cập nhật thứ tự Layout!");
+      queryClient.invalidateQueries({ queryKey: ["cms-layout"] });
+    },
+    onError: (err: any) => notifyError(err?.message || "Không thể đổi thứ tự."),
+  });
+
   const saveBannerMutation = useMutation({
     mutationFn: (data: any) =>
       data.id ? adminApi.home.banners.update(data.id, data) : adminApi.home.banners.create(data),
@@ -105,19 +140,130 @@ export default function CmsPage() {
     setFormData({});
   };
 
-  const openCreateModal = (type: "banner" | "brand" | "featured") => {
+  const openCreateModal = (type: "layout" | "banner" | "brand" | "featured") => {
     setModalType(type);
     setEditingItem(null);
-    setFormData({ displayOrder: 0, isActive: true });
+    setFormData({ displayOrder: (layoutSections.length || 0) + 1, enabled: true, isActive: true });
   };
 
-  const openEditModal = (type: "banner" | "brand" | "featured", item: any) => {
+  const openEditModal = (type: "layout" | "banner" | "brand" | "featured", item: any) => {
     setModalType(type);
     setEditingItem(item);
     setFormData({ ...item });
   };
 
+  const handleMoveSection = (index: number, direction: "up" | "down") => {
+    const list = [...layoutSections];
+    const targetIdx = direction === "up" ? index - 1 : index + 1;
+    if (targetIdx < 0 || targetIdx >= list.length) return;
+
+    const temp = list[index];
+    list[index] = list[targetIdx];
+    list[targetIdx] = temp;
+
+    const reorderedPayload = list.map((item, idx) => ({
+      id: item.id,
+      displayOrder: idx + 1,
+    }));
+
+    reorderLayoutMutation.mutate(reorderedPayload);
+  };
+
+  const handleToggleSectionEnabled = (section: HomeLayoutSection) => {
+    saveLayoutMutation.mutate({
+      ...section,
+      enabled: !section.enabled,
+    });
+  };
+
   // Columns Configuration
+  const layoutColumns: Column<HomeLayoutSection>[] = [
+    {
+      key: "displayOrder",
+      header: "Thứ tự",
+      cell: (row) => (
+        <span className="font-mono text-xs font-bold px-2 py-1 bg-zinc-100 border border-black">
+          #{row.displayOrder}
+        </span>
+      ),
+    },
+    {
+      key: "sectionKey",
+      header: "Mã Block (Section Key)",
+      cell: (row) => (
+        <div>
+          <span className="px-2 py-0.5 bg-black text-white text-[11px] font-mono font-bold">
+            {row.sectionKey}
+          </span>
+          {row.layoutStyle && (
+            <span className="ml-2 text-xs text-zinc-500 font-mono">[{row.layoutStyle}]</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "title",
+      header: "Tiêu đề & Mô tả",
+      cell: (row) => (
+        <div>
+          <p className="font-bold text-black">{row.title || "—"}</p>
+          {row.subtitle && <p className="text-xs text-zinc-500">{row.subtitle}</p>}
+        </div>
+      ),
+    },
+    {
+      key: "enabled",
+      header: "Hiển thị",
+      cell: (row) => (
+        <button
+          onClick={() => handleToggleSectionEnabled(row)}
+          className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold uppercase transition-colors cursor-pointer border border-black ${
+            row.enabled ? "bg-green-100 text-green-800" : "bg-zinc-100 text-zinc-500 opacity-60"
+          }`}
+        >
+          {row.enabled ? <Eye size={12} /> : <EyeOff size={12} />}
+          {row.enabled ? "BẬT" : "TẮT"}
+        </button>
+      ),
+    },
+    {
+      key: "actions",
+      header: "Thao tác & Sắp xếp",
+      cell: (row: HomeLayoutSection) => {
+        const idx = layoutSections.findIndex((item) => item.id === row.id);
+        return (
+          <div className="flex items-center gap-2">
+            <button
+              disabled={idx <= 0}
+              onClick={() => handleMoveSection(idx, "up")}
+              title="Lên trên"
+              className="p-1 border border-black hover:bg-zinc-100 disabled:opacity-30 disabled:pointer-events-none"
+            >
+              <ArrowUp size={14} />
+            </button>
+            <button
+              disabled={idx < 0 || idx >= layoutSections.length - 1}
+              onClick={() => handleMoveSection(idx, "down")}
+              title="Xuống dưới"
+              className="p-1 border border-black hover:bg-zinc-100 disabled:opacity-30 disabled:pointer-events-none"
+            >
+              <ArrowDown size={14} />
+            </button>
+            <button onClick={() => openEditModal("layout", row)} className="p-1 border border-black hover:bg-zinc-100">
+              <Edit3 size={14} />
+            </button>
+            <button
+              onClick={() => deleteLayoutMutation.mutate(row.id)}
+              className="p-1 border border-red-600 text-red-600 hover:bg-red-50"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
+        );
+      },
+    },
+  ];
+
   const bannerColumns: Column<any>[] = [
     {
       key: "preview",
@@ -265,15 +411,17 @@ export default function CmsPage() {
         <div>
           <h1 className="text-[28px] font-medium tracking-tight">Homepage CMS</h1>
           <p className="mt-1 text-sm text-zinc-600">
-            Quản lý Banners slider, Logo thương hiệu đối tác và Danh mục sản phẩm ghim nổi bật.
+            Cấu hình thứ tự hiển thị bố cục trang chủ, Banners slider, Thương hiệu đối tác và Danh mục nổi bật.
           </p>
         </div>
 
         <button
-          onClick={() =>
-            openCreateModal(activeTab === "banners" ? "banner" : activeTab === "brands" ? "brand" : "featured")
-          }
-          className="flex items-center gap-2 bg-black text-white px-4 py-2 text-sm font-medium rounded-none hover:bg-zinc-800"
+          onClick={() => {
+            const targetType =
+              activeTab === "banners" ? "banner" : activeTab === "brands" ? "brand" : activeTab;
+            openCreateModal(targetType);
+          }}
+          className="flex items-center gap-2 bg-black text-white px-4 py-2 text-sm font-medium rounded-none hover:bg-zinc-800 cursor-pointer"
         >
           <Plus size={16} /> Thêm mới
         </button>
@@ -282,6 +430,7 @@ export default function CmsPage() {
       {/* Tabs */}
       <div className="flex border-b border-black">
         {[
+          ["layout", "Bố Cục Trang Chủ (Layout Builder)"],
           ["banners", "Banners Slider"],
           ["brands", "Thương hiệu nổi bật"],
           ["featured", "Danh mục ghim trang chủ"],
@@ -299,6 +448,16 @@ export default function CmsPage() {
       </div>
 
       {/* Content */}
+      {activeTab === "layout" && (
+        <DataTable
+          columns={layoutColumns}
+          rows={Array.isArray(layoutSections) ? layoutSections : []}
+          loading={layoutQuery.isLoading}
+          rowKey={(r) => r.id}
+          empty="Chưa có Section nào trong Layout."
+        />
+      )}
+
       {activeTab === "banners" && (
         <DataTable
           columns={bannerColumns}
@@ -335,23 +494,86 @@ export default function CmsPage() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
+              if (modalType === "layout") saveLayoutMutation.mutate(formData);
               if (modalType === "banner") saveBannerMutation.mutate(formData);
               if (modalType === "brand") saveBrandMutation.mutate(formData);
               if (modalType === "featured") saveFeaturedMutation.mutate(formData);
             }}
-            className="w-full max-w-lg border border-black bg-white p-6 space-y-4"
+            className="w-full max-w-lg border border-black bg-white p-6 space-y-4 shadow-xl"
           >
             <div className="flex items-center justify-between border-b border-black pb-3">
               <h3 className="text-xl font-medium">
                 {editingItem ? "Cập nhật" : "Thêm mới"}{" "}
-                {modalType === "banner" ? "Banner" : modalType === "brand" ? "Thương hiệu" : "Section Nổi Bật"}
+                {modalType === "layout"
+                  ? "Layout Section"
+                  : modalType === "banner"
+                  ? "Banner"
+                  : modalType === "brand"
+                  ? "Thương hiệu"
+                  : "Section Nổi Bật"}
               </h3>
-              <button type="button" onClick={closeModal}>
+              <button type="button" onClick={closeModal} className="text-lg font-bold">
                 ✕
               </button>
             </div>
 
             <div className="space-y-3">
+              {modalType === "layout" && (
+                <>
+                  <label className="block text-sm font-medium">
+                    Mã Block (Section Key)
+                    <select
+                      required
+                      value={formData.sectionKey || "HERO_BANNER"}
+                      onChange={(e) => setFormData({ ...formData, sectionKey: e.target.value })}
+                      className="mt-1 block w-full border border-black px-3 py-2 text-sm bg-white"
+                    >
+                      <option value="HERO_BANNER">HERO_BANNER (Hero Slide Banner)</option>
+                      <option value="MARQUEE_TICKER">MARQUEE_TICKER (Dòng chữ thông báo chạy)</option>
+                      <option value="FEATURED_PRODUCTS">FEATURED_PRODUCTS (Sản phẩm nổi bật)</option>
+                      <option value="BUY_BY_NEED">BUY_BY_NEED (Mua theo nhu cầu)</option>
+                      <option value="FEATURED_CATEGORIES">FEATURED_CATEGORIES (Danh mục nổi bật)</option>
+                      <option value="NEWS_JOURNAL">NEWS_JOURNAL (Tin tức & Xu hướng)</option>
+                      <option value="BRAND_LOGOS">BRAND_LOGOS (Thương hiệu đối tác)</option>
+                      <option value="CUSTOM_PROMO_BANNER">CUSTOM_PROMO_BANNER (Banner khuyến mãi tùy chỉnh)</option>
+                    </select>
+                  </label>
+
+                  <label className="block text-sm font-medium">
+                    Tiêu đề chính
+                    <input
+                      type="text"
+                      value={formData.title || ""}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      className="mt-1 block w-full border border-black px-3 py-2 text-sm"
+                      placeholder="VD: Sản phẩm bán chạy nhất"
+                    />
+                  </label>
+
+                  <label className="block text-sm font-medium">
+                    Tiêu đề phụ / Subtitle
+                    <input
+                      type="text"
+                      value={formData.subtitle || ""}
+                      onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
+                      className="mt-1 block w-full border border-black px-3 py-2 text-sm"
+                      placeholder="VD: Bộ sưu tập công nghệ 2026"
+                    />
+                  </label>
+
+                  <label className="block text-sm font-medium">
+                    Kiểu Layout (Layout Style)
+                    <input
+                      type="text"
+                      value={formData.layoutStyle || ""}
+                      onChange={(e) => setFormData({ ...formData, layoutStyle: e.target.value })}
+                      className="mt-1 block w-full border border-black px-3 py-2 text-sm"
+                      placeholder="GRID_5 / SLIDER / 2_COL_GRID / 3_COL_GRID"
+                    />
+                  </label>
+                </>
+              )}
+
               {modalType === "banner" && (
                 <>
                   <label className="block text-sm font-medium">
@@ -435,17 +657,21 @@ export default function CmsPage() {
                   />
                 </label>
 
-                {modalType !== "brand" && (
-                  <label className="flex items-center gap-2 text-sm font-medium pt-6 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.isActive ?? true}
-                      onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                      className="accent-black"
-                    />
-                    Hiển thị công khai
-                  </label>
-                )}
+                <label className="flex items-center gap-2 text-sm font-medium pt-6 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={modalType === "layout" ? (formData.enabled ?? true) : (formData.isActive ?? true)}
+                    onChange={(e) => {
+                      if (modalType === "layout") {
+                        setFormData({ ...formData, enabled: e.target.checked });
+                      } else {
+                        setFormData({ ...formData, isActive: e.target.checked });
+                      }
+                    }}
+                    className="accent-black w-4 h-4"
+                  />
+                  Hiển thị công khai
+                </label>
               </div>
             </div>
 
@@ -453,7 +679,7 @@ export default function CmsPage() {
               <button type="button" onClick={closeModal} className="border border-black px-4 py-2 text-sm">
                 Hủy
               </button>
-              <button className="bg-black text-white px-5 py-2 text-sm hover:bg-zinc-800">Lưu</button>
+              <button className="bg-black text-white px-5 py-2 text-sm hover:bg-zinc-800 cursor-pointer">Lưu</button>
             </div>
           </form>
         </div>

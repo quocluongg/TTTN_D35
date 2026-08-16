@@ -34,6 +34,7 @@ import { useCurrentUser, useLogout } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 
 export function Navbar() {
+  const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
   const { data: user, isLoading } = useCurrentUser();
   const logout = useLogout();
@@ -46,6 +47,8 @@ export function Navbar() {
   const ticking = useRef(false);
 
   useEffect(() => {
+    setMounted(true);
+
     const handleScroll = () => {
       if (!ticking.current) {
         window.requestAnimationFrame(() => {
@@ -157,9 +160,9 @@ export function Navbar() {
         )}
 
         {/* Item 6: Đăng nhập / User Dropdown */}
-        <div className="flex items-center">
-          {isLoading ? (
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        <div className="flex items-center min-h-[32px]">
+          {!mounted || isLoading ? (
+            <div className="w-5 h-5 border-2 border-zinc-400 border-t-transparent rounded-full animate-spin" />
           ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -170,7 +173,7 @@ export function Navbar() {
                       {user?.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="truncate max-w-[120px] text-black dark:text-white text-[24px] font-medium">{user?.fullName.split(" ").pop()}</span>
+                  <span className="truncate max-w-[120px] text-black dark:text-white text-[24px] font-medium">{user?.fullName?.split(" ").pop()}</span>
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-1.5 shadow-lg shadow-black/5 dark:shadow-black/40" align="end" forceMount>
@@ -243,16 +246,20 @@ export function Navbar() {
               {cartCount}
             </span>
           </Link>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="rounded-full w-8 h-8 text-black dark:text-white hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer focus-visible:ring-0"
-          >
-            <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
-          </Button>
+          {mounted ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="rounded-full w-8 h-8 text-black dark:text-white hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer focus-visible:ring-0"
+            >
+              <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <span className="sr-only">Toggle theme</span>
+            </Button>
+          ) : (
+            <div className="w-8 h-8" />
+          )}
         </div>
       </div>
 

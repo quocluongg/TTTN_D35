@@ -21,6 +21,13 @@ export const adminApi = {
   reports: { revenue: (params?: Query) => http.get("/admin/reports/revenue", { params }), topProducts: (params?: Query) => http.get("/admin/reports/top-products", { params }), topCustomers: (params?: Query) => http.get("/admin/reports/top-customers", { params }), orderStatus: (params?: Query) => http.get("/admin/reports/order-status-summary", { params }), lowStock: (params?: Query) => http.get("/admin/reports/inventory-low-stock", { params }) },
   auditLogs: (params?: Query) => http.get("/admin/audit-logs", { params }),
   home: {
+    layout: {
+      list: () => http.get("/admin/home/layout"),
+      create: (data: unknown) => http.post("/admin/home/layout", data),
+      update: (id: string, data: unknown) => http.put(`/admin/home/layout/${id}`, data),
+      reorder: (data: unknown) => http.put("/admin/home/layout/reorder", data),
+      delete: (id: string) => http.delete(`/admin/home/layout/${id}`),
+    },
     banners: crud("/admin/home/banners"),
     brands: crud("/admin/home/brands"),
     featuredCategories: crud("/admin/home/featured-categories"),

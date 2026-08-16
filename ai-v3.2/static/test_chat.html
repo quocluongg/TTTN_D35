@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShopWise AI Chatbot - Test</title>
+    <title>ShopWise AI Chatbot v3.2 - Linked Messages & Product Cards</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -19,7 +19,7 @@
 
         .container {
             width: 100%;
-            max-width: 900px;
+            max-width: 920px;
             background: #0f172a;
             border-radius: 24px;
             box-shadow: 0 25px 80px rgba(0,0,0,0.5);
@@ -85,7 +85,7 @@
         .stat-item { text-align: center; }
 
         .stat-value {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 700;
             color: #3b82f6;
         }
@@ -124,7 +124,7 @@
         .message.user { justify-content: flex-end; }
 
         .message-bubble {
-            max-width: 75%;
+            max-width: 85%;
             padding: 14px 18px;
             border-radius: 18px;
             font-size: 14px;
@@ -149,20 +149,69 @@
             color: #64748b;
             margin-top: 8px;
             display: flex;
-            gap: 12px;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
         .message.user .message-meta { justify-content: flex-end; }
 
         .meta-tag {
-            background: #1e293b;
+            background: #0f172a;
             padding: 3px 8px;
             border-radius: 6px;
             font-size: 11px;
+            border: 1px solid #334155;
         }
 
-        .message.user .meta-tag { background: rgba(255,255,255,0.15); }
+        .message.user .meta-tag { background: rgba(255,255,255,0.15); border: none; }
+
+        .link-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-family: monospace;
+            font-size: 11px;
+            color: #38bdf8;
+            background: #0369a1;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 6px;
+        }
+
+        .product-card-container {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .product-card {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 12px 16px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .product-card-title {
+            font-weight: 700;
+            color: #60a5fa;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .product-card-details {
+            font-size: 12px;
+            color: #94a3b8;
+            display: flex;
+            gap: 16px;
+            margin-bottom: 4px;
+        }
+
+        .product-card-price {
+            font-weight: 700;
+            color: #4ade80;
+        }
 
         .sources {
             margin-top: 12px;
@@ -182,7 +231,7 @@
             color: #60a5fa;
             margin-bottom: 6px;
             padding: 8px 12px;
-            background: #1e293b;
+            background: #0f172a;
             border-radius: 8px;
             border-left: 3px solid #3b82f6;
         }
@@ -196,7 +245,7 @@
         .entity-tag {
             display: inline-block;
             padding: 3px 10px;
-            background: #1e293b;
+            background: #0f172a;
             border: 1px solid #334155;
             border-radius: 12px;
             font-size: 11px;
@@ -259,7 +308,7 @@
         .input-wrapper input:focus { border-color: #3b82f6; }
 
         .input-wrapper button {
-            padding: 14px 28px;
+            padding: 14px 24px;
             background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
             color: white;
             border: none;
@@ -325,8 +374,8 @@
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <h1>🤖 ShopWise AI Chatbot</h1>
-                <p>RAG Chatbot Tư vấn Sản phẩm &mdash; pgvector + BM25 + PhoBERT</p>
+                <h1>🤖 ShopWise AI Chatbot v3.2</h1>
+                <p>RAG Chatbot Tư vấn &mdash; Line-by-Line Specs & Product Cards</p>
             </div>
             <div class="status">
                 <div class="status-dot" id="statusDot"></div>
@@ -336,42 +385,36 @@
 
         <div class="stats-bar">
             <div class="stat-item">
-                <div class="stat-value" id="totalProducts">-</div>
-                <div class="stat-label">Products</div>
+                <div class="stat-value" id="convIdDisplay" style="font-size:13px; word-break:break-all;">-</div>
+                <div class="stat-label">Conversation ID</div>
             </div>
             <div class="stat-item">
-                <div class="stat-value" id="totalChunks">-</div>
-                <div class="stat-label">Chunks</div>
+                <div class="stat-value" id="lastMsgIdDisplay" style="font-size:13px; word-break:break-all;">-</div>
+                <div class="stat-label">Last Message ID (Parent)</div>
             </div>
             <div class="stat-item">
-                <div class="stat-value" id="pgvectors">-</div>
-                <div class="stat-label">pgvector</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="geminiStatus">-</div>
-                <div class="stat-label">Gemini</div>
+                <button class="quick-btn" onclick="startNewConversation()" style="margin-top:2px;">🆕 Conversation mới</button>
             </div>
         </div>
 
         <div class="chat-container" id="chatContainer">
             <div class="message bot">
                 <div class="message-bubble">
-                    Xin chào! 👋 Tôi là trợ lý AI tư vấn sản phẩm công nghệ của ShopWise. Bạn cần tìm sản phẩm nào hoặc có câu hỏi gì?
+                    Xin chào anh/chị! 👋 Em là trợ lý tư vấn sản phẩm công nghệ của ShopWise. Anh/chị cần tìm sản phẩm nào hay cần em hỗ trợ thông tin gì ạ?
                 </div>
             </div>
         </div>
 
         <div class="input-container">
             <div class="input-wrapper">
-                <input type="text" id="userInput" placeholder="Nhập câu hỏi của bạn..." autocomplete="off">
+                <input type="text" id="userInput" placeholder="Nhập câu hỏi của bạn (ví dụ: 'Asus Vivobook 15 giá bao nhiêu?')" autocomplete="off">
                 <button id="sendBtn" onclick="sendMessage()">Gửi</button>
             </div>
             <div class="quick-questions">
-                <button class="quick-btn" onclick="askQuick('Laptop gaming nào tốt nhất?')">🎮 Laptop gaming?</button>
-                <button class="quick-btn" onclick="askQuick('Điện thoại Samsung giá bao nhiêu?')">📱 Giá Samsung?</button>
-                <button class="quick-btn" onclick="askQuick('Laptop nào cho sinh viên?')">🎓 Laptop sinh viên?</button>
-                <button class="quick-btn" onclick="askQuick('Tai nghe chống ồn tốt?')">🎧 Tai nghe chống ồn?</button>
-                <button class="quick-btn" onclick="askQuick('Bảo hành sản phẩm như thế nào?')">🛡️ Bảo hành?</button>
+                <button class="quick-btn" onclick="askQuick('Laptop ASUS Vivobook 15 giá bao nhiêu?')">💻 ASUS Vivobook 15?</button>
+                <button class="quick-btn" onclick="askQuick('Cấu hình của nó gồm những gì?')">🔍 Cấu hình của nó?</button>
+                <button class="quick-btn" onclick="askQuick('Nó có bảo hành bao lâu?')">🛡️ Bảo hành bao lâu?</button>
+                <button class="quick-btn" onclick="askQuick('So sánh nó với MacBook Air M3')">⚖️ So sánh với MacBook Air M3?</button>
             </div>
         </div>
     </div>
@@ -381,6 +424,9 @@
         const chatContainer = document.getElementById('chatContainer');
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
+
+        let currentConversationId = null;
+        let lastMessageId = null;
 
         // Load stats on startup
         loadStats();
@@ -399,11 +445,6 @@
                 if (!response.ok) throw new Error('Stats endpoint failed');
                 const data = await response.json();
 
-                document.getElementById('totalProducts').textContent = data.total_products || 0;
-                document.getElementById('totalChunks').textContent = data.total_chunks || 0;
-                document.getElementById('pgvectors').textContent = data.pgvector_vectors || 0;
-                document.getElementById('geminiStatus').textContent = data.gemini_status === 'connected' ? '✅' : '❌';
-
                 document.getElementById('statusDot').classList.remove('error');
                 document.getElementById('statusText').textContent = 'Connected';
             } catch (error) {
@@ -411,6 +452,38 @@
                 document.getElementById('statusDot').classList.add('error');
                 document.getElementById('statusText').textContent = 'Disconnected';
             }
+        }
+
+        function formatMarkdownText(text) {
+            if (!text) return '';
+            let html = text;
+            // Bold
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            // Line-by-line Bullet points
+            html = html.replace(/^[ \t]*[•\*][ \t]+(.+)$/gm, '<li style="margin-left: 18px; margin-bottom: 4px;">$1</li>');
+            // Wrap <li> in <ul>
+            html = html.replace(/(<li.*<\/li>\n?)+/g, '<ul style="margin: 8px 0; padding-left: 4px;">$&</ul>');
+            // Line breaks
+            html = html.replace(/\n/g, '<br>');
+            html = html.replace(/<br><ul/g, '<ul').replace(/<\/ul><br>/g, '</ul>');
+            return html;
+        }
+
+        function startNewConversation() {
+            currentConversationId = null;
+            lastMessageId = null;
+            document.getElementById('convIdDisplay').textContent = '- (Sẽ tự tạo)';
+            document.getElementById('lastMsgIdDisplay').textContent = '-';
+
+            const sysMsg = document.createElement('div');
+            sysMsg.className = 'message bot';
+            sysMsg.innerHTML = `
+                <div class="message-bubble" style="background:#0284c7; color:white;">
+                    ✨ Đã bắt đầu cuộc trò chuyện mới! Chuỗi tin nhắn đã được khởi tạo lại.
+                </div>
+            `;
+            chatContainer.appendChild(sysMsg);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
         async function sendMessage() {
@@ -435,7 +508,15 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
             try {
-                const response = await fetch(`${API_URL}/api/v1/chat?q=${encodeURIComponent(query)}&top_k=5`);
+                let url = `${API_URL}/api/v1/chat?q=${encodeURIComponent(query)}&top_k=5`;
+                if (currentConversationId) {
+                    url += `&conversation_id=${encodeURIComponent(currentConversationId)}`;
+                }
+                if (lastMessageId) {
+                    url += `&parent_id=${encodeURIComponent(lastMessageId)}`;
+                }
+
+                const response = await fetch(url);
                 const data = await response.json();
 
                 chatContainer.removeChild(typingDiv);
@@ -443,7 +524,17 @@
                 if (data.error) {
                     addMessage(data.error, 'bot', null, true);
                 } else {
-                    addMessage(data.answer || data.response || 'Không có phản hồi.', 'bot', data);
+                    // Update linked message pointers
+                    if (data.conversation_id) {
+                        currentConversationId = data.conversation_id;
+                        document.getElementById('convIdDisplay').textContent = currentConversationId.substring(0, 8) + '...';
+                    }
+                    if (data.message_id) {
+                        lastMessageId = data.message_id;
+                        document.getElementById('lastMsgIdDisplay').textContent = lastMessageId.substring(0, 8) + '...';
+                    }
+
+                    addMessage(data.response || data.answer || 'Không có phản hồi.', 'bot', data);
                 }
             } catch (error) {
                 chatContainer.removeChild(typingDiv);
@@ -459,16 +550,30 @@
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type}`;
 
-            let sourcesHtml = '';
-            if (data && data.retrieved_products && data.retrieved_products.length > 0) {
-                sourcesHtml = `
-                    <div class="sources">
-                        <div class="sources-title">📚 Sản phẩm liên quan:</div>
-                        ${data.retrieved_products.slice(0, 3).map(s => `
-                            <div class="source-item">
-                                <strong>${s.name || s.product_name || ''}</strong>
-                                ${s.price ? ` — ${Number(s.price).toLocaleString('vi-VN')}đ` : ''}
-                                ${s.stage1_score ? ` (score: ${s.stage1_score})` : ''}
+            let linkBadgeHtml = '';
+            if (data && data.message_id) {
+                const parentText = data.parent_id ? data.parent_id.substring(0, 6) : 'null (root)';
+                const msgText = data.message_id.substring(0, 6);
+                linkBadgeHtml = `
+                    <div class="link-badge">
+                        🔗 ID: ${msgText} ⬅️ Parent: ${parentText} ${data.history_length ? `| History: ${data.history_length} turns` : ''}
+                    </div>
+                `;
+            }
+
+            let cardsHtml = '';
+            if (data && data.products && data.products.length > 0) {
+                cardsHtml = `
+                    <div class="product-card-container">
+                        ${data.products.map(p => `
+                            <div class="product-card">
+                                <div class="product-card-title">🛒 ${p.name}</div>
+                                <div class="product-card-details">
+                                    <span>🏷️ ${p.brand}</span>
+                                    <span>📁 ${p.category_name}</span>
+                                    <span>⭐ ${p.rating_avg}/5.0 (${p.review_count} lượt)</span>
+                                </div>
+                                <div class="product-card-price">💰 ${Number(p.price_from).toLocaleString('vi-VN')} VNĐ</div>
                             </div>
                         `).join('')}
                     </div>
@@ -490,29 +595,25 @@
             if (data) {
                 const intent = data.intent || '';
                 const confidence = data.confidence ? `${(data.confidence * 100).toFixed(0)}%` : '';
-                const validation = data.validation;
-                let validationBadge = '';
-                if (validation && validation.warnings && validation.warnings.length > 0) {
-                    validationBadge = `<span class="meta-tag" style="color:#fbbf24">⚠️ ${validation.warnings.length} warnings</span>`;
-                }
 
                 metaHtml = `
                     <div class="message-meta">
                         ${intent ? `<span class="meta-tag">Intent: ${intent}</span>` : ''}
                         ${confidence ? `<span class="meta-tag">Confidence: ${confidence}</span>` : ''}
-                        ${data.retrieved_products ? `<span class="meta-tag">Sources: ${data.retrieved_products.length}</span>` : ''}
-                        ${validationBadge}
+                        ${data.products ? `<span class="meta-tag">Cards: ${data.products.length}</span>` : ''}
                     </div>
                 `;
             }
 
             const bubbleClass = isError ? 'message-bubble error-bubble' : 'message-bubble';
+            const formattedContent = type === 'bot' ? formatMarkdownText(text) : text.replace(/\n/g, '<br>');
 
             messageDiv.innerHTML = `
                 <div class="${bubbleClass}">
-                    ${text.replace(/\n/g, '<br>')}
+                    ${formattedContent}
+                    ${cardsHtml}
+                    ${linkBadgeHtml}
                     ${entitiesHtml}
-                    ${sourcesHtml}
                     ${metaHtml}
                 </div>
             `;

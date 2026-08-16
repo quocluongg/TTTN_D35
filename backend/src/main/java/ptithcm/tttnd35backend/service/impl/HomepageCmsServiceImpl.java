@@ -30,6 +30,7 @@ public class HomepageCmsServiceImpl implements IHomepageCmsService {
     private final IHomeFeaturedCategoryItemRepository featuredItemRepository;
     private final ICategoryRepository categoryRepository;
     private final IProductRepository productRepository;
+    private final HomeLayoutSectionRepository layoutSectionRepository;
 
     private final IHomeBannerMapper bannerMapper;
     private final IBrandLogoMapper brandMapper;
@@ -253,5 +254,149 @@ public class HomepageCmsServiceImpl implements IHomepageCmsService {
             throw new ResourceNotFoundException("Không tìm thấy item nổi bật với id: " + itemId);
         }
         featuredItemRepository.deleteById(itemId);
+    }
+
+    // --- Homepage Layout Sections ---
+    @Override
+    @Transactional(readOnly = true)
+    public List<HomeLayoutSectionResponse> getPublicLayout() {
+        seedDefaultLayoutSectionsIfEmpty();
+        return layoutSectionRepository.findAllByEnabledTrueOrderByDisplayOrderAsc()
+                .stream()
+                .map(this::mapToLayoutResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<HomeLayoutSectionResponse> getAllLayoutSections() {
+        seedDefaultLayoutSectionsIfEmpty();
+        return layoutSectionRepository.findAllByOrderByDisplayOrderAsc()
+                .stream()
+                .map(this::mapToLayoutResponse)
+                .toList();
+    }
+
+    @Override
+    public HomeLayoutSectionResponse createLayoutSection(HomeLayoutSectionRequest request) {
+        HomeLayoutSection section = HomeLayoutSection.builder()
+                .sectionKey(request.getSectionKey())
+                .title(request.getTitle())
+                .subtitle(request.getSubtitle())
+                .displayOrder(request.getDisplayOrder())
+                .enabled(request.getEnabled() == null || Boolean.TRUE.equals(request.getEnabled()))
+                .layoutStyle(request.getLayoutStyle())
+                .configJson(request.getConfigJson())
+                .build();
+        return mapToLayoutResponse(layoutSectionRepository.save(section));
+    }
+
+    @Override
+    public HomeLayoutSectionResponse updateLayoutSection(UUID id, HomeLayoutSectionRequest request) {
+        HomeLayoutSection section = layoutSectionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy section layout với id: " + id));
+
+        if (request.getSectionKey() != null) section.setSectionKey(request.getSectionKey());
+        if (request.getTitle() != null) section.setTitle(request.getTitle());
+        if (request.getSubtitle() != null) section.setSubtitle(request.getSubtitle());
+        section.setDisplayOrder(request.getDisplayOrder());
+        if (request.getEnabled() != null) section.setEnabled(request.getEnabled());
+        if (request.getLayoutStyle() != null) section.setLayoutStyle(request.getLayoutStyle());
+        if (request.getConfigJson() != null) section.setConfigJson(request.getConfigJson());
+
+        return mapToLayoutResponse(layoutSectionRepository.save(section));
+    }
+
+    @Override
+    public void reorderLayoutSections(List<HomeLayoutReorderRequest> requests) {
+        if (requests == null || requests.isEmpty()) return;
+        for (HomeLayoutReorderRequest req : requests) {
+            layoutSectionRepository.findById(req.getId()).ifPresent(section -> {
+                section.setDisplayOrder(req.getDisplayOrder());
+                layoutSectionRepository.save(section);
+            });
+        }
+    }
+
+    @Override
+    public void deleteLayoutSection(UUID id) {
+        if (!layoutSectionRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Không tìm thấy section layout với id: " + id);
+        }
+        layoutSectionRepository.deleteById(id);
+    }
+
+    private HomeLayoutSectionResponse mapToLayoutResponse(HomeLayoutSection section) {
+        return HomeLayoutSectionResponse.builder()
+                .id(section.getId())
+                .sectionKey(section.getSectionKey())
+                .title(section.getTitle())
+                .subtitle(section.getSubtitle())
+                .displayOrder(section.getDisplayOrder())
+                .enabled(section.isEnabled())
+                .layoutStyle(section.getLayoutStyle())
+                .configJson(section.getConfigJson())
+                .createdAt(section.getCreatedAt())
+                .updatedAt(section.getUpdatedAt())
+                .build();
+    }
+
+    private void seedDefaultLayoutSectionsIfEmpty() {
+        if (layoutSectionRepository.count() > 0) {
+            return;
+        }
+        List<HomeLayoutSection> defaultSections = List.of(
+            HomeLayoutSection.builder()
+                .sectionKey("HERO_BANNER")
+                .title("Hero Banner")
+                .subtitle("Bộ sưu tập công nghệ 2026")
+                .displayOrder(1)
+                .enabled(true)
+                .layoutStyle("HERO_FULL")
+                .build(),
+            HomeLayoutSection.builder()
+                .sectionKey("MARQUEE_TICKER")
+                .title("Thông báo nổi bật")
+                .subtitle("⚡ MUA HÀNG CHÍNH HÃNG HỎA TỐC 2H")
+                .displayOrder(2)
+                .enabled(true)
+                .layoutStyle("TICKER")
+                .build(),
+            HomeLayoutSection.builder()
+                .sectionKey("FEATURED_PRODUCTS")
+                .title("Sản phẩm được yêu thích nhất")
+                .subtitle("Sản phẩm nổi bật chính hãng")
+                .displayOrder(3)
+                .enabled(true)
+                .layoutStyle("GRID_5")
+                .configJson("{\"limit\":10,\"sortBy\":\"createdAt\"}")
+                .build(),
+            HomeLayoutSection.builder()
+                .sectionKey("BUY_BY_NEED")
+                .title("Mua theo nhu cầu sử dụng")
+                .subtitle("Làm việc văn phòng & Gaming đồ họa")
+                .displayOrder(4)
+                .enabled(true)
+                .layoutStyle("2_COL_GRID")
+                .build(),
+            HomeLayoutSection.builder()
+                .sectionKey("FEATURED_CATEGORIES")
+                .title("Danh mục nổi bật")
+                .subtitle("Khám phá danh mục nổi bật")
+                .displayOrder(5)
+                .enabled(true)
+                .layoutStyle("3_COL_GRID")
+                .build(),
+            HomeLayoutSection.builder()
+                .sectionKey("NEWS_JOURNAL")
+                .title("Tin tức & Xu hướng")
+                .subtitle("ShopWise Journal")
+                .displayOrder(6)
+                .enabled(true)
+                .layoutStyle("3_COL_GRID")
+                .configJson("{\"limit\":3}")
+                .build()
+        );
+        layoutSectionRepository.saveAll(defaultSections);
     }
 }
