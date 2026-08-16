@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "timestamp": "2026-08-12T02:05:29.040903",
+    "testset_size": 5,
+    "ragas_version": "0.2.x",
+    "llm_judge": "gemini-3.5-flash",
+    "system": "ai-v3 RAG Pipeline"
+  },
+  "aggregate_scores": {
+    "faithfulness": 0.0,
+    "answer_relevancy": 0.0,
+    "context_recall": 0.0,
+    "context_precision": 0.0,
+    "ragas_overall": 0.0
+  },
+  "evaluation_quality": {
+    "total_questions": 5,
+    "llm_judge_count": 0,
+    "fallback_count": 0,
+    "phase1_completed": 4,
+    "phase1_failed": 1,
+    "scored_total": 0
+  },
+  "performance": {
+    "latency_mean_ms": 24623.844349998762,
+    "latency_p50_ms": 24329.062049997447,
+    "latency_p95_ms": 27724.895565002953,
+    "latency_p99_ms": 28184.89287300399,
+    "throughput_qps": 0.040611042930022836,
+    "avg_input_tokens": 24.5,
+    "avg_output_tokens": 1140.5,
+    "total_input_tokens": 98,
+    "total_output_tokens": 4562,
+    "estimated_cost_usd": 0.000275
+  },
+  "per_sample": []
+}
