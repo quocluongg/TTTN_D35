@@ -89,10 +89,19 @@ Expand the sidebar inspector to include all fields:
 
 **layoutStyle options:** `FULL_WIDTH`, `HERO_FULL`, `GRID`, `GRID_5`, `2_COL_GRID`, `3_COL_GRID`, `CARDS`, `TICKER`, `LIST`
 
-**configJson handling:** Parse JSON → render contextual form fields:
-- `limit` → number input
-- `sortBy` → select (createdAt, price, name, rating)
-- Not raw JSON editor — user-friendly form fields
+**configJson handling:** Parse JSON → render contextual form fields. Not raw JSON editor — user-friendly form fields.
+
+| Section Key | configJson Fields | Form Control |
+|---|---|---|
+| HERO_BANNER | (none) | — |
+| MARQUEE_TICKER | (none) | — |
+| FEATURED_PRODUCTS | `limit` (number), `sortBy` (string) | Number input, Select (createdAt/price/name/rating) |
+| BUY_BY_NEED | (none) | — |
+| FEATURED_CATEGORIES | (none) | — |
+| NEWS_JOURNAL | `limit` (number) | Number input |
+| BRAND_LOGOS | (none) | — |
+
+configJson is stored as a JSON string in the database. The inspector parses it to form fields on load, and serializes back to JSON string on save.
 
 ### Public Homepage Sync
 
