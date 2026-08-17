@@ -463,7 +463,8 @@ export default function CmsPage() {
                       required
                       value={modalFormData.sectionKey || "HERO_BANNER"}
                       onChange={(e) => setModalFormData({ ...modalFormData, sectionKey: e.target.value })}
-                      className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:border-blue-400"
+                      disabled={!!editingItem?.id}
+                      className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <option value="HERO_BANNER">HERO_BANNER (Hero Slide Banner)</option>
                       <option value="MARQUEE_TICKER">MARQUEE_TICKER (Dòng chữ thông báo chạy)</option>
@@ -472,6 +473,7 @@ export default function CmsPage() {
                       <option value="FEATURED_CATEGORIES">FEATURED_CATEGORIES (Danh mục nổi bật)</option>
                       <option value="NEWS_JOURNAL">NEWS_JOURNAL (Tin tức & Xu hướng)</option>
                       <option value="BRAND_LOGOS">BRAND_LOGOS (Thương hiệu đối tác)</option>
+                      <option value="CUSTOM_PROMO_BANNER">CUSTOM_PROMO_BANNER (Banner khuyến mãi)</option>
                     </select>
                   </div>
 
@@ -499,6 +501,28 @@ export default function CmsPage() {
                       className="w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder:text-gray-300 focus:outline-none focus:border-blue-400"
                       placeholder="VD: Bộ sưu tập công nghệ 2026"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                      Layout Style
+                    </label>
+                    <select
+                      value={modalFormData.layoutStyle || ""}
+                      onChange={(e) => setModalFormData({ ...modalFormData, layoutStyle: e.target.value })}
+                      className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:border-blue-400"
+                    >
+                      <option value="">— Chọn layout —</option>
+                      <option value="FULL_WIDTH">Full Width</option>
+                      <option value="HERO_FULL">Hero Full</option>
+                      <option value="GRID">Grid</option>
+                      <option value="GRID_5">Grid 5 Columns</option>
+                      <option value="2_COL_GRID">2 Column Grid</option>
+                      <option value="3_COL_GRID">3 Column Grid</option>
+                      <option value="CARDS">Cards</option>
+                      <option value="TICKER">Ticker</option>
+                      <option value="LIST">List</option>
+                    </select>
                   </div>
                 </>
               )}
