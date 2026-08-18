@@ -64,7 +64,7 @@ File `.env` nằm tại `ai-v3/.env`. Dưới đây là toàn bộ biến:
 
 | Biến | Giá trị | Mô tả |
 |---|---|---|
-| `GEMINI_API_KEY` | `<YOUR_KEY>` | API key cho Google GenAI (Gemma/Gemini) |
+| `GEMINI_API_KEY` | `<your-gcp-api-key>` | API key cho Google GenAI (Gemma/Gemini) |
 | `GEMINI_MODEL` | `gemini-3.1-flash-lite` | Tên model LLM chính |
 | `GEMINI_MODEL_NAME` | `gemini-3.1-flash-lite` | Tên model cho LLM client |
 | `LLM_TEMPERATURE` | `0.2` | Nhiệt độ sinh text (0.0 = deterministic) |

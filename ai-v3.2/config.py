@@ -39,7 +39,7 @@ class Settings:
         self.MMR_LAMBDA = float(os.getenv("MMR_LAMBDA", "0.7"))
 
         # LLM
-        self.GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "<YOUR_KEY>")
+        self.GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
         self.GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemma-4-31b-it")
         self.LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.2"))
 

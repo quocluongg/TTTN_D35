@@ -17,7 +17,7 @@ if sys.platform == "win32":
 
 logger = logging.getLogger(__name__)
 
-GEMINI_API_KEY = "<YOUR_KEY>"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 DEFAULT_MODEL = "gemini-3.1-flash-lite"
 
 
