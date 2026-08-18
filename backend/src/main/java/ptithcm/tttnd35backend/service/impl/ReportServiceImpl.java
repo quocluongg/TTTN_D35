@@ -48,7 +48,7 @@ public class ReportServiceImpl implements IReportService {
                 FROM orders
                 WHERE (status = 'COMPLETED' OR payment_status = 'PAID')
                   AND status <> 'CANCELLED'
-                  AND (CAST(:from AS TIMESTAMP) IS NULL OR created_at >= :from)
+AND (CAST(:from AS TIMESTAMP) IS NULL OR created_at >= :from)
                   AND (CAST(:to AS TIMESTAMP) IS NULL OR created_at <= :to)
                 GROUP BY TO_CHAR(created_at, '%s')
                 ORDER BY period ASC

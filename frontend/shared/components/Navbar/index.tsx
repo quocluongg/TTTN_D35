@@ -40,6 +40,15 @@ export function Navbar() {
   const logout = useLogout();
   const { totalItems: cartCount } = useCart();
 
+  // mounted-guard: React Query chỉ fetch user ở client -> isLoading/user khác nhau giữa
+  // HTML server render và lần render đầu tiên ở client => hydration mismatch (thấy trong log).
+  // Chặn bằng cách luôn render 1 placeholder giống hệt nhau ở lần render đầu (mounted=false),
+  // rồi mới đổi sang trạng thái thật sau khi đã hydrate xong.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Scroll-hide animation logic
   const [isVisible, setIsVisible] = useState(true);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
