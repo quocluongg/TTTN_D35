@@ -11,6 +11,7 @@ router = APIRouter(prefix="/admin/analytics", tags=["admin-analytics"])
 
 
 @router.get("")
+@router.get("/rag")
 async def get_analytics():
     """Get RAG performance analytics."""
     chat_logs = get_chat_logs_raw()

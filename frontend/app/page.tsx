@@ -7,6 +7,7 @@ import { newsService } from "@/services/newsService";
 import { homeService } from "@/services/homeService";
 import { HomeLayoutSection } from "@/types/home";
 
+import HomepageSkeleton from "@/components/home/HomepageSkeleton";
 import HeroSection from "@/components/home/HeroSection";
 import MarqueeTickerSection from "@/components/home/MarqueeTickerSection";
 import ProductShowcaseSection from "@/components/home/ProductShowcaseSection";
@@ -131,7 +132,9 @@ export default function HomePage() {
   return (
     <PublicLayout fullWidth>
       <div className="w-full bg-[#F2F2F2] dark:bg-zinc-950 text-black dark:text-white transition-colors duration-300">
-        {layoutSections.length > 0 ? (
+        {loadingLayout ? (
+          <HomepageSkeleton />
+        ) : layoutSections.length > 0 ? (
           // Render sections in order returned by API
           layoutSections.map((section) => renderSectionComponent(section))
         ) : (

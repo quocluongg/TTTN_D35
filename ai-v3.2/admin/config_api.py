@@ -11,7 +11,8 @@ from config import get_settings
 router = APIRouter(prefix="/admin/config", tags=["admin-config"])
 
 
-@router.get("", response_model=SystemConfig)
+@router.get("")
+@router.get("/rag")
 async def get_config():
     """Get current system configuration."""
     s = get_settings()
@@ -32,6 +33,7 @@ async def get_config():
 
 
 @router.put("")
+@router.put("/rag")
 async def update_config(update: ConfigUpdate):
     """Update system configuration (runtime only, not persisted to .env)."""
     s = get_settings()

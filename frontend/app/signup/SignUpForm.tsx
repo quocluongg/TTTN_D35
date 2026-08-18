@@ -25,7 +25,7 @@ export default function SignUpForm() {
   const registerMutation = useMutation({
     mutationFn: () => {
       if (form.password.length < 8) {
-        throw new Error("Password must be at least 8 characters.");
+        throw new Error("Mật khẩu phải có ít nhất 8 ký tự.");
       }
       return authService.register({
         email: form.email.trim(),
@@ -38,7 +38,7 @@ export default function SignUpForm() {
       setStep("otp");
     },
     onError: (err: any) => {
-      setErrorMsg(err?.response?.data?.message || err?.message || "Registration failed. Please check your information!");
+      setErrorMsg(err?.response?.data?.message || err?.message || "Đăng ký thất bại. Vui lòng kiểm tra lại thông tin!");
     },
   });
 
@@ -53,7 +53,7 @@ export default function SignUpForm() {
       router.push("/login");
     },
     onError: (err: any) => {
-      setErrorMsg(err?.response?.data?.message || err?.message || "Invalid or expired OTP code!");
+      setErrorMsg(err?.response?.data?.message || err?.message || "Mã OTP không hợp lệ hoặc đã hết hạn!");
     },
   });
 
@@ -62,10 +62,10 @@ export default function SignUpForm() {
     mutationFn: () => authService.resendOtp(form.email.trim()),
     onSuccess: () => {
       setErrorMsg("");
-      alert("A new OTP code has been sent to your email!");
+      alert("Mã OTP mới đã được gửi đến email của bạn!");
     },
     onError: (err: any) => {
-      setErrorMsg(err?.response?.data?.message || err?.message || "Could not resend OTP code at this time.");
+      setErrorMsg(err?.response?.data?.message || err?.message || "Không thể gửi lại mã OTP lúc này. Vui lòng thử lại sau!");
     },
   });
 
@@ -74,7 +74,7 @@ export default function SignUpForm() {
     setErrorMsg("");
 
     if (!form.fullName || !form.email || !form.password) {
-      setErrorMsg("Please fill in all required fields.");
+      setErrorMsg("Vui lòng điền đầy đủ các thông tin bắt buộc.");
       return;
     }
 
@@ -86,7 +86,7 @@ export default function SignUpForm() {
     setErrorMsg("");
 
     if (!otp) {
-      setErrorMsg("Please enter the 6-digit OTP code.");
+      setErrorMsg("Vui lòng nhập đủ 6 chữ số mã OTP.");
       return;
     }
 
@@ -99,11 +99,11 @@ export default function SignUpForm() {
       {/* Title Header - Matching LoginForm */}
       <div className="space-y-2">
         <h1 className="text-[36px] sm:text-[48px] font-bold tracking-tight leading-[1.1]">
-          {step === "register" ? "Sign Up" : "Verify OTP"}
+          {step === "register" ? "Đăng ký tài khoản" : "Xác thực mã OTP"}
         </h1>
         {step === "otp" && (
           <p className="text-[16px] text-zinc-500 font-medium">
-            Enter the 6-digit OTP code sent to <strong className="text-black dark:text-white">{form.email}</strong>
+            Nhập mã OTP 6 chữ số đã được gửi đến <strong className="text-black dark:text-white">{form.email}</strong>
           </p>
         )}
       </div>
@@ -120,13 +120,13 @@ export default function SignUpForm() {
           {/* Input 1: Full Name */}
           <div className="space-y-2">
             <label className="block text-[18px] sm:text-[20px] font-medium">
-              Full Name
+              Họ và tên
             </label>
             <input
               type="text"
               value={form.fullName}
               onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-              placeholder="Full Name"
+              placeholder="Nhập họ và tên của bạn"
               required
               disabled={registerMutation.isPending}
               className="w-full h-[54px] px-4 bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 text-[18px] text-black dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all disabled:opacity-50"
@@ -136,13 +136,13 @@ export default function SignUpForm() {
           {/* Input 2: Email Address */}
           <div className="space-y-2">
             <label className="block text-[18px] sm:text-[20px] font-medium">
-              Email address
+              Địa chỉ Email
             </label>
             <input
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder="Email address"
+              placeholder="Nhập địa chỉ email"
               required
               disabled={registerMutation.isPending}
               className="w-full h-[54px] px-4 bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 text-[18px] text-black dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all disabled:opacity-50"
@@ -152,14 +152,14 @@ export default function SignUpForm() {
           {/* Input 3: Password */}
           <div className="space-y-2">
             <label className="block text-[18px] sm:text-[20px] font-medium">
-              Password (Min 8 characters)
+              Mật khẩu (Tối thiểu 8 ký tự)
             </label>
             <div className="relative flex items-center">
               <input
                 type={showPassword ? "text" : "password"}
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                placeholder="Password"
+                placeholder="Nhập mật khẩu"
                 required
                 minLength={8}
                 disabled={registerMutation.isPending}
@@ -188,10 +188,10 @@ export default function SignUpForm() {
             >
               {registerMutation.isPending ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" /> Submitting...
+                  <Loader2 className="w-5 h-5 animate-spin" /> Đang xử lý...
                 </>
               ) : (
-                "Continue"
+                "Tiếp tục"
               )}
             </button>
 
@@ -199,7 +199,7 @@ export default function SignUpForm() {
               href="/login"
               className="w-full h-[54px] bg-[#F2F2F2] dark:bg-zinc-900 text-black dark:text-white border border-black dark:border-zinc-700 text-[20px] font-medium flex items-center justify-center hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
             >
-              Back to Log In
+              Quay lại Đăng nhập
             </Link>
           </div>
         </form>
@@ -215,7 +215,7 @@ export default function SignUpForm() {
           {/* Input OTP */}
           <div className="space-y-2">
             <label className="block text-[18px] sm:text-[20px] font-medium">
-              OTP Code (6 digits)
+              Mã OTP (6 chữ số)
             </label>
             <input
               type="text"
@@ -239,10 +239,10 @@ export default function SignUpForm() {
             >
               {verifyMutation.isPending ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" /> Verifying...
+                  <Loader2 className="w-5 h-5 animate-spin" /> Đang xác thực...
                 </>
               ) : (
-                "Verify & Complete"
+                "Xác nhận & Hoàn tất"
               )}
             </button>
 
@@ -252,7 +252,7 @@ export default function SignUpForm() {
                 onClick={() => setStep("register")}
                 className="text-zinc-600 dark:text-zinc-400 hover:underline"
               >
-                Change Info
+                Thay đổi thông tin
               </button>
               <button
                 type="button"
@@ -260,7 +260,7 @@ export default function SignUpForm() {
                 onClick={() => resendMutation.mutate()}
                 className="text-black dark:text-white underline font-bold"
               >
-                {resendMutation.isPending ? "Resending..." : "Resend OTP"}
+                {resendMutation.isPending ? "Đang gửi..." : "Gửi lại mã OTP"}
               </button>
             </div>
           </div>

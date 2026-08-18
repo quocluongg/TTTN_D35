@@ -88,6 +88,7 @@ def _sync_one_product(product_id: str) -> dict:
 
 
 @router.get("/status")
+@router.get("/rag/status")
 async def get_sync_status():
     """Get sync status for all products."""
     all_products = fetch_all_products()
@@ -126,6 +127,7 @@ async def get_sync_status():
 
 
 @router.post("/product/{product_id}")
+@router.post("/rag/product/{product_id}")
 async def sync_single_product(product_id: str):
     """Sync a single product to pgvector."""
     result = _sync_one_product(product_id)
@@ -135,6 +137,7 @@ async def sync_single_product(product_id: str):
 
 
 @router.post("/batch")
+@router.post("/rag/batch")
 async def sync_batch_products(request: BatchSyncRequest):
     """Sync multiple products to pgvector."""
     results = []
@@ -159,6 +162,7 @@ async def sync_batch_products(request: BatchSyncRequest):
 
 
 @router.post("/all")
+@router.post("/rag/all")
 async def sync_all_products():
     """Full reindex: sync all products to pgvector."""
     products = fetch_all_products()

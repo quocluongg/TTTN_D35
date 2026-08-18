@@ -21,7 +21,7 @@ public class AdminHomeController {
 
     // --- Banners ---
     @GetMapping("/banners")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<List<HomeBannerResponse>> getAllBanners() {
         return ApiResponse.<List<HomeBannerResponse>>builder()
                 .success(true)
@@ -31,7 +31,7 @@ public class AdminHomeController {
     }
 
     @GetMapping("/banners/{id}")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<HomeBannerResponse> getBannerById(@PathVariable UUID id) {
         return ApiResponse.<HomeBannerResponse>builder()
                 .success(true)
@@ -41,7 +41,7 @@ public class AdminHomeController {
     }
 
     @PostMapping("/banners")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<HomeBannerResponse> createBanner(@RequestBody @Valid HomeBannerRequest request) {
         return ApiResponse.<HomeBannerResponse>builder()
                 .success(true)
@@ -52,7 +52,7 @@ public class AdminHomeController {
     }
 
     @PutMapping("/banners/{id}")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<HomeBannerResponse> updateBanner(@PathVariable UUID id, @RequestBody @Valid HomeBannerRequest request) {
         return ApiResponse.<HomeBannerResponse>builder()
                 .success(true)
@@ -63,7 +63,7 @@ public class AdminHomeController {
     }
 
     @DeleteMapping("/banners/{id}")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<Void> deleteBanner(@PathVariable UUID id) {
         cmsService.deleteBanner(id);
         return ApiResponse.<Void>builder()
@@ -75,7 +75,7 @@ public class AdminHomeController {
 
     // --- Brands ---
     @GetMapping("/brands")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<List<BrandLogoResponse>> getAllBrands() {
         return ApiResponse.<List<BrandLogoResponse>>builder()
                 .success(true)
@@ -85,7 +85,7 @@ public class AdminHomeController {
     }
 
     @GetMapping("/brands/{id}")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<BrandLogoResponse> getBrandById(@PathVariable UUID id) {
         return ApiResponse.<BrandLogoResponse>builder()
                 .success(true)
@@ -95,7 +95,7 @@ public class AdminHomeController {
     }
 
     @PostMapping("/brands")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<BrandLogoResponse> createBrand(@RequestBody @Valid BrandLogoRequest request) {
         return ApiResponse.<BrandLogoResponse>builder()
                 .success(true)
@@ -106,7 +106,7 @@ public class AdminHomeController {
     }
 
     @PutMapping("/brands/{id}")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<BrandLogoResponse> updateBrand(@PathVariable UUID id, @RequestBody @Valid BrandLogoRequest request) {
         return ApiResponse.<BrandLogoResponse>builder()
                 .success(true)
@@ -117,7 +117,7 @@ public class AdminHomeController {
     }
 
     @DeleteMapping("/brands/{id}")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<Void> deleteBrand(@PathVariable UUID id) {
         cmsService.deleteBrand(id);
         return ApiResponse.<Void>builder()
@@ -129,7 +129,7 @@ public class AdminHomeController {
 
     // --- Featured Categories ---
     @GetMapping("/featured-categories")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<List<HomeFeaturedCategoryResponse>> getAllFeaturedCategories() {
         return ApiResponse.<List<HomeFeaturedCategoryResponse>>builder()
                 .success(true)
@@ -139,7 +139,7 @@ public class AdminHomeController {
     }
 
     @GetMapping("/featured-categories/{id}")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<HomeFeaturedCategoryResponse> getFeaturedCategoryById(@PathVariable UUID id) {
         return ApiResponse.<HomeFeaturedCategoryResponse>builder()
                 .success(true)
@@ -149,7 +149,7 @@ public class AdminHomeController {
     }
 
     @PostMapping("/featured-categories")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<HomeFeaturedCategoryResponse> createFeaturedCategory(@RequestBody @Valid HomeFeaturedCategoryRequest request) {
         return ApiResponse.<HomeFeaturedCategoryResponse>builder()
                 .success(true)
@@ -160,7 +160,7 @@ public class AdminHomeController {
     }
 
     @PutMapping("/featured-categories/{id}")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<HomeFeaturedCategoryResponse> updateFeaturedCategory(@PathVariable UUID id, @RequestBody @Valid HomeFeaturedCategoryRequest request) {
         return ApiResponse.<HomeFeaturedCategoryResponse>builder()
                 .success(true)
@@ -171,7 +171,7 @@ public class AdminHomeController {
     }
 
     @DeleteMapping("/featured-categories/{id}")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<Void> deleteFeaturedCategory(@PathVariable UUID id) {
         cmsService.deleteFeaturedCategory(id);
         return ApiResponse.<Void>builder()
@@ -183,7 +183,7 @@ public class AdminHomeController {
 
     // --- Featured Category Items ---
     @PostMapping("/featured-categories/{id}/items")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<HomeFeaturedCategoryItemResponse> addItem(
             @PathVariable UUID id,
             @RequestBody @Valid HomeFeaturedCategoryItemRequest request
@@ -197,7 +197,7 @@ public class AdminHomeController {
     }
 
     @DeleteMapping("/featured-categories/items/{itemId}")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<Void> deleteItem(@PathVariable UUID itemId) {
         cmsService.deleteFeaturedCategoryItem(itemId);
         return ApiResponse.<Void>builder()
@@ -209,7 +209,7 @@ public class AdminHomeController {
 
     // --- Layout Sections ---
     @GetMapping("/layout")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<List<HomeLayoutSectionResponse>> getAllLayoutSections() {
         return ApiResponse.<List<HomeLayoutSectionResponse>>builder()
                 .success(true)
@@ -219,7 +219,7 @@ public class AdminHomeController {
     }
 
     @PostMapping("/layout")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<HomeLayoutSectionResponse> createLayoutSection(@RequestBody @Valid HomeLayoutSectionRequest request) {
         return ApiResponse.<HomeLayoutSectionResponse>builder()
                 .success(true)
@@ -230,7 +230,7 @@ public class AdminHomeController {
     }
 
     @PutMapping("/layout/{id}")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<HomeLayoutSectionResponse> updateLayoutSection(
             @PathVariable UUID id,
             @RequestBody @Valid HomeLayoutSectionRequest request
@@ -244,7 +244,7 @@ public class AdminHomeController {
     }
 
     @PutMapping("/layout/reorder")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<Void> reorderLayoutSections(@RequestBody List<HomeLayoutReorderRequest> requests) {
         cmsService.reorderLayoutSections(requests);
         return ApiResponse.<Void>builder()
@@ -255,7 +255,7 @@ public class AdminHomeController {
     }
 
     @DeleteMapping("/layout/{id}")
-    @PreAuthorize("hasAuthority('HOMEPAGE_CMS_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HOMEPAGE_CMS_MANAGE')")
     public ApiResponse<Void> deleteLayoutSection(@PathVariable UUID id) {
         cmsService.deleteLayoutSection(id);
         return ApiResponse.<Void>builder()

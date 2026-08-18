@@ -36,7 +36,7 @@ export default function LoginForm() {
       {/* Title Header */}
       <div className="space-y-2">
         <h1 className="text-[36px] sm:text-[48px] font-bold tracking-tight leading-[1.1]">
-          Log In
+          Đăng nhập
         </h1>
       </div>
 
@@ -51,13 +51,13 @@ export default function LoginForm() {
         {/* Input 1: Email Address */}
         <div className="space-y-2">
           <label className="block text-[18px] sm:text-[20px] font-medium">
-            Email address
+            Địa chỉ Email
           </label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email address"
+            placeholder="Nhập email của bạn"
             required
             disabled={isPending}
             className="w-full h-[54px] px-4 bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 text-[18px] text-black dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all disabled:opacity-50"
@@ -67,14 +67,14 @@ export default function LoginForm() {
         {/* Input 2: Password */}
         <div className="space-y-2">
           <label className="block text-[18px] sm:text-[20px] font-medium">
-            Password
+            Mật khẩu
           </label>
           <div className="relative flex items-center">
             <input
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
+              placeholder="Nhập mật khẩu"
               required
               disabled={isPending}
               className="w-full h-[54px] pl-4 pr-12 bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 text-[18px] text-black dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all disabled:opacity-50"
@@ -99,7 +99,7 @@ export default function LoginForm() {
             href="/forgot-password"
             className="text-[16px] font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white underline transition-colors"
           >
-            Forgot your password?
+            Quên mật khẩu?
           </Link>
         </div>
 
@@ -113,10 +113,10 @@ export default function LoginForm() {
           >
             {isPending ? (
               <>
-                <Loader2 className="w-5 h-5 animate-spin" /> Log In...
+                <Loader2 className="w-5 h-5 animate-spin" /> Đang đăng nhập...
               </>
             ) : (
-              "Log In"
+              "Đăng nhập"
             )}
           </button>
 
@@ -125,7 +125,7 @@ export default function LoginForm() {
             href="/signup"
             className="w-full h-[54px] bg-[#F2F2F2] dark:bg-zinc-900 text-black dark:text-white border border-black dark:border-zinc-700 text-[20px] font-medium flex items-center justify-center hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
           >
-            Create an Account
+            Tạo tài khoản mới
           </Link>
         </div>
       </form>

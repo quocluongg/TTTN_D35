@@ -401,6 +401,7 @@ export default function AIChatPage() {
   const [hideLastSessionCard, setHideLastSessionCard] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // Mock user ID (replace with real auth)
@@ -410,10 +411,21 @@ export default function AIChatPage() {
     setMounted(true);
   }, []);
 
-  // Auto-scroll to bottom
+  const scrollToBottom = (smooth = true) => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: smooth ? "smooth" : "auto",
+      });
+    }
+  };
+
+  // Auto-scroll inside chat container
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+    if (messages.length > 0) {
+      scrollToBottom(true);
+    }
+  }, [messages.length, loading]);
 
   // Load conversations on mount
   useEffect(() => {
@@ -565,7 +577,7 @@ export default function AIChatPage() {
       setError(err.message || "Có lỗi xảy ra");
     } finally {
       setLoading(false);
-      inputRef.current?.focus();
+      inputRef.current?.focus({ preventScroll: true });
     }
   };
 
@@ -693,7 +705,7 @@ export default function AIChatPage() {
         <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-zinc-950">
 
           {/* Messages or Welcome View */}
-          <div className="flex-1 overflow-y-auto px-4 py-6">
+          <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-4 py-6">
             {messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center max-w-2xl mx-auto space-y-6 text-center">
                 {/* Header Welcome Title */}
@@ -810,7 +822,7 @@ export default function AIChatPage() {
                       key={i}
                       onClick={() => {
                         setInput(s.query);
-                        inputRef.current?.focus();
+                        inputRef.current?.focus({ preventScroll: true });
                       }}
                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors group cursor-pointer"
                     >

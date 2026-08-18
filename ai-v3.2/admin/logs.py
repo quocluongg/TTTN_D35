@@ -73,6 +73,7 @@ def get_sync_logs_raw() -> list[dict]:
 
 
 @router.get("/chat")
+@router.get("/rag/chat")
 async def get_chat_logs(
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=200),
@@ -98,6 +99,7 @@ async def get_chat_logs(
 
 
 @router.get("/sync")
+@router.get("/rag/sync")
 async def get_sync_logs(
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=200),

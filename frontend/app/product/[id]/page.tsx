@@ -152,23 +152,51 @@ export default function ProductDetailPage() {
   // Variant attributes object
   const variantAttributes: Record<string, string> = selectedVariant?.attributes || product.variants?.[0]?.attributes || {};
 
-  // Build comprehensive specs combining attributes + defaults
-  const detailedSpecsList = [
-    { key: "Bộ vi xử lý (CPU)", value: variantAttributes["CPU"] || variantAttributes["cpu"] || "Intel Core Ultra 7 155H / Ultra 5 / AMD Ryzen 7" },
-    { key: "Bộ nhớ RAM", value: variantAttributes["RAM"] || variantAttributes["ram"] || "16GB LPDDR5X 7467MHz (Onboard)" },
-    { key: "Ổ cứng lưu trữ", value: variantAttributes["SSD"] || variantAttributes["ssd"] || variantAttributes["Storage"] || "512GB PCIe 4.0 NVMe M.2 SSD" },
-    { key: "Card đồ họa (VGA)", value: variantAttributes["VGA"] || variantAttributes["vga"] || "Intel Arc Graphics tích hợp" },
-    { key: "Màn hình", value: variantAttributes["Screen"] || variantAttributes["screen"] || "14.0 inch 3K (2880 x 1800) OLED 16:10, 120Hz, 100% DCI-P3" },
-    { key: "Màu sắc (Color)", value: variantAttributes["Color"] || variantAttributes["color"] || "Xanh Trầm (Ponder Blue) / Xám" },
-    { key: "Hệ điều hành", value: "Windows 11 Home Bản Quyền" },
-    { key: "Bàn phím & Touchpad", value: "Bàn phím ErgoSense tích hợp đèn nền LED, Touchpad phủ kính rộng rãi" },
-    { key: "Cổng kết nối", value: "2x Thunderbolt™ 4, 1x USB 3.2 Gen 1 Type-A, 1x HDMI 2.1 TMDS, 1x Jack 3.5mm Combo Audio" },
-    { key: "Kết nối không dây", value: "Wi-Fi 6E (802.11ax) + Bluetooth® 5.3" },
-    { key: "Pin & Sạc", value: "75WHrs, 4-cell Li-ion, Sạc nhanh Type-C 65W" },
-    { key: "Trọng lượng & Kích thước", value: "1.2 kg · 31.24 x 22.01 x 1.49 cm (Siêu mỏng nhẹ)" },
-    { key: "Âm thanh", value: "Hệ thống loa Harman Kardon kép, Dolby Atmos, Smart Amp" },
-    { key: "Bảo mật", value: "Camera IR FHD với nhận diện khuôn mặt Windows Hello & Nắp che camera vật lý" },
-  ];
+  // Build specs from backend data (grouped by specGroup), falling back to variant
+  // attributes / a generic list when no specification data is available.
+  const rawSpecs: any[] = product?.specifications || [];
+  const specGroups: { name: string; items: { key: string; value: string }[] }[] = [];
+  rawSpecs.forEach((spec: any) => {
+    const key = spec.attributeDisplayName || spec.attributeName || "";
+    const value = spec.specValue ? (spec.specUnit ? `${spec.specValue} ${spec.specUnit}` : `${spec.specValue}`) : "";
+    if (!key || !value) return;
+    const groupName = spec.specGroup || "Thông tin chung";
+    let group = specGroups.find((g) => g.name === groupName);
+    if (!group) {
+      group = { name: groupName, items: [] };
+      specGroups.push(group);
+    }
+    group.items.push({ key, value });
+  });
+
+  const hasRealSpecs = specGroups.length > 0;
+  const detailedSpecsList = hasRealSpecs
+    ? specGroups
+    : [{ name: "Thông số chung", items: [{ key: "Màu sắc", value: variantAttributes["Color"] || variantAttributes["color"] || "Đang cập nhật" }] }];
+
+  // Build key highlight cards from real specs by matching common attribute names.
+  const findSpecValue = (...keys: string[]) => {
+    for (const key of keys) {
+      const found = rawSpecs.find((s: any) => {
+        const name = (s.attributeDisplayName || s.attributeName || "").toLowerCase();
+        return name.includes(key.toLowerCase());
+      });
+      if (found?.specValue) return found.specUnit ? `${found.specValue} ${found.specUnit}` : `${found.specValue}`;
+    }
+    return "";
+  };
+
+  const highlights: { label: string; icon: React.ReactNode; value: string }[] = [];
+  const cpu = findSpecValue("chipset", "vi xử lý", "cpu", "bộ xử lý");
+  if (cpu) highlights.push({ label: "Chip", icon: <Cpu className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />, value: cpu });
+  const ram = findSpecValue("ram", "bộ nhớ trong", "dung lượng ram");
+  if (ram) highlights.push({ label: "RAM / Bộ nhớ", icon: <Layers className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />, value: ram });
+  const screen = findSpecValue("màn hình", "kích thước màn hình");
+  if (screen) highlights.push({ label: "Màn hình", icon: <Monitor className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />, value: screen });
+  const camera = findSpecValue("camera", "độ phân giải camera");
+  if (camera) highlights.push({ label: "Camera", icon: <Sparkles className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />, value: camera });
+  const battery = findSpecValue("pin", "dung lượng pin", "sạc");
+  if (battery) highlights.push({ label: "Pin", icon: <Zap className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />, value: battery });
 
   return (
     <PublicLayout fullWidth>
@@ -301,48 +329,23 @@ export default function ProductDetailPage() {
                   )}
                 </div>
 
-                {/* LAPTOP KEY HIGHLIGHTS QUICK CARDS */}
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="p-3 border border-black/20 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 flex items-center gap-2.5">
-                    <Cpu className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                    <div className="overflow-hidden">
-                      <span className="text-[10px] text-zinc-500 uppercase font-bold block">Vi xử lý</span>
-                      <span className="font-bold text-black dark:text-white truncate block">
-                        {variantAttributes["CPU"] || variantAttributes["cpu"] || "Intel Core Ultra 7"}
-                      </span>
-                    </div>
+                {/* KEY HIGHLIGHTS QUICK CARDS */}
+                {highlights.length > 0 && (
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    {highlights.map((h) => (
+                      <div
+                        key={h.label}
+                        className="p-3 border border-black/20 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 flex items-center gap-2.5"
+                      >
+                        {h.icon}
+                        <div className="overflow-hidden">
+                          <span className="text-[10px] text-zinc-500 uppercase font-bold block">{h.label}</span>
+                          <span className="font-bold text-black dark:text-white truncate block">{h.value}</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-
-                  <div className="p-3 border border-black/20 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 flex items-center gap-2.5">
-                    <Layers className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                    <div className="overflow-hidden">
-                      <span className="text-[10px] text-zinc-500 uppercase font-bold block">RAM</span>
-                      <span className="font-bold text-black dark:text-white truncate block">
-                        {variantAttributes["RAM"] || variantAttributes["ram"] || "16GB LPDDR5X"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-3 border border-black/20 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 flex items-center gap-2.5">
-                    <HardDrive className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                    <div className="overflow-hidden">
-                      <span className="text-[10px] text-zinc-500 uppercase font-bold block">Ổ cứng</span>
-                      <span className="font-bold text-black dark:text-white truncate block">
-                        {variantAttributes["SSD"] || variantAttributes["ssd"] || "512GB NVMe SSD"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-3 border border-black/20 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 flex items-center gap-2.5">
-                    <Monitor className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                    <div className="overflow-hidden">
-                      <span className="text-[10px] text-zinc-500 uppercase font-bold block">Màn hình</span>
-                      <span className="font-bold text-black dark:text-white truncate block">
-                        {variantAttributes["Screen"] || variantAttributes["screen"] || "14\" OLED 120Hz"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                )}
 
                 {/* VARIANTS SELECTOR */}
                 {product.variants && product.variants.length > 0 && (
@@ -455,20 +458,29 @@ export default function ProductDetailPage() {
                 <div className="overflow-x-auto border border-black dark:border-zinc-800">
                   <table className="w-full text-left text-sm border-collapse">
                     <tbody>
-                      {detailedSpecsList.map((item, idx) => (
-                        <tr
-                          key={item.key}
-                          className={`border-b border-zinc-200 dark:border-zinc-800 ${
-                            idx % 2 === 0 ? "bg-zinc-50 dark:bg-zinc-800/40" : "bg-white dark:bg-zinc-900"
-                          }`}
-                        >
-                          <td className="p-4 font-bold w-1/3 text-zinc-700 dark:text-zinc-300 border-r border-zinc-200 dark:border-zinc-800">
-                            {item.key}
-                          </td>
-                          <td className="p-4 font-semibold text-black dark:text-white">
-                            {item.value}
-                          </td>
-                        </tr>
+                      {detailedSpecsList.map((group) => (
+                        <React.Fragment key={group.name}>
+                          <tr className="bg-black dark:bg-zinc-950">
+                            <td colSpan={2} className="p-3 font-bold text-white dark:text-zinc-100 uppercase tracking-wider text-xs">
+                              {group.name}
+                            </td>
+                          </tr>
+                          {group.items.map((item, idx) => (
+                            <tr
+                              key={`${group.name}-${item.key}`}
+                              className={`border-b border-zinc-200 dark:border-zinc-800 ${
+                                idx % 2 === 0 ? "bg-zinc-50 dark:bg-zinc-800/40" : "bg-white dark:bg-zinc-900"
+                              }`}
+                            >
+                              <td className="p-4 font-bold w-1/3 text-zinc-700 dark:text-zinc-300 border-r border-zinc-200 dark:border-zinc-800">
+                                {item.key}
+                              </td>
+                              <td className="p-4 font-semibold text-black dark:text-white">
+                                {item.value}
+                              </td>
+                            </tr>
+                          ))}
+                        </React.Fragment>
                       ))}
                     </tbody>
                   </table>

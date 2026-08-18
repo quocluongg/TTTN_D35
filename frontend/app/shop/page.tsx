@@ -69,6 +69,16 @@ function ShopContent() {
 
   const categories = categoriesData || [{ name: "Tất cả", slug: "" }];
 
+  // Keep header title in sync with the selected category slug
+  useEffect(() => {
+    if (!selectedCategorySlug) {
+      setSelectedCategoryName("Tất cả sản phẩm");
+      return;
+    }
+    const found = categories.find((c) => c.slug === selectedCategorySlug);
+    if (found) setSelectedCategoryName(found.name);
+  }, [selectedCategorySlug, categories]);
+
   // Determine specKey & specValue for EAV filtering
   let specKey: string | undefined = undefined;
   let specValue: string | undefined = undefined;
@@ -221,7 +231,7 @@ function ShopContent() {
                     {selectedCategorySlug && (
                       <span className="inline-flex items-center gap-2 px-3 py-1 bg-white dark:bg-zinc-800 border border-black text-xs font-bold">
                         {selectedCategoryName}
-                        <X className="w-3.5 h-3.5 cursor-pointer" onClick={() => setSelectedCategorySlug("")} />
+                        <X className="w-3.5 h-3.5 cursor-pointer" onClick={() => { setSelectedCategorySlug(""); setSelectedCategoryName("Tất cả sản phẩm"); }} />
                       </span>
                     )}
                     {selectedRam && (

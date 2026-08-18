@@ -240,20 +240,34 @@ for idx, item in enumerate(crawled_items, start=1):
         thumbnail, discount_percent, json.dumps({"Cấu hình": f"Nâng cấp | {info['ssd']}"}, ensure_ascii=False), 10.00, True
     ))
 
-    # Insert Product Specifications
-    specs = [
-        ("Vi xử lý", "CPU", info["cpu"], None),
-        ("Bộ nhớ", "RAM", info["ram"], "GB"),
-        ("Lưu trữ", "SSD", info["ssd"], "GB"),
-        ("Màn hình", "Display", "14.0 inch / 15.6 inch FHD IPS", "inch"),
-        ("Hệ điều hành", "OS", "Windows 11 Home" if brand != "Apple" else "macOS", None),
-        ("Trọng lượng", "Weight", "1.65", "kg")
-    ]
-    for group, key, val, unit in specs:
+    # Helper tra cứu / tạo mới attribute_key_id trong product_attribute_keys
+    def get_attr_key_id(key_name, display_name=None, unit=None):
+        cur.execute("SELECT id FROM product_attribute_keys WHERE name = %s", (key_name,))
+        row = cur.fetchone()
+        if row:
+            return row[0]
         cur.execute("""
-            INSERT INTO product_specifications (product_id, spec_group, spec_key, spec_value, spec_unit)
+            INSERT INTO product_attribute_keys (name, display_name, unit, sort_order)
+            VALUES (%s, %s, %s, 0)
+            RETURNING id;
+        """, (key_name, display_name or key_name, unit))
+        return cur.fetchone()[0]
+
+    # Insert Product Specifications into product_attribute_values
+    specs = [
+        ("Vi xử lý", "Loại CPU", info["cpu"], None),
+        ("Bộ nhớ", "Dung lượng RAM", info["ram"], "GB"),
+        ("Lưu trữ", "Ổ cứng", info["ssd"], "GB"),
+        ("Màn hình", "Kích thước màn hình", "14.0 inch / 15.6 inch FHD IPS", "inch"),
+        ("Hệ điều hành", "Hệ điều hành khi ra mắt", "Windows 11 Home" if brand != "Apple" else "macOS", None),
+        ("Trọng lượng", "Trọng lượng", "1.65", "kg")
+    ]
+    for group, key_name, val, unit in specs:
+        attr_key_id = get_attr_key_id(key_name, unit=unit)
+        cur.execute("""
+            INSERT INTO product_attribute_values (product_id, spec_group, attribute_key_id, spec_value, spec_unit)
             VALUES (%s, %s, %s, %s, %s);
-        """, (pid, group, key, val, unit))
+        """, (pid, group, attr_key_id, val, unit))
 
     # Insert Product Chunks for RAG Chatbot
     cur.execute("""

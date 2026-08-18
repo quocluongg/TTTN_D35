@@ -59,8 +59,8 @@ public interface IOrderRepository extends JpaRepository<Order, UUID> {
     @org.springframework.data.jpa.repository.Query("""
             SELECT new ptithcm.tttnd35backend.dto.response.OrderStatusSummaryResponse(o.status, COUNT(o))
             FROM Order o
-            WHERE (:from IS NULL OR o.createdAt >= :from)
-              AND (:to IS NULL OR o.createdAt <= :to)
+            WHERE (CAST(:from AS java.time.LocalDateTime) IS NULL OR o.createdAt >= :from)
+              AND (CAST(:to AS java.time.LocalDateTime) IS NULL OR o.createdAt <= :to)
             GROUP BY o.status
             """)
     List<ptithcm.tttnd35backend.dto.response.OrderStatusSummaryResponse> countOrdersByStatus(
@@ -75,8 +75,8 @@ public interface IOrderRepository extends JpaRepository<Order, UUID> {
             JOIN o.user p
             WHERE (o.status = 'COMPLETED' OR o.paymentStatus = 'PAID')
               AND o.status <> 'CANCELLED'
-              AND (:from IS NULL OR o.createdAt >= :from)
-              AND (:to IS NULL OR o.createdAt <= :to)
+              AND (CAST(:from AS java.time.LocalDateTime) IS NULL OR o.createdAt >= :from)
+              AND (CAST(:to AS java.time.LocalDateTime) IS NULL OR o.createdAt <= :to)
             GROUP BY p.id, p.fullName, p.email
             ORDER BY SUM(o.totalAmount) DESC
             """)

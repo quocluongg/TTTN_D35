@@ -7,7 +7,9 @@ import org.springframework.web.bind.annotation.RestController;
 import ptithcm.tttnd35backend.dto.response.ApiResponse;
 import ptithcm.tttnd35backend.dto.response.BrandLogoResponse;
 import ptithcm.tttnd35backend.dto.response.HomeBannerResponse;
+import ptithcm.tttnd35backend.dto.response.HomeFeaturedCategoryResponse;
 import ptithcm.tttnd35backend.dto.response.HomeLayoutSectionResponse;
+import ptithcm.tttnd35backend.service.IHomepageCmsService;
 
 import java.time.LocalDateTime;
 import java.util.List;

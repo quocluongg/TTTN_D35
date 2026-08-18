@@ -39,10 +39,10 @@ export default function ForgotPasswordPage() {
           {/* Header Title & Subtitle */}
           <div className="space-y-3">
             <h1 className="text-[36px] sm:text-[48px] font-bold tracking-tight leading-[1.1]">
-              Forgot Your Password?
+              Quên mật khẩu?
             </h1>
             <p className="text-[16px] text-zinc-600 dark:text-zinc-400 font-medium">
-              Enter your email address to receive a password reset link.
+              Nhập địa chỉ email của bạn để nhận liên kết đặt lại mật khẩu.
             </p>
           </div>
 
@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
           {isSubmitted ? (
             <div className="p-6 bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 space-y-4 text-center">
               <CheckCircle2 className="w-12 h-12 text-[#1CCA00] mx-auto" />
-              <h3 className="text-xl font-bold">Email Reset Đã Được Gửi</h3>
+              <h3 className="text-xl font-bold">Email Đặt Lại Mật Khẩu Đã Gửi</h3>
               <p className="text-sm text-zinc-600 dark:text-zinc-400">
                 Chúng tôi đã gửi hướng dẫn khôi phục mật khẩu tới{" "}
                 <span className="font-semibold text-black dark:text-white">{email}</span>.
@@ -74,13 +74,13 @@ export default function ForgotPasswordPage() {
               {/* Email Input */}
               <div className="space-y-2">
                 <label className="block text-[18px] sm:text-[20px] font-medium">
-                  Email address
+                  Địa chỉ Email
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Email address"
+                  placeholder="Nhập địa chỉ email"
                   required
                   disabled={isPending}
                   className="w-full h-[54px] px-4 bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 text-[18px] text-black dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all disabled:opacity-50"
@@ -95,10 +95,10 @@ export default function ForgotPasswordPage() {
               >
                 {isPending ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" /> Sending...
+                    <Loader2 className="w-5 h-5 animate-spin" /> Đang gửi...
                   </>
                 ) : (
-                  "Send Reset Link"
+                  "Gửi liên kết khôi phục"
                 )}
               </button>
 

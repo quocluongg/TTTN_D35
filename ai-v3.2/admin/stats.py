@@ -13,6 +13,7 @@ router = APIRouter(prefix="/admin", tags=["admin-stats"])
 
 
 @router.get("/stats")
+@router.get("/rag/stats")
 async def get_system_stats():
     """Get comprehensive system statistics."""
     # Products

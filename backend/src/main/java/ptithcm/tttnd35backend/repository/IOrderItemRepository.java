@@ -26,8 +26,8 @@ public interface IOrderItemRepository extends JpaRepository<OrderItem, UUID> {
             JOIN Product p ON oi.productId = p.id
             WHERE (o.status = 'COMPLETED' OR o.paymentStatus = 'PAID')
               AND o.status <> 'CANCELLED'
-              AND (:from IS NULL OR o.createdAt >= :from)
-              AND (:to IS NULL OR o.createdAt <= :to)
+              AND (CAST(:from AS java.time.LocalDateTime) IS NULL OR o.createdAt >= :from)
+              AND (CAST(:to AS java.time.LocalDateTime) IS NULL OR o.createdAt <= :to)
             GROUP BY p.id, p.name, p.thumbnail
             ORDER BY SUM(oi.quantity) DESC
             """)
