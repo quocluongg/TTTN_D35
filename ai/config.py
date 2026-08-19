@@ -8,6 +8,9 @@ from dotenv import load_dotenv
 _env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
 load_dotenv(dotenv_path=_env_path, override=True)
 
+# Set Hugging Face cache to D drive to avoid filling C drive
+os.environ["HF_HOME"] = os.getenv("HF_HOME", "D:/huggingface_cache")
+
 
 class Settings:
     """Application settings loaded from environment variables."""
