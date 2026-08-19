@@ -66,23 +66,23 @@ export default function AnalyticsPage() {
   const avgLatencyMs = dash.avgLatencyMs ?? pyData.avg_latency_ms ?? 480;
 
   const statCards = [
-    { label: "Tổng phiên Chat", value: totalConversations, icon: MessageSquare, sub: ${activeConversations} đang diễn ra },
+    { label: "Tổng phiên Chat", value: totalConversations, icon: MessageSquare, sub: `${activeConversations} đang diễn ra` },
     { label: "Yêu cầu tiếp quản (Handoff)", value: handoffCount, icon: ShieldAlert, sub: "Cần nhân viên xử lý", alert: handoffCount > 0 },
-    { label: "Tỉ lệ chuyển đổi đơn hàng", value: ${conversionRate.toFixed(1)}%, icon: Target, sub: "Chatbot -> Giỏ hàng / Đơn" },
-    { label: "Doanh thu từ Chatbot", value: ${(totalRevenueFromChat / 1000000).toFixed(1)} triệu ₫, icon: TrendingUp, sub: "Phát sinh qua gợi ý AI" },
+    { label: "Tỉ lệ chuyển đổi đơn hàng", value: `${conversionRate.toFixed(1)}%`, icon: Target, sub: "Chatbot -> Giỏ hàng / Đơn" },
+    { label: "Doanh thu từ Chatbot", value: `${(totalRevenueFromChat / 1000000).toFixed(1)} triệu ₫`, icon: TrendingUp, sub: "Phát sinh qua gợi ý AI" },
   ];
 
   const handleExportPDF = () => {
-    exportToPdf("chat-analytics-report", Bao-cao-hieu-qua-Chatbot-RAG-.pdf);
+    exportToPdf("chat-analytics-report", `Bao-cao-hieu-qua-Chatbot-RAG-${new Date().toISOString().slice(0, 10)}.pdf`);
   };
 
   const handleExportCSV = () => {
     const csvContent = "data:text/csv;charset=utf-8," 
-      + ["Chi tieu,Gia tri", Tong phien chat,, Hand off,, Ti le chuyen doi,%, Doanh thu Chatbot,].join("\n");
+      + ["Chi tieu,Gia tri", `Tong phien chat,${totalConversations}`, `Hand off,${handoffCount}`, `Ti le chuyen doi,${conversionRate}%`, `Doanh thu Chatbot,${totalRevenueFromChat}`].join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", Chatbot_Analytics_.csv);
+    link.setAttribute("download", `Chatbot_Analytics_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
