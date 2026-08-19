@@ -18,8 +18,9 @@ export default function AdminPage() {
   const topRows = unwrap(top.data) || [];
   const dataRows = (x: any) => Array.isArray(x) ? x : x.content ?? [];
 
-  const rawRevenue = rev.totalRevenue ?? rev.revenue ?? rev.total ?? 0;
-  const formattedRevenue = typeof rawRevenue === "number" ? `${rawRevenue.toLocaleString("vi-VN")} ₫` : String(rawRevenue);
+  const revList = dataRows(rev);
+  const rawRevenue = revList.reduce((sum: number, item: any) => sum + Number(item.totalAmount ?? item.revenue ?? item.total ?? 0), 0);
+  const formattedRevenue = `${rawRevenue.toLocaleString("vi-VN")} ₫`;
   const totalOrders = dataRows(statusRows).reduce((n: number, x: any) => n + Number(x.count ?? 0), 0);
   const lowStockCount = dataRows(lowRows).length;
   const topProductCount = dataRows(topRows).length;

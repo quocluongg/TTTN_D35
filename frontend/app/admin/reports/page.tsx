@@ -16,28 +16,33 @@ export default function ReportsPage() {
   const [groupBy, setGroupBy] = useState<"day" | "week" | "month">("day");
   const [lowStockThreshold, setLowStockThreshold] = useState(10);
 
+  const cleanParams = {
+    from: range.from || undefined,
+    to: range.to || undefined,
+  };
+
   // Reports Queries
   const revenueQuery = useQuery({
-    queryKey: ["report-revenue", range, groupBy],
-    queryFn: () => adminApi.reports.revenue({ ...range, groupBy }),
+    queryKey: ["report-revenue", cleanParams, groupBy],
+    queryFn: () => adminApi.reports.revenue({ ...cleanParams, groupBy }),
     enabled: activeTab === "revenue",
   });
 
   const topProductsQuery = useQuery({
-    queryKey: ["report-top-products", range],
-    queryFn: () => adminApi.reports.topProducts({ ...range, limit: 10 }),
+    queryKey: ["report-top-products", cleanParams],
+    queryFn: () => adminApi.reports.topProducts({ ...cleanParams, limit: 10 }),
     enabled: activeTab === "products",
   });
 
   const topCustomersQuery = useQuery({
-    queryKey: ["report-top-customers", range],
-    queryFn: () => adminApi.reports.topCustomers({ ...range, limit: 10 }),
+    queryKey: ["report-top-customers", cleanParams],
+    queryFn: () => adminApi.reports.topCustomers({ ...cleanParams, limit: 10 }),
     enabled: activeTab === "customers",
   });
 
   const orderStatusQuery = useQuery({
-    queryKey: ["report-order-status", range],
-    queryFn: () => adminApi.reports.orderStatus({ ...range }),
+    queryKey: ["report-order-status", cleanParams],
+    queryFn: () => adminApi.reports.orderStatus({ ...cleanParams }),
     enabled: activeTab === "status",
   });
 
@@ -57,24 +62,24 @@ export default function ReportsPage() {
 
   // Revenue chart values
   const revenueList: any[] = Array.isArray(revenueData) ? revenueData : revenueData.content || [];
-  const chartValues = revenueList.map((item) => Number(item.revenue ?? item.totalRevenue ?? item.total ?? 0));
+  const chartValues = revenueList.map((item) => Number(item.totalAmount ?? item.totalRevenue ?? item.revenue ?? item.total ?? 0));
   const maxRevenue = Math.max(1, ...chartValues);
 
   // Top Products Columns
   const productColumns: Column<any>[] = [
     { key: "productName", header: "Sản phẩm", cell: (r) => <span className="font-medium">{r.productName || r.name}</span> },
-    { key: "sku", header: "SKU", cell: (r) => <span className="font-mono text-xs">{r.sku || "—"}</span> },
-    { key: "quantity", header: "Đã bán", cell: (r) => <span className="font-bold">{r.quantity ?? r.totalSold ?? 0}</span> },
-    { key: "revenue", header: "Tổng doanh thu", cell: (r) => <span className="font-bold text-black">{formatVND(r.revenue)}</span> },
+    { key: "totalQuantitySold", header: "Đã bán", cell: (r) => <span className="font-bold">{r.totalQuantitySold ?? r.quantity ?? r.totalSold ?? 0}</span> },
+    { key: "totalRevenue", header: "Tổng doanh thu", cell: (r) => <span className="font-bold text-black">{formatVND(r.totalRevenue ?? r.revenue)}</span> },
   ];
 
   // Top Customers Columns
   const customerColumns: Column<any>[] = [
-    { key: "customerName", header: "Khách hàng", cell: (r) => <span className="font-medium">{r.fullName || r.customerName || r.email}</span> },
-    { key: "email", header: "Email", cell: (r) => <span className="font-mono text-xs text-zinc-600">{r.email}</span> },
-    { key: "orderCount", header: "Số đơn hàng", cell: (r) => <span className="font-bold">{r.orderCount ?? r.totalOrders ?? 0}</span> },
+    { key: "customerName", header: "Khách hàng", cell: (r) => <span className="font-medium">{r.customerName || r.fullName}</span> },
+    { key: "customerEmail", header: "Email", cell: (r) => <span className="font-mono text-xs text-zinc-600">{r.customerEmail || r.email}</span> },
+    { key: "totalOrders", header: "Số đơn hàng", cell: (r) => <span className="font-bold">{r.totalOrders ?? r.orderCount ?? 0}</span> },
     { key: "totalSpent", header: "Tổng chi tiêu", cell: (r) => <span className="font-bold text-black">{formatVND(r.totalSpent || r.revenue)}</span> },
   ];
+
 
   // Low Stock Columns
   const lowStockColumns: Column<any>[] = [
@@ -144,7 +149,7 @@ export default function ReportsPage() {
               <p className="text-sm text-zinc-500">Đang tải dữ liệu doanh thu...</p>
             ) : revenueList.length ? (
               revenueList.map((item, index) => {
-                const rev = Number(item.revenue ?? item.totalRevenue ?? item.total ?? 0);
+                const rev = Number(item.totalAmount ?? item.totalRevenue ?? item.revenue ?? item.total ?? 0);
                 const heightPercent = Math.max(5, (rev / maxRevenue) * 100);
                 return (
                   <div key={index} className="flex-1 flex flex-col items-center gap-2 group">
@@ -156,7 +161,7 @@ export default function ReportsPage() {
                       className="w-full bg-black hover:bg-lime-500 transition-all rounded-none"
                     />
                     <span className="text-[10px] font-mono text-zinc-500 truncate w-full text-center">
-                      {item.date || item.label || index + 1}
+                      {item.period || item.date || item.label || index + 1}
                     </span>
                   </div>
                 );

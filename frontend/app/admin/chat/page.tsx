@@ -13,6 +13,7 @@ import {
   Send,
 } from "lucide-react";
 import { notifyError, notifySuccess } from "@/components/Notify";
+import { exportPdf } from "@/utils/exportPdf";
 
 type Conversation = {
   id: string;
@@ -72,6 +73,8 @@ type StatPoint = {
 type TopProductAsked = { productId: string; productName: string; mentionCount: number; orderCount: number };
 type TopQuestion = { category: string; questionCount: number; percentage: number };
 type KbEffect = { versionName: string; conversations: number; messages: number; avgConfidence: number; flaggedCount: number; flaggedRate: number; ordersPlaced: number; conversionRate: number };
+type SourceComparison = { source: string; conversations: number; uniqueUsers: number; addToCart: number; ordersPlaced: number; addToCartRate: number; conversionRate: number; revenue: number };
+type RevenuePoint = { period: string; orders: number; revenue: number };
 
 export default function ChatAdminPage() {
   const [tab, setTab] = useState<Tab>("conversations");
@@ -102,6 +105,9 @@ export default function ChatAdminPage() {
   const [topProductsAsked, setTopProductsAsked] = useState<TopProductAsked[]>([]);
   const [topQuestions, setTopQuestions] = useState<TopQuestion[]>([]);
   const [kbEffect, setKbEffect] = useState<KbEffect[]>([]);
+  const [sourceComparison, setSourceComparison] = useState<SourceComparison[]>([]);
+  const [revenue, setRevenue] = useState<RevenuePoint[]>([]);
+  const [groupBy, setGroupBy] = useState<"day" | "week" | "month" | "quarter">("day");
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
   const loadConversations = async () => {
@@ -151,23 +157,27 @@ export default function ChatAdminPage() {
   useEffect(() => { loadConversations(); }, [search]);
   useEffect(() => { if (tab === "sensitive") loadSensitive(); }, [tab]);
   useEffect(() => { if (tab === "kb") loadKbVersions(); }, [tab]);
-  useEffect(() => { if (tab === "analytics") loadAnalytics(); }, [tab]);
+  useEffect(() => { if (tab === "analytics") loadAnalytics(); }, [tab, groupBy]);
 
   const loadAnalytics = async () => {
     setAnalyticsLoading(true);
     try {
-      const [d, s, tp, tq, k] = await Promise.all([
+      const [d, s, tp, tq, k, sc, rev] = await Promise.all([
         adminApi.chat.dashboard(),
-        adminApi.chat.userStats({ groupBy: "day" }),
+        adminApi.chat.userStats({ groupBy }),
         adminApi.chat.topProductsAsked({ limit: 10 }),
         adminApi.chat.topQuestions({ limit: 10 }),
         adminApi.chat.kbEffectiveness(),
+        adminApi.chat.sourceComparison(),
+        adminApi.chat.revenue({ groupBy }),
       ]);
       setDashboard(d?.data || null);
       setUserStats(Array.isArray(s?.data) ? s.data : []);
       setTopProductsAsked(Array.isArray(tp?.data) ? tp.data : []);
       setTopQuestions(Array.isArray(tq?.data) ? tq.data : []);
       setKbEffect(Array.isArray(k?.data) ? k.data : []);
+      setSourceComparison(Array.isArray(sc?.data) ? sc.data : []);
+      setRevenue(Array.isArray(rev?.data) ? rev.data : []);
     } catch (err: any) {
       notifyError(err?.response?.data?.message || "Không tải được báo cáo");
     } finally {
@@ -403,16 +413,50 @@ export default function ChatAdminPage() {
 
           {/* User stats */}
           <div className="border border-black rounded-lg p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="font-medium">Thống kê người dùng theo ngày</h3>
-              <button
-                onClick={() => exportCSV("chat-user-stats.csv",
-                  ["Ngày", "Hội thoại", "Người dùng", "Thời gian TB(s)", "Tin nhắn", "Thêm giỏ", "Đơn hàng", "Chuyển đổi(%)"],
-                  userStats.map((s) => [s.period, s.conversations, s.uniqueUsers, Math.round(s.avgDurationSeconds), s.messages, s.addToCartCount, s.orderPlacedCount, s.conversionRate]))}
-                className="px-3 py-1 border border-black text-xs"
-              >
-                Xuất Excel
-              </button>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <h3 className="font-medium">Thống kê người dùng theo kỳ</h3>
+              <div className="flex items-center gap-2">
+                <div className="flex border border-black rounded overflow-hidden">
+                  {(["day", "week", "month", "quarter"] as const).map((g) => (
+                    <button
+                      key={g}
+                      onClick={() => setGroupBy(g)}
+                      className={`px-3 py-1 text-xs uppercase ${groupBy === g ? "bg-black text-white" : "hover:bg-zinc-100"}`}
+                    >
+                      {g === "day" ? "Ngày" : g === "week" ? "Tuần" : g === "month" ? "Tháng" : "Quý"}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => exportCSV("chat-user-stats.csv",
+                    ["Kỳ", "Hội thoại", "Người dùng", "Thời gian TB(s)", "Tin nhắn", "Thêm giỏ", "Đơn hàng", "Chuyển đổi(%)"],
+                    userStats.map((s) => [s.period, s.conversations, s.uniqueUsers, Math.round(s.avgDurationSeconds), s.messages, s.addToCartCount, s.orderPlacedCount, s.conversionRate]))}
+                  className="px-3 py-1 border border-black text-xs"
+                >
+                  Xuất Excel
+                </button>
+                <button
+                  onClick={() => exportPdf({
+                    title: "Thống kê người dùng Chatbot",
+                    subtitle: `Nhóm theo: ${groupBy} • ${new Date().toLocaleDateString("vi-VN")}`,
+                    filename: "chat-user-stats.pdf",
+                    columns: [
+                      { header: "Kỳ", key: "period" },
+                      { header: "Hội thoại", key: "conversations" },
+                      { header: "Người dùng", key: "uniqueUsers" },
+                      { header: "TB(s)", key: "avgDurationSeconds" },
+                      { header: "Tin nhắn", key: "messages" },
+                      { header: "Thêm giỏ", key: "addToCartCount" },
+                      { header: "Đơn hàng", key: "orderPlacedCount" },
+                      { header: "Chuyển đổi (%)", key: "conversionRate" },
+                    ],
+                    rows: userStats,
+                  })}
+                  className="px-3 py-1 border border-black text-xs"
+                >
+                  Xuất PDF
+                </button>
+              </div>
             </div>
             <table className="w-full text-sm">
               <thead>
@@ -442,6 +486,122 @@ export default function ChatAdminPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Chatbot revenue */}
+          <div className="border border-black rounded-lg p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-medium">Doanh thu từ tư vấn Chatbot</h3>
+              <button
+                onClick={() => exportCSV("chat-revenue.csv",
+                  ["Kỳ", "Đơn hàng", "Doanh thu"],
+                  revenue.map((r) => [r.period, r.orders, Math.round(r.revenue)]))}
+                className="px-3 py-1 border border-black text-xs"
+              >
+                Xuất Excel
+              </button>
+              <button
+                onClick={() => exportPdf({
+                  title: "Doanh thu từ tư vấn Chatbot",
+                  subtitle: `Nhóm theo: ${groupBy} • ${new Date().toLocaleDateString("vi-VN")}`,
+                  filename: "chat-revenue.pdf",
+                  columns: [
+                    { header: "Kỳ", key: "period" },
+                    { header: "Đơn hàng", key: "orders" },
+                    { header: "Doanh thu (VND)", key: "revenue", formatter: (v) => Math.round(Number(v || 0)).toLocaleString("vi-VN") },
+                  ],
+                  rows: revenue,
+                })}
+                className="px-3 py-1 border border-black text-xs"
+              >
+                Xuất PDF
+              </button>
+            </div>
+            <div className="h-40 flex items-end gap-3 pt-4 border-b border-zinc-200">
+              {revenue.length ? (
+                revenue.map((r, idx) => {
+                  const max = Math.max(1, ...revenue.map((x) => x.revenue));
+                  const h = Math.max(5, (r.revenue / max) * 100);
+                  return (
+                    <div key={idx} className="flex-1 flex flex-col items-center gap-1 group">
+                      <div className="text-[10px] font-mono opacity-0 group-hover:opacity-100">{Math.round(r.revenue).toLocaleString("vi-VN")}₫</div>
+                      <div style={{ height: `${h}%` }} className="w-full bg-lime-500" />
+                      <span className="text-[10px] font-mono text-zinc-500 truncate w-full text-center">{r.period}</span>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-sm text-zinc-500">Chưa có đơn hàng từ chatbot trong kỳ này.</p>
+              )}
+            </div>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-black text-left">
+                  <th className="py-1 pr-3">Kỳ</th>
+                  <th className="py-1 pr-3">Đơn hàng</th>
+                  <th className="py-1">Doanh thu</th>
+                </tr>
+              </thead>
+              <tbody>
+                {revenue.map((r) => (
+                  <tr key={r.period} className="border-b">
+                    <td className="py-1.5 pr-3">{r.period}</td>
+                    <td className="py-1.5 pr-3">{r.orders}</td>
+                    <td className="py-1.5 font-medium">{Math.round(r.revenue).toLocaleString("vi-VN")}₫</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Source comparison: Chatbot vs Search */}
+          <div className="border border-black rounded-lg p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-medium">So sánh chuyển đổi: Chatbot vs. Tìm kiếm thường</h3>
+              <button
+                onClick={() => exportCSV("chat-source-comparison.csv",
+                  ["Nguồn", "Hội thoại", "Người dùng", "Thêm giỏ", "Đơn hàng", "Tỉ lệ thêm giỏ(%)", "Chuyển đổi(%)", "Doanh thu"],
+                  sourceComparison.map((s) => [s.source, s.conversations, s.uniqueUsers, s.addToCart, s.ordersPlaced, s.addToCartRate, s.conversionRate, Math.round(s.revenue)]))}
+                className="px-3 py-1 border border-black text-xs"
+              >
+                Xuất Excel
+              </button>
+              <button
+                onClick={() => exportPdf({
+                  title: "So sánh chuyển đổi Chatbot vs. Tìm kiếm",
+                  subtitle: new Date().toLocaleDateString("vi-VN"),
+                  filename: "chat-source-comparison.pdf",
+                  columns: [
+                    { header: "Nguồn", key: "source" },
+                    { header: "Hội thoại", key: "conversations" },
+                    { header: "Người dùng", key: "uniqueUsers" },
+                    { header: "Thêm giỏ", key: "addToCart" },
+                    { header: "Đơn hàng", key: "ordersPlaced" },
+                    { header: "Chuyển đổi (%)", key: "conversionRate" },
+                    { header: "Doanh thu (VND)", key: "revenue", formatter: (v) => Math.round(Number(v || 0)).toLocaleString("vi-VN") },
+                  ],
+                  rows: sourceComparison,
+                })}
+                className="px-3 py-1 border border-black text-xs"
+              >
+                Xuất PDF
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {sourceComparison.map((s) => (
+                <div key={s.source} className={`border p-4 space-y-2 ${s.source === "CHATBOT" ? "bg-lime-50 border-lime-500" : "bg-zinc-50"}`}>
+                  <p className="font-medium uppercase text-sm">{s.source === "CHATBOT" ? "Chatbot tư vấn" : "Tìm kiếm thường"}</p>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <span className="text-zinc-500">Hội thoại</span><span className="font-medium text-right">{s.conversations}</span>
+                    <span className="text-zinc-500">Người dùng</span><span className="font-medium text-right">{s.uniqueUsers}</span>
+                    <span className="text-zinc-500">Thêm giỏ</span><span className="font-medium text-right">{s.addToCart}</span>
+                    <span className="text-zinc-500">Đơn hàng</span><span className="font-medium text-right">{s.ordersPlaced}</span>
+                    <span className="text-zinc-500">Tỉ lệ chuyển đổi</span><span className="font-bold text-right">{s.conversionRate}%</span>
+                    <span className="text-zinc-500">Doanh thu</span><span className="font-bold text-right">{Math.round(s.revenue).toLocaleString("vi-VN")}₫</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Top products asked */}

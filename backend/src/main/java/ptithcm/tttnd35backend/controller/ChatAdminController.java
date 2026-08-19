@@ -173,6 +173,33 @@ public class ChatAdminController {
                 .build();
     }
 
+    @GetMapping("/analytics/source-comparison")
+    @PreAuthorize("hasAuthority('RAG_VIEW')")
+    public ApiResponse<List<ChatSourceComparisonResponse>> getSourceComparison(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to
+    ) {
+        return ApiResponse.<List<ChatSourceComparisonResponse>>builder()
+                .success(true)
+                .data(chatAdminService.getSourceComparison(from, to))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @GetMapping("/analytics/revenue")
+    @PreAuthorize("hasAuthority('RAG_VIEW')")
+    public ApiResponse<List<ChatRevenuePointResponse>> getChatbotRevenue(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
+            @RequestParam(defaultValue = "day") String groupBy
+    ) {
+        return ApiResponse.<List<ChatRevenuePointResponse>>builder()
+                .success(true)
+                .data(chatAdminService.getChatbotRevenue(from, to, groupBy))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
     // ===================== Sensitive Questions =====================
 
     @GetMapping("/sensitive-questions")

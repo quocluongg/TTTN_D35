@@ -37,6 +37,10 @@ public interface IChatAdminService {
 
     List<ChatKbEffectivenessResponse> getKbEffectiveness();
 
+    List<ChatSourceComparisonResponse> getSourceComparison(LocalDateTime from, LocalDateTime to);
+
+    List<ChatRevenuePointResponse> getChatbotRevenue(LocalDateTime from, LocalDateTime to, String groupBy);
+
     List<SensitiveQuestionResponse> getSensitiveQuestions(String search, Boolean isActive);
 
     SensitiveQuestionResponse createSensitiveQuestion(SensitiveQuestionRequest request);

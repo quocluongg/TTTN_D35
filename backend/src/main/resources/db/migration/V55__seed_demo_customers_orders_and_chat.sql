@@ -187,13 +187,13 @@ BEGIN
     ON CONFLICT (email) DO NOTHING;
 
     -- 3. Địa chỉ
-    INSERT INTO addresses (id, profile_id, full_name, phone, address_line, is_default)
+    INSERT INTO addresses (id, profile_id, recipient_name, phone, province, district, ward, detail_address, is_default)
     VALUES
-        (v_addr1, v_cust1, 'Nguyen Thi Lan',   '0901111001', '12 Nguyen Trai, Quan 1, TP.HCM',        TRUE),
-        (v_addr2, v_cust2, 'Tran Van Hung',     '0901111002', '45 Le Van Luong, Cau Giay, Ha Noi',     TRUE),
-        (v_addr3, v_cust3, 'Le Thi Mai',        '0901111003', '88 Hoang Dieu, Hai Chau, Da Nang',      TRUE),
-        (v_addr4, v_cust4, 'Pham Van Duc',      '0901111004', '33 Tran Hung Dao, Quan 5, TP.HCM',      TRUE),
-        (v_addr5, v_cust5, 'Hoang Thi Hoa',     '0901111005', '17 Dinh Tien Hoang, Binh Thanh, TP.HCM',TRUE)
+        (v_addr1, v_cust1, 'Nguyen Thi Lan',   '0901111001', 'TP.HCM',   'Quan 1',     'Phuong Ben Nghe',    '12 Nguyen Trai, Quan 1, TP.HCM',        TRUE),
+        (v_addr2, v_cust2, 'Tran Van Hung',     '0901111002', 'Ha Noi',   'Cau Giay',   'Phuong Dich Vong',   '45 Le Van Luong, Cau Giay, Ha Noi',     TRUE),
+        (v_addr3, v_cust3, 'Le Thi Mai',        '0901111003', 'Da Nang',  'Hai Chau',   'Phuong Hai Chau',    '88 Hoang Dieu, Hai Chau, Da Nang',      TRUE),
+        (v_addr4, v_cust4, 'Pham Van Duc',      '0901111004', 'TP.HCM',   'Quan 5',     'Phuong 3',           '33 Tran Hung Dao, Quan 5, TP.HCM',      TRUE),
+        (v_addr5, v_cust5, 'Hoang Thi Hoa',     '0901111005', 'TP.HCM',   'Binh Thanh', 'Phuong 22',          '17 Dinh Tien Hoang, Binh Thanh, TP.HCM',TRUE)
     ON CONFLICT DO NOTHING;
 
     -- 4. Knowledge Base Versions
@@ -236,33 +236,33 @@ BEGIN
     ON CONFLICT DO NOTHING;
 
     -- 7. Order Items
-    INSERT INTO order_items (id, order_id, product_id, variant_id, product_name, variant_name, unit_price, quantity, subtotal, created_at)
+    INSERT INTO order_items (id, order_id, product_id, variant_id, quantity, price_at_purchase, attributes_snapshot)
     VALUES
-        (v_oi1,  v_ord1,  v_prod_phone,   v_var_phone1,   'iPhone 15 Pro Max 256GB',  'Titan Tu Nhien 256GB', 32990000,1,32990000, NOW()-INTERVAL'30 days'),
-        (v_oi2,  v_ord2,  v_prod_dell,    v_var_dell1,    'Laptop Dell Pro 13 Plus',  'Bac Ultra 7 16GB',     35990000,1,35990000, NOW()-INTERVAL'28 days'),
-        (v_oi3,  v_ord3,  v_prod_msi,     v_var_msi1,     'Laptop MSI Cyborg 15',     'Den i5 16GB RTX3050',  23990000,1,23990000, NOW()-INTERVAL'25 days'),
-        (v_oi4,  v_ord4,  v_prod_airpods, v_var_airpods1, 'Apple AirPods Pro 2',      'Trang USB-C',          5990000, 1,5990000,  NOW()-INTERVAL'22 days'),
-        (v_oi5,  v_ord5,  v_prod_samsung, v_var_samsung1, 'Samsung Galaxy S24 Ultra', 'Titan Den 256GB',      29990000,1,29990000, NOW()-INTERVAL'20 days'),
-        (v_oi6,  v_ord6,  v_prod_akko,    v_var_akko1,    'Ban phim co Akko 3098B+',  'Ocean Star Akko Blue', 1890000, 1,1890000,  NOW()-INTERVAL'18 days'),
-        (v_oi7,  v_ord7,  v_prod_asus,    v_var_asus1,    'Laptop ASUS ZenBook 14',   'Xam Ryzen7 16GB',      28990000,1,28990000, NOW()-INTERVAL'15 days'),
-        (v_oi8,  v_ord8,  v_prod_dell,    v_var_dell1,    'Laptop Dell Pro 13 Plus',  'Bac Ultra 7 16GB',     34990000,1,34990000, NOW()-INTERVAL'12 days'),
-        (v_oi9,  v_ord9,  v_prod_samsung, v_var_samsung1, 'Samsung Galaxy S24 Ultra', 'Titan Den 256GB',      29990000,1,29990000, NOW()-INTERVAL'5 days'),
-        (v_oi10, v_ord10, v_prod_msi,     v_var_msi1,     'Laptop MSI Cyborg 15',     'Den i5 16GB RTX3050',  23990000,1,23990000, NOW()-INTERVAL'4 days'),
-        (v_oi11, v_ord11, v_prod_phone,   v_var_phone1,   'iPhone 15 Pro Max 256GB',  'Titan Tu Nhien 256GB', 32990000,1,32990000, NOW()-INTERVAL'3 days'),
-        (v_oi12, v_ord12, v_prod_airpods, v_var_airpods1, 'Apple AirPods Pro 2',      'Trang USB-C',          5990000, 1,5990000,  NOW()-INTERVAL'2 days'),
-        (v_oi13, v_ord13, v_prod_phone,   v_var_phone1,   'iPhone 15 Pro Max 256GB',  'Titan Tu Nhien 256GB', 32990000,1,32990000, NOW()-INTERVAL'1 day'),
-        (v_oi14, v_ord14, v_prod_akko,    v_var_akko1,    'Ban phim co Akko 3098B+',  'Ocean Star Akko Blue', 1890000, 1,1890000,  NOW()-INTERVAL'12 hours'),
-        (v_oi15, v_ord15, v_prod_msi,     v_var_msi1,     'Laptop MSI Cyborg 15',     'Den i5 16GB RTX3050',  23990000,1,23990000, NOW()-INTERVAL'6 hours'),
-        (v_oi16, v_ord16, v_prod_dell,    v_var_dell1,    'Laptop Dell Pro 13 Plus',  'Bac Ultra 7 16GB',     35990000,1,35990000, NOW()-INTERVAL'3 hours'),
-        (v_oi17, v_ord17, v_prod_samsung, v_var_samsung1, 'Samsung Galaxy S24 Ultra', 'Titan Den 256GB',      29990000,1,29990000, NOW()-INTERVAL'1 hour'),
-        (v_oi18, v_ord18, v_prod_asus,    v_var_asus1,    'Laptop ASUS ZenBook 14',   'Xam Ryzen7 16GB',      28990000,1,28990000, NOW()-INTERVAL'10 days'),
-        (v_oi19, v_ord19, v_prod_phone,   v_var_phone1,   'iPhone 15 Pro Max 256GB',  'Titan Tu Nhien 256GB', 32990000,1,32990000, NOW()-INTERVAL'8 days'),
-        (v_oi20, v_ord20, v_prod_airpods, v_var_airpods1, 'Apple AirPods Pro 2',      'Trang USB-C',          5990000, 1,5990000,  NOW()-INTERVAL'6 days'),
-        (v_oi21, v_ord1,  v_prod_akko,    v_var_akko1,    'Ban phim co Akko 3098B+',  'Ocean Star Akko Blue', 1890000, 1,1890000,  NOW()-INTERVAL'30 days'),
-        (v_oi22, v_ord5,  v_prod_airpods, v_var_airpods1, 'Apple AirPods Pro 2',      'Trang USB-C',          5990000, 1,5990000,  NOW()-INTERVAL'20 days'),
-        (v_oi23, v_ord7,  v_prod_cam,     v_var_cam1,     'Camera IP 360 do',          'Phien ban chuan',     1290000, 1,1290000,  NOW()-INTERVAL'15 days'),
-        (v_oi24, v_ord8,  v_prod_akko,    v_var_akko1,    'Ban phim co Akko 3098B+',  'Ocean Star Akko Blue', 1890000, 2,3780000,  NOW()-INTERVAL'12 days'),
-        (v_oi25, v_ord2,  v_prod_airpods, v_var_airpods1, 'Apple AirPods Pro 2',      'Trang USB-C',          5990000, 1,5990000,  NOW()-INTERVAL'28 days')
+        (v_oi1,  v_ord1,  v_prod_phone,   v_var_phone1,   1, 32990000, '{}'::jsonb),
+        (v_oi2,  v_ord2,  v_prod_dell,    v_var_dell1,    1, 35990000, '{}'::jsonb),
+        (v_oi3,  v_ord3,  v_prod_msi,     v_var_msi1,     1, 23990000, '{}'::jsonb),
+        (v_oi4,  v_ord4,  v_prod_airpods, v_var_airpods1, 1, 5990000,  '{}'::jsonb),
+        (v_oi5,  v_ord5,  v_prod_samsung, v_var_samsung1, 1, 29990000, '{}'::jsonb),
+        (v_oi6,  v_ord6,  v_prod_akko,    v_var_akko1,    1, 1890000,  '{}'::jsonb),
+        (v_oi7,  v_ord7,  v_prod_asus,    v_var_asus1,    1, 28990000, '{}'::jsonb),
+        (v_oi8,  v_ord8,  v_prod_dell,    v_var_dell1,    1, 34990000, '{}'::jsonb),
+        (v_oi9,  v_ord9,  v_prod_samsung, v_var_samsung1, 1, 29990000, '{}'::jsonb),
+        (v_oi10, v_ord10, v_prod_msi,     v_var_msi1,     1, 23990000, '{}'::jsonb),
+        (v_oi11, v_ord11, v_prod_phone,   v_var_phone1,   1, 32990000, '{}'::jsonb),
+        (v_oi12, v_ord12, v_prod_airpods, v_var_airpods1, 1, 5990000,  '{}'::jsonb),
+        (v_oi13, v_ord13, v_prod_phone,   v_var_phone1,   1, 32990000, '{}'::jsonb),
+        (v_oi14, v_ord14, v_prod_akko,    v_var_akko1,    1, 1890000,  '{}'::jsonb),
+        (v_oi15, v_ord15, v_prod_msi,     v_var_msi1,     1, 23990000, '{}'::jsonb),
+        (v_oi16, v_ord16, v_prod_dell,    v_var_dell1,    1, 35990000, '{}'::jsonb),
+        (v_oi17, v_ord17, v_prod_samsung, v_var_samsung1, 1, 29990000, '{}'::jsonb),
+        (v_oi18, v_ord18, v_prod_asus,    v_var_asus1,    1, 28990000, '{}'::jsonb),
+        (v_oi19, v_ord19, v_prod_phone,   v_var_phone1,   1, 32990000, '{}'::jsonb),
+        (v_oi20, v_ord20, v_prod_airpods, v_var_airpods1, 1, 5990000,  '{}'::jsonb),
+        (v_oi21, v_ord1,  v_prod_akko,    v_var_akko1,    1, 1890000,  '{}'::jsonb),
+        (v_oi22, v_ord5,  v_prod_airpods, v_var_airpods1, 1, 5990000,  '{}'::jsonb),
+        (v_oi23, v_ord7,  v_prod_cam,     v_var_cam1,     1, 1290000,  '{}'::jsonb),
+        (v_oi24, v_ord8,  v_prod_akko,    v_var_akko1,    2, 1890000,  '{}'::jsonb),
+        (v_oi25, v_ord2,  v_prod_airpods, v_var_airpods1, 1, 5990000,  '{}'::jsonb)
     ON CONFLICT DO NOTHING;
 
     -- 8. Reviews (15 đánh giá - chỉ cho COMPLETED orders)
@@ -286,7 +286,7 @@ BEGIN
     ON CONFLICT DO NOTHING;
 
     -- 9. Payment Transactions
-    INSERT INTO payment_transactions (id, order_id, gateway, transaction_id, amount, status, created_at, updated_at)
+    INSERT INTO payment_transactions (id, order_id, provider, provider_transaction_id, amount, status, created_at, updated_at)
     VALUES
         (gen_random_uuid(), v_ord1,  'VNPAY',  'VNPAY-V55-ORD001', 32990000, 'SUCCESS', NOW()-INTERVAL'30 days', NOW()-INTERVAL'29 days'),
         (gen_random_uuid(), v_ord2,  'VNPAY',  'VNPAY-V55-ORD002', 35990000, 'SUCCESS', NOW()-INTERVAL'28 days', NOW()-INTERVAL'27 days'),

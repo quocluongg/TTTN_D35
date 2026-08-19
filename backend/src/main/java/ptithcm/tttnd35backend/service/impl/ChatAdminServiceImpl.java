@@ -187,7 +187,12 @@ public class ChatAdminServiceImpl implements IChatAdminService {
 
     @Override
     public List<ChatStatPointResponse> getUserStats(LocalDateTime from, LocalDateTime to, String groupBy) {
-        String dateFormat = "month".equalsIgnoreCase(groupBy) ? "YYYY-MM" : "YYYY-MM-DD";
+        String dateFormat = switch (groupBy == null ? "day" : groupBy) {
+            case "week" -> "IYYY\"-W\"IW";
+            case "month" -> "YYYY-MM";
+            case "quarter" -> "YYYY\"-Q\"Q";
+            default -> "YYYY-MM-DD";
+        };
         String sql = """
                 SELECT TO_CHAR(c.started_at, '%s') AS period,
                        COUNT(DISTINCT c.id) AS conversations,
@@ -195,19 +200,19 @@ public class ChatAdminServiceImpl implements IChatAdminService {
                        COALESCE(AVG(EXTRACT(EPOCH FROM (c.ended_at - c.started_at))), 0) AS avg_duration,
                        (SELECT COUNT(*) FROM chat_messages m
                          JOIN chat_conversations cc ON cc.id = m.conversation_id
-                         WHERE TO_CHAR(cc.started_at, '%s') = period) AS messages,
+                         WHERE TO_CHAR(cc.started_at, '%s') = TO_CHAR(c.started_at, '%s')) AS messages,
                        (SELECT COUNT(*) FROM chat_conversion_events e
                          JOIN chat_conversations cc2 ON cc2.id = e.conversation_id
-                         WHERE TO_CHAR(cc2.started_at, '%s') = period AND e.event_type = 'ADD_TO_CART') AS add_to_cart,
+                         WHERE TO_CHAR(cc2.started_at, '%s') = TO_CHAR(c.started_at, '%s') AND e.event_type = 'ADD_TO_CART') AS add_to_cart,
                        (SELECT COUNT(*) FROM chat_conversion_events e2
                          JOIN chat_conversations cc3 ON cc3.id = e2.conversation_id
-                         WHERE TO_CHAR(cc3.started_at, '%s') = period AND e2.event_type = 'ORDER_PLACED') AS orders_placed
+                         WHERE TO_CHAR(cc3.started_at, '%s') = TO_CHAR(c.started_at, '%s') AND e2.event_type = 'ORDER_PLACED') AS orders_placed
                 FROM chat_conversations c
                 WHERE (:from IS NULL OR c.started_at >= CAST(:from AS TIMESTAMP))
                   AND (:to IS NULL OR c.started_at <= CAST(:to AS TIMESTAMP))
                 GROUP BY TO_CHAR(c.started_at, '%s')
-                ORDER BY period ASC
-                """.formatted(dateFormat, dateFormat, dateFormat, dateFormat, dateFormat, dateFormat);
+                ORDER BY TO_CHAR(c.started_at, '%s') ASC
+                """.formatted(dateFormat, dateFormat, dateFormat, dateFormat, dateFormat, dateFormat, dateFormat, dateFormat, dateFormat, dateFormat);
 
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("from", from);
@@ -345,6 +350,103 @@ public class ChatAdminServiceImpl implements IChatAdminService {
                     .flaggedRate(round2(flaggedRate))
                     .ordersPlaced(orders)
                     .conversionRate(round2(convRate))
+                    .build());
+        }
+        return result;
+    }
+
+    @Override
+    public List<ChatSourceComparisonResponse> getSourceComparison(LocalDateTime from, LocalDateTime to) {
+        String sql = """
+                SELECT c.source,
+                       COUNT(DISTINCT c.id) AS conversations,
+                       COUNT(DISTINCT c.user_id) AS unique_users,
+                       (SELECT COUNT(*) FROM chat_conversion_events e
+                          JOIN chat_conversations cc ON cc.id = e.conversation_id
+                          WHERE cc.source = c.source AND e.event_type = 'ADD_TO_CART'
+                            AND (:f IS NULL OR cc.started_at >= CAST(:f AS TIMESTAMP))
+                            AND (:t IS NULL OR cc.started_at <= CAST(:t AS TIMESTAMP))) AS add_to_cart,
+                       (SELECT COUNT(*) FROM chat_conversion_events e2
+                          JOIN chat_conversations cc2 ON cc2.id = e2.conversation_id
+                          WHERE cc2.source = c.source AND e2.event_type = 'ORDER_PLACED'
+                            AND (:f IS NULL OR cc2.started_at >= CAST(:f AS TIMESTAMP))
+                            AND (:t IS NULL OR cc2.started_at <= CAST(:t AS TIMESTAMP))) AS orders_placed,
+                       (SELECT COALESCE(SUM(o.total_amount), 0) FROM chat_conversion_events e3
+                          JOIN chat_conversations cc3 ON cc3.id = e3.conversation_id
+                          JOIN orders o ON o.id = e3.order_id
+                          WHERE cc3.source = c.source AND e3.event_type = 'ORDER_PLACED'
+                            AND (:f IS NULL OR cc3.started_at >= CAST(:f AS TIMESTAMP))
+                            AND (:t IS NULL OR cc3.started_at <= CAST(:t AS TIMESTAMP))) AS revenue
+                FROM chat_conversations c
+                WHERE (:f IS NULL OR c.started_at >= CAST(:f AS TIMESTAMP))
+                  AND (:t IS NULL OR c.started_at <= CAST(:t AS TIMESTAMP))
+                GROUP BY c.source
+                ORDER BY c.source ASC
+                """;
+        Query query = entityManager.createNativeQuery(sql);
+        query.setParameter("f", from);
+        query.setParameter("t", to);
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = query.getResultList();
+        List<ChatSourceComparisonResponse> result = new ArrayList<>();
+        for (Object[] row : rows) {
+            String source = (String) row[0];
+            long conversations = ((Number) row[1]).longValue();
+            long users = row[2] != null ? ((Number) row[2]).longValue() : 0L;
+            long addToCart = row[3] != null ? ((Number) row[3]).longValue() : 0L;
+            long orders = row[4] != null ? ((Number) row[4]).longValue() : 0L;
+            double revenue = row[5] != null ? ((Number) row[5]).doubleValue() : 0.0;
+
+            double addToCartRate = conversations > 0 ? addToCart * 100.0 / conversations : 0.0;
+            double convRate = addToCart > 0 ? orders * 100.0 / addToCart : 0.0;
+
+            result.add(ChatSourceComparisonResponse.builder()
+                    .source(source)
+                    .conversations(conversations)
+                    .uniqueUsers(users)
+                    .addToCart(addToCart)
+                    .ordersPlaced(orders)
+                    .addToCartRate(round2(addToCartRate))
+                    .conversionRate(round2(convRate))
+                    .revenue(round2(revenue))
+                    .build());
+        }
+        return result;
+    }
+
+    @Override
+    public List<ChatRevenuePointResponse> getChatbotRevenue(LocalDateTime from, LocalDateTime to, String groupBy) {
+        String dateFormat = switch (groupBy == null ? "day" : groupBy) {
+            case "week" -> "IYYY\"-W\"IW";
+            case "month" -> "YYYY-MM";
+            case "quarter" -> "YYYY\"-Q\"Q";
+            default -> "YYYY-MM-DD";
+        };
+        String sql = """
+                SELECT TO_CHAR(o.created_at, '%s') AS period,
+                       COUNT(DISTINCT e.order_id) AS orders,
+                       COALESCE(SUM(o.total_amount), 0) AS revenue
+                FROM chat_conversion_events e
+                JOIN chat_conversations c ON c.id = e.conversation_id
+                JOIN orders o ON o.id = e.order_id
+                WHERE e.event_type = 'ORDER_PLACED'
+                  AND c.source = 'CHATBOT'
+                  AND (:f IS NULL OR o.created_at >= CAST(:f AS TIMESTAMP))
+                  AND (:t IS NULL OR o.created_at <= CAST(:t AS TIMESTAMP))
+                GROUP BY TO_CHAR(o.created_at, '%s')
+                ORDER BY TO_CHAR(o.created_at, '%s') ASC
+                """.formatted(dateFormat, dateFormat, dateFormat);
+        Query query = entityManager.createNativeQuery(sql);
+        query.setParameter("f", from);
+        query.setParameter("t", to);
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = query.getResultList();
+        List<ChatRevenuePointResponse> result = new ArrayList<>();
+        for (Object[] row : rows) {
+            result.add(ChatRevenuePointResponse.builder()
+                    .period((String) row[0])
+                    .orders(row[1] != null ? ((Number) row[1]).longValue() : 0L)
+                    .revenue(round2(row[2] != null ? ((Number) row[2]).doubleValue() : 0.0))
                     .build());
         }
         return result;
