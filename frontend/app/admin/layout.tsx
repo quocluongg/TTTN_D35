@@ -18,7 +18,8 @@ import {
   Users, 
   Warehouse, 
   X, 
-  Brain 
+  Brain,
+  MessageSquare 
 } from "lucide-react";
 import { useState } from "react";
 
@@ -34,6 +35,7 @@ const nav = [
   ["/admin/news", "Tin tức", FileText],
   ["/admin/warranties", "Bảo hành", Boxes],
   ["/admin/cms", "Homepage CMS", LayoutTemplate],
+  ["/admin/chat", "Chatbot", MessageSquare],
   ["/admin/reports", "Báo cáo", BarChart3],
   ["/admin/settings", "Cấu hình", Settings],
   ["/admin/audit-logs", "Audit logs", FileText],

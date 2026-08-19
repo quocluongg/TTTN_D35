@@ -5,6 +5,9 @@ import PublicLayout from "@/shared/layouts/PublicLayout";
 import { ThinkingOrb } from "thinking-orbs";
 import MarkdownText from "@/components/ui/MarkdownText";
 import { productService, ProductListItem, ProductDetail } from "@/services/productServices";
+import { useCurrentUser } from "@/hooks/useAuth";
+import { cartService } from "@/services/cartService";
+import { notifyError, notifySuccess } from "@/components/Notify";
 import {
   Search,
   ArrowUp,
@@ -314,7 +317,7 @@ function RefProductCard({ source }: { source?: { id?: string; text?: string; sco
   );
 }
 
-function RefProductCardFromItem({ product }: { product: ProductListItem }) {
+function RefProductCardFromItem({ product, onAddToCart }: { product: ProductListItem; onAddToCart?: (product: ProductListItem) => void }) {
   if (!product) return null;
   const slug = product.slug || product.id;
   const formattedPrice = product.priceFrom
@@ -326,45 +329,49 @@ function RefProductCardFromItem({ product }: { product: ProductListItem }) {
   const categoryName = product.categoryName || "LAPTOP";
 
   return (
-    <a
-      href={`/product/${slug}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group flex flex-col justify-between w-full max-w-[280px] border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-xl overflow-hidden shadow-2xs hover:shadow-lg transition-all duration-300 block text-inherit no-underline"
-    >
+    <div className="group flex flex-col justify-between w-full max-w-[280px] border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-xl overflow-hidden shadow-2xs hover:shadow-lg transition-all duration-300 block text-inherit no-underline">
       {/* Top Image Section */}
-      <div className="relative w-full aspect-square bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 p-4 flex items-center justify-center overflow-hidden">
-        {/* Brand Badge */}
-        {product.brand && (
-          <span className="absolute top-3 left-3 z-10 px-2 py-0.5 bg-black text-white dark:bg-white dark:text-black text-[10px] font-extrabold uppercase rounded tracking-wider">
-            {product.brand}
-          </span>
-        )}
+      <a
+        href={`/product/${slug}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block"
+      >
+        <div className="relative w-full aspect-square bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 p-4 flex items-center justify-center overflow-hidden">
+          {/* Brand Badge */}
+          {product.brand && (
+            <span className="absolute top-3 left-3 z-10 px-2 py-0.5 bg-black text-white dark:bg-white dark:text-black text-[10px] font-extrabold uppercase rounded tracking-wider">
+              {product.brand}
+            </span>
+          )}
 
-        {/* Product Image */}
-        <ProductThumbnail src={thumbnail} brand="" />
-      </div>
+          {/* Product Image */}
+          <ProductThumbnail src={thumbnail} brand="" />
+        </div>
+      </a>
 
       {/* Bottom Info Section */}
       <div className="p-4 flex flex-col justify-between flex-1 gap-3 bg-white dark:bg-zinc-900">
-        <div className="space-y-2">
-          {/* Category & Rating */}
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
-              {categoryName}
-            </span>
-            <div className="flex items-center gap-1 text-[11px] font-bold text-amber-500">
-              <Star size={12} className="fill-amber-400 text-amber-400" />
-              <span>{rating}</span>
-              <span className="text-zinc-400 font-normal">({reviewCount})</span>
+        <a href={`/product/${slug}`} target="_blank" rel="noopener noreferrer" className="block">
+          <div className="space-y-2">
+            {/* Category & Rating */}
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                {categoryName}
+              </span>
+              <div className="flex items-center gap-1 text-[11px] font-bold text-amber-500">
+                <Star size={12} className="fill-amber-400 text-amber-400" />
+                <span>{rating}</span>
+                <span className="text-zinc-400 font-normal">({reviewCount})</span>
+              </div>
             </div>
-          </div>
 
-          {/* Product Title */}
-          <h3 className="text-sm font-bold text-zinc-900 dark:text-white line-clamp-2 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-            {product.name}
-          </h3>
-        </div>
+            {/* Product Title */}
+            <h3 className="text-sm font-bold text-zinc-900 dark:text-white line-clamp-2 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              {product.name}
+            </h3>
+          </div>
+        </a>
 
         <div>
           {/* Divider Line */}
@@ -378,13 +385,33 @@ function RefProductCardFromItem({ product }: { product: ProductListItem }) {
             </span>
           </div>
 
-          {/* Full Width Button */}
-          <div className="w-full py-2.5 bg-black text-white dark:bg-white dark:text-black font-bold text-xs rounded-none text-center group-hover:bg-blue-600 dark:group-hover:bg-blue-500 group-hover:text-white dark:group-hover:text-white transition-colors">
-            Xem chi tiết
+          {/* Action Buttons */}
+          <div className="grid grid-cols-2 gap-2">
+            <a
+              href={`/product/${slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="py-2.5 bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white font-bold text-xs rounded-lg text-center hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors flex items-center justify-center gap-1"
+            >
+              Xem chi tiết
+            </a>
+            {onAddToCart && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onAddToCart(product);
+                }}
+                className="py-2.5 bg-black text-white dark:bg-white dark:text-black font-bold text-xs rounded-lg text-center group-hover:bg-blue-600 dark:group-hover:bg-blue-500 transition-colors flex items-center justify-center gap-1 cursor-pointer"
+              >
+                <ShoppingBag size={13} />
+                Thêm giỏ
+              </button>
+            )}
           </div>
         </div>
       </div>
-    </a>
+    </div>
   );
 }
 
@@ -404,8 +431,33 @@ export default function AIChatPage() {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Mock user ID (replace with real auth)
-  const userId = "mock-user-123";
+  // Real authenticated user (fallback to guest id when not logged in)
+  const { data: currentUser } = useCurrentUser();
+  const userId = currentUser?.id || "guest";
+
+  const handleAddToCart = async (product: ProductListItem) => {
+    try {
+      const res = await productService.getProductBySlugOrId(product.id || product.slug);
+      const detail = res?.data;
+      const variant = detail?.variants?.find((v) => v.stock > 0) || detail?.variants?.[0];
+      if (!variant) {
+        notifyError("Sản phẩm chưa có biến thể để thêm vào giỏ.");
+        return;
+      }
+      await cartService.addItem({ variantId: variant.id, quantity: 1 });
+      notifySuccess("Đã thêm sản phẩm vào giỏ hàng!");
+
+      // Log conversion event to AI service for analytics
+      const params = new URLSearchParams();
+      if (currentConversation) params.append("conversation_id", currentConversation);
+      params.append("user_id", userId);
+      params.append("event_type", "ADD_TO_CART");
+      params.append("product_id", detail?.id || product.id);
+      fetch(`${AI_API_URL}/chat/conversion?${params}`, { method: "POST" }).catch(() => {});
+    } catch (err: any) {
+      notifyError(err?.response?.data?.message || err?.message || "Không thể thêm vào giỏ hàng!");
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -874,7 +926,7 @@ export default function AIChatPage() {
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-3">
                             {msg.realProducts && msg.realProducts.length > 0
                               ? msg.realProducts.map((p, i) => (
-                                  <RefProductCardFromItem key={i} product={p} />
+                                  <RefProductCardFromItem key={i} product={p} onAddToCart={handleAddToCart} />
                                 ))
                               : msg.sources?.slice(0, 2).map((s, i) => (
                                   <RefProductCard key={i} source={s} />

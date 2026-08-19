@@ -15,7 +15,9 @@ import {
   CheckCircle,
   XCircle,
   Clock,
+  ShieldAlert,
 } from "lucide-react";
+
 
 const API_URL = process.env.NEXT_PUBLIC_AI_API_URL || "http://localhost:8000";
 
@@ -140,6 +142,12 @@ export default function RAGDashboardPage() {
       description: "Performance metrics",
       href: "/admin/ai-management/analytics",
       icon: BarChart3,
+    },
+    {
+      label: "Câu hỏi nhạy cảm",
+      description: "Quản lý từ khóa cần handoff",
+      href: "/admin/ai-management/sensitive",
+      icon: ShieldAlert,
     },
   ];
 

@@ -77,6 +77,7 @@ export default function MarkdownText({ content, className = "" }: MarkdownTextPr
   let currentList: { type: "ul" | "ol"; items: React.ReactNode[] } | null = null;
   let inCodeBlock = false;
   let codeBlockLines: string[] = [];
+  let tableRows: string[] | null = null;
 
   const flushList = () => {
     if (!currentList) return;
@@ -96,8 +97,71 @@ export default function MarkdownText({ content, className = "" }: MarkdownTextPr
     currentList = null;
   };
 
+  const flushTable = () => {
+    if (!tableRows) return;
+    // Parse rows: split on |, trim, drop empty first/last cells
+    const cells = (row: string) =>
+      row
+        .replace(/^\s*\|/, "")
+        .replace(/\|\s*$/, "")
+        .split("|")
+        .map((c) => c.trim());
+    const rows: React.ReactNode[] = [];
+    tableRows.forEach((row, idx) => {
+      if (/^\s*[-:|\s]+\s*$/.test(row.trim()) && row.includes("-")) return; // separator
+      const rowCells = cells(row);
+      const tag = idx === 0 ? "th" : "td";
+      rows.push(
+        <tr key={idx}>
+          {rowCells.map((c, ci) =>
+            React.createElement(
+              tag,
+              {
+                key: ci,
+                className:
+                  tag === "th"
+                    ? "px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wide bg-zinc-100 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700"
+                    : "px-3 py-2 text-xs border-b border-zinc-100 dark:border-zinc-800 align-top",
+              },
+              renderInline(c)
+            )
+          )}
+        </tr>
+      );
+    });
+    blocks.push(
+      <div key={`table-${blocks.length}`} className="my-3 overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-700">
+        <table className="w-full border-collapse text-current">
+          <tbody>{rows}</tbody>
+        </table>
+      </div>
+    );
+    tableRows = null;
+  };
+
   lines.forEach((line, idx) => {
     const trimmed = line.trim();
+
+    // Table detection: header row followed by a separator row like |---|---|
+    const isTableSeparator = /^\s*\|[\s:-]+\|\s*$/.test(trimmed);
+    if (isTableSeparator && tableRows === null && idx + 1 < lines.length) {
+      const header = lines[idx - 1];
+      if (header && header.includes("|")) {
+        flushList();
+        flushTable();
+        tableRows = [header];
+        return;
+      }
+    }
+
+    if (tableRows !== null) {
+      if (trimmed.startsWith("|") || trimmed.endsWith("|")) {
+        tableRows.push(trimmed);
+        return;
+      } else {
+        flushTable();
+      }
+    }
 
     // Code block toggle (```)
     if (trimmed.startsWith("```")) {
@@ -230,6 +294,7 @@ export default function MarkdownText({ content, className = "" }: MarkdownTextPr
   });
 
   flushList();
+  flushTable();
 
   return <div className={`space-y-1 text-inherit ${className}`}>{blocks}</div>;
 }

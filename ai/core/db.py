@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import sys
+import uuid
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -293,3 +294,114 @@ def get_all_chunk_ids_by_product() -> dict:
     except Exception as e:
         logger.error(f"[DB] Failed to get chunk mapping: {e}")
         return {}
+
+
+# ============ CHAT CONVERSATION PERSISTENCE ============
+
+
+def ensure_conversation(session_id: str, user_id: str = None, source: str = "CHATBOT") -> str:
+    """Create or fetch conversation row by session_id. Returns conversation UUID."""
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT id FROM chat_conversations WHERE session_id = %s", (session_id,))
+        row = cur.fetchone()
+        if row:
+            conversation_id = str(row[0])
+            cur.close()
+            conn.close()
+            return conversation_id
+        conversation_id = str(uuid.uuid4())
+        cur.execute(
+            "INSERT INTO chat_conversations (id, session_id, user_id, status, source, started_at) "
+            "VALUES (%s, %s, %s, 'ACTIVE', %s, NOW())",
+            (conversation_id, session_id, user_id, source),
+        )
+        conn.commit()
+        cur.close()
+        conn.close()
+        return conversation_id
+    except Exception as e:
+        logger.warning(f"[DB] ensure_conversation failed: {e}")
+        return None
+
+
+def insert_chat_message(
+    conversation_id: str,
+    role: str,
+    content: str,
+    intent: str = None,
+    confidence: float = None,
+    latency_ms: int = None,
+    sources: list = None,
+    product_ids: list = None,
+) -> bool:
+    """Insert a chat message into chat_messages."""
+    if not conversation_id:
+        return False
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        msg_id = str(uuid.uuid4())
+        cur.execute(
+            "INSERT INTO chat_messages (id, conversation_id, role, content, intent, confidence, latency_ms, sources, product_ids) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s::uuid[])",
+            (
+                msg_id, conversation_id, role, content,
+                intent, confidence, latency_ms,
+                json.dumps(sources, ensure_ascii=False) if sources is not None else None,
+                product_ids,
+            ),
+        )
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True
+    except Exception as e:
+        logger.warning(f"[DB] insert_chat_message failed: {e}")
+        return False
+
+
+def log_conversion_event(
+    conversation_id: str,
+    event_type: str,
+    user_id: str = None,
+    product_id: str = None,
+    order_id: str = None,
+) -> bool:
+    """Log a conversion event (RECOMMENDED / ADD_TO_CART / ORDER_PLACED)."""
+    if not conversation_id:
+        return False
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO chat_conversion_events (id, conversation_id, user_id, product_id, order_id, event_type) "
+            "VALUES (%s, %s, %s, %s, %s, %s)",
+            (str(uuid.uuid4()), conversation_id, user_id, product_id, order_id, event_type),
+        )
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True
+    except Exception as e:
+        logger.warning(f"[DB] log_conversion_event failed: {e}")
+        return False
+
+
+def close_conversation(conversation_id: str) -> None:
+    """Mark conversation as CLOSED and set ended_at."""
+    if not conversation_id:
+        return
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE chat_conversations SET status = 'CLOSED', ended_at = NOW() WHERE id = %s",
+            (conversation_id,),
+        )
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        logger.warning(f"[DB] close_conversation failed: {e}")
