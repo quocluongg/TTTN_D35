@@ -7,6 +7,7 @@ import { adminCategoryService } from "@/services/admin/adminCategoryService";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { notifyError, notifySuccess } from "@/components/Notify";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import { FolderPlus } from "lucide-react";
 
 type CategoryRow = Record<string, any>;
 
@@ -100,10 +101,10 @@ export default function CategoriesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       <ResourcePage
         title="Quản lý Danh mục"
-        description="Quản lý cây danh mục sản phẩm, hiển thị thứ tự và slug đường dẫn."
+        description="Quản lý cây danh mục sản phẩm, thứ tự hiển thị và đường dẫn tĩnh."
         queryKey="admin-categories"
         fetcher={adminCategoryService.list}
         fields={[
@@ -120,59 +121,66 @@ export default function CategoriesPage() {
       {/* CRUD Modal */}
       {modalOpen && (
         <Dialog open={modalOpen} onOpenChange={(v) => !v && setModalOpen(false)}>
-          <DialogContent className="max-w-md border-2 border-black bg-white p-6">
+          <DialogContent className="max-w-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 rounded-xl shadow-xl">
             <DialogHeader>
-              <DialogTitle className="text-lg font-bold uppercase tracking-wider">
-                {editingCategory ? "Chỉnh sửa danh mục" : "Thêm danh mục mới"}
+              <DialogTitle className="text-base font-bold flex items-center gap-2 text-zinc-900 dark:text-white">
+                <FolderPlus className="w-5 h-5 text-indigo-600" />
+                <span>{editingCategory ? "Chỉnh sửa danh mục" : "Thêm danh mục mới"}</span>
               </DialogTitle>
             </DialogHeader>
 
             <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-              <label className="block text-sm font-semibold">
-                Tên danh mục <span className="text-red-500">*</span>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                  Tên danh mục <span className="text-red-500">*</span>
+                </label>
                 <input
                   required
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="mt-1 block w-full border border-black px-3 py-2 text-sm bg-white"
-                  placeholder="Ví dụ: Laptop Gaming"
+                  className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                  placeholder="Ví dụ: Laptop Gaming, Điện thoại..."
                 />
-              </label>
+              </div>
 
-              <label className="block text-sm font-semibold">
-                Đường dẫn tĩnh (Slug)
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                  Đường dẫn tĩnh (Slug)
+                </label>
                 <input
                   type="text"
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
-                  className="mt-1 block w-full border border-black px-3 py-2 text-sm bg-white"
+                  className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                   placeholder="Tự động sinh nếu để trống"
                 />
-              </label>
+              </div>
 
-              <label className="block text-sm font-semibold">
-                Thứ tự hiển thị
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                  Thứ tự hiển thị
+                </label>
                 <input
                   type="number"
                   value={displayOrder}
                   onChange={(e) => setDisplayOrder(Number(e.target.value))}
-                  className="mt-1 block w-full border border-black px-3 py-2 text-sm bg-white"
+                  className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2 text-sm font-mono text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                 />
-              </label>
+              </div>
 
-              <div className="flex justify-end gap-2 pt-4 border-t border-black/10">
+              <div className="flex justify-end gap-2 pt-4 border-t border-zinc-100 dark:border-zinc-800">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="border border-black px-4 py-2 text-sm"
+                  className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 text-xs font-semibold rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
                   disabled={createMutation.isPending || updateMutation.isPending}
-                  className="bg-black text-white px-5 py-2 text-sm hover:bg-zinc-800 disabled:opacity-50"
+                  className="px-5 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-xs font-semibold rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-100 disabled:opacity-50 transition-colors"
                 >
                   {createMutation.isPending || updateMutation.isPending ? "Đang lưu..." : "Xác nhận"}
                 </button>
@@ -187,8 +195,9 @@ export default function CategoriesPage() {
         open={!!deleteConfirmItem}
         onOpenChange={(v) => !v && setDeleteConfirmItem(null)}
         title="Xác nhận xóa danh mục?"
-        description={`Hành động này sẽ xóa vĩnh viễn danh mục "${deleteConfirmItem?.name}". Điều này có thể ảnh hưởng đến liên kết danh mục của một số sản phẩm.`}
+        description={`Hành động này sẽ xóa vĩnh viễn danh mục "${deleteConfirmItem?.name}".`}
         confirmText="Xóa vĩnh viễn"
+        danger
         onConfirm={() => {
           if (deleteConfirmItem) deleteMutation.mutate(deleteConfirmItem.id);
         }}

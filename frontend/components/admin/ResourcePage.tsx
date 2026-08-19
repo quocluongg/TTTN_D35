@@ -5,6 +5,7 @@ import DataTable, { type Column } from "@/components/DataTable";
 import StatusBadge from "@/components/StatusBadge";
 import type { Query } from "@/services/apiTypes";
 import React from "react";
+import { Plus, Edit3, Trash2 } from "lucide-react";
 
 type Row = Record<string, unknown>;
 
@@ -42,13 +43,13 @@ const formatValue = (key: string, val: unknown): React.ReactNode => {
   if (typeof val === "object") {
     if (React.isValidElement(val)) return val;
     try {
-      return <span className="max-w-xs truncate block font-mono text-xs">{JSON.stringify(val)}</span>;
+      return <span className="max-w-xs truncate block font-mono text-xs text-zinc-500">{JSON.stringify(val)}</span>;
     } catch {
       return "—";
     }
   }
 
-  return <span className="max-w-xs truncate block">{String(val)}</span>;
+  return <span className="max-w-xs truncate block text-xs text-zinc-800 dark:text-zinc-200">{String(val)}</span>;
 };
 
 export default function ResourcePage({
@@ -92,23 +93,26 @@ export default function ResourcePage({
     columns.push({
       key: "resource-actions",
       header: "Thao tác",
+      className: "text-right",
       cell: (row) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-end gap-1.5">
           {customActions && customActions(row)}
           {onEdit && (
             <button
               onClick={() => onEdit(row)}
-              className="border border-black px-2 py-1 text-xs hover:bg-zinc-100"
+              className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+              title="Chỉnh sửa"
             >
-              Sửa
+              <Edit3 className="w-3.5 h-3.5" />
             </button>
           )}
           {onDelete && (
             <button
               onClick={() => onDelete(row)}
-              className="border border-black bg-black text-white px-2 py-1 text-xs hover:bg-zinc-800"
+              className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+              title="Xóa"
             >
-              Xóa
+              <Trash2 className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
@@ -117,28 +121,28 @@ export default function ResourcePage({
   }
 
   return (
-    <section className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-black dark:border-zinc-800 pb-5">
+    <section className="space-y-6 font-sans">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-5">
         <div>
-          <h1 className="text-[28px] font-bold tracking-tight">{title}</h1>
-          <p className="mt-1 text-sm text-zinc-500">{description}</p>
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">{title}</h1>
+          <p className="mt-1 text-xs text-zinc-500">{description}</p>
         </div>
         <div className="flex items-center gap-3">
           {filter}
           {onCreate && (
             <button
               onClick={onCreate}
-              className="bg-black text-white px-4 py-2 text-xs font-bold uppercase tracking-wider hover:bg-zinc-800 border border-black"
+              className="bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all shadow-xs"
             >
-              Thêm mới
+              <Plus size={14} /> Thêm mới
             </button>
           )}
         </div>
       </div>
 
       {isError ? (
-        <div className="border border-red-500 bg-red-50 dark:bg-red-950/40 p-5 text-red-800 dark:text-red-300 font-medium">
-          Không thể tải dữ liệu. Hãy kiểm tra quyền truy cập hoặc API backend.
+        <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/40 p-5 text-red-700 dark:text-red-300 text-xs font-semibold">
+          Không thể tải dữ liệu. Hãy kiểm tra quyền truy cập hoặc kết nối API backend.
         </div>
       ) : (
         <div className="space-y-4">
@@ -152,9 +156,9 @@ export default function ResourcePage({
             rowKey={(row) => String(row.id ?? row.key ?? row.code ?? Math.random())}
           />
           {!isLoading && rows.length > 0 && (
-            <div className="flex items-center gap-4 text-xs font-mono text-zinc-500 bg-white dark:bg-zinc-900 p-4 border border-black dark:border-zinc-800">
+            <div className="flex items-center justify-between text-xs text-zinc-500 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3.5 shadow-xs">
               <div>
-                Hiển thị trang <strong className="text-black dark:text-white">{page + 1}</strong> / {totalPages} (Tổng <strong className="text-black dark:text-white">{totalElements}</strong> dòng)
+                Trang <strong className="text-zinc-900 dark:text-white font-mono">{page + 1}</strong> / {totalPages} (Tổng <strong className="text-zinc-900 dark:text-white font-mono">{totalElements}</strong> kết quả)
               </div>
               <div className="flex items-center gap-2">
                 <span>Hiển thị:</span>
@@ -164,7 +168,7 @@ export default function ResourcePage({
                     setSize(Number(e.target.value));
                     setPage(0);
                   }}
-                  className="px-2 py-1 border border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 text-black dark:text-white font-mono cursor-pointer outline-none text-xs"
+                  className="px-2 py-1 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white font-mono cursor-pointer outline-none text-xs"
                 >
                   <option value={10}>10 / trang</option>
                   <option value={20}>20 / trang</option>

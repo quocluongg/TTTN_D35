@@ -9,7 +9,7 @@ export const config = {
   matcher: ["/admin/:path*", "/login", "/signup", "/forgot-password", "/reset-password", "/account/:path*", "/account", "/orders/:path*", "/checkout/:path*", "/cart/:path*", "/cart"],
 };
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("token")?.value;
   const isAdmin = pathname.startsWith("/admin");

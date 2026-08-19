@@ -34,7 +34,6 @@ import { useCurrentUser, useLogout } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 
 export function Navbar() {
-  const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
   const { data: user, isLoading } = useCurrentUser();
   const logout = useLogout();

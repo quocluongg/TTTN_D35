@@ -12,19 +12,16 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import { 
   Plus, 
   Search, 
-  SlidersHorizontal, 
   Edit3, 
   Eye, 
   Package, 
   Tag, 
   Layers, 
   Star, 
-  CheckCircle2, 
-  XCircle, 
   RefreshCw,
   ChevronLeft,
   ChevronRight,
-  Sparkles
+  Sliders
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -42,9 +39,10 @@ export default function AdminProductsPage() {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(20);
 
-  // Quick View Variants Modal State
+  // Quick View Variants & Specifications Modal State
   const [selectedProduct, setSelectedProduct] = useState<Any | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [modalActiveTab, setModalActiveTab] = useState<"VARIANTS" | "SPECS">("VARIANTS");
 
   // Status Toggle Confirm State
   const [toggleProduct, setToggleProduct] = useState<Any | null>(null);
@@ -68,6 +66,16 @@ export default function AdminProductsPage() {
         size,
       }),
   });
+
+  // Query full product detail including specifications when Quick View modal opens
+  const modalDetailQuery = useQuery({
+    queryKey: ["admin-product-modal-detail", selectedProduct?.id],
+    queryFn: () => adminProductService.get(selectedProduct!.id),
+    enabled: !!selectedProduct?.id && detailModalOpen,
+  });
+
+  const fullDetail: Any = unwrap(modalDetailQuery.data) || selectedProduct;
+  const modalSpecs: Any[] = fullDetail?.specifications || [];
 
   const payload: Any = unwrap(productsQuery.data) || {};
   const rawRows: Any[] = payload.items || payload.content || (Array.isArray(payload) ? payload : []);
@@ -105,427 +113,521 @@ export default function AdminProductsPage() {
     ? Math.round(rawRows.reduce((sum, r) => sum + (Number(r.priceFrom || r.price || 0)), 0) / rawRows.length)
     : 0;
 
-  const topRated = rawRows.length > 0
-    ? [...rawRows].sort((a, b) => (b.ratingAvg ?? 5) - (a.ratingAvg ?? 5))[0]?.name
-    : "—";
+  const topRatedProduct = rawRows.length > 0
+    ? [...rawRows].sort((a, b) => Number(b.ratingAvg ?? 5) - Number(a.ratingAvg ?? 5))[0]
+    : null;
+  const topRatingVal = topRatedProduct?.ratingAvg ? Number(topRatedProduct.ratingAvg).toFixed(1) : "5.0";
 
   const totalOutOfStock = rawRows.reduce((acc, r) => {
-    // If has variants, count variants with stock = 0
     const outOfStockCount = r.variants ? r.variants.filter((v: Any) => Number(v.stock || 0) === 0).length : 0;
     return acc + outOfStockCount;
   }, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* ===== HEADER & TOP ACTION ===== */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-black dark:border-zinc-800 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-5">
         <div>
-          <h1 className="text-[28px] font-bold tracking-tight uppercase flex items-center gap-2">
-            <Package className="w-7 h-7 text-black dark:text-white" />
-            <span>Quản Lý Sản Phẩm</span>
-          </h1>
-          <p className="mt-1 text-sm text-zinc-500">
-            Quản lý kho hàng, giá bán, danh mục, thương hiệu và trạng thái kinh doanh của cửa hàng.
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">Quản Lý Sản Phẩm Kho hàng</h1>
+          <p className="text-xs text-zinc-500 mt-1 font-mono">
+            Tổng số: <strong className="text-zinc-900 dark:text-white">{totalElements}</strong> sản phẩm trong kho hệ thống.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <button
             onClick={() => productsQuery.refetch()}
-            className="p-2.5 border border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
-            title="Làm mới dữ liệu"
+            className="p-2.5 border border-zinc-300 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+            title="Tải lại danh sách"
           >
-            <RefreshCw className={`w-4 h-4 ${productsQuery.isFetching ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-4 h-4 text-zinc-600 dark:text-zinc-400 ${productsQuery.isFetching ? "animate-spin" : ""}`} />
           </button>
-
           <Link
             href="/admin/products/new"
-            className="bg-black text-white dark:bg-white dark:text-black px-5 py-2.5 font-bold text-xs uppercase tracking-wider flex items-center gap-2 hover:bg-[#C5FA1F] hover:text-black transition-all border border-black shadow-xs"
+            className="bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 px-4 py-2.5 text-xs font-bold rounded-lg flex items-center gap-2 transition-all shadow-xs"
           >
-            <Plus size={16} /> Thêm sản phẩm mới
+            <Plus className="w-4 h-4" /> Thêm sản phẩm mới
           </Link>
         </div>
       </div>
 
-      {/* ===== KPI SUMMARY CARDS ===== */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="border border-black dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
-          <p className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Tổng sản phẩm hệ thống</p>
-          <p className="mt-2 text-3xl font-extrabold">{totalElements}</p>
+      {/* ===== SMART METRICS DASHBOARD ===== */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between shadow-xs">
+          <div>
+            <span className="text-[11px] font-semibold text-zinc-400 uppercase">Tổng sản phẩm</span>
+            <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-white mt-0.5">{totalElements}</div>
+          </div>
+          <Package className="w-7 h-7 text-zinc-300 dark:text-zinc-700" />
         </div>
-        <div className="border border-black dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
-          <p className="text-xs font-mono text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Giá bán trung bình (Trang)</p>
-          <p className="mt-2 text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
-            {avgPrice > 0 ? avgPrice.toLocaleString("vi-VN") + " ₫" : "—"}
-          </p>
+
+        <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between shadow-xs">
+          <div>
+            <span className="text-[11px] font-semibold text-zinc-400 uppercase">Giá trung bình</span>
+            <div className="text-xl font-bold font-mono text-indigo-600 dark:text-indigo-400 mt-0.5">
+              {avgPrice > 0 ? `${avgPrice.toLocaleString("vi-VN")} ₫` : "—"}
+            </div>
+          </div>
+          <Tag className="w-7 h-7 text-zinc-300 dark:text-zinc-700" />
         </div>
-        <div className="border border-black dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
-          <p className="text-xs font-mono text-rose-600 dark:text-rose-400 uppercase tracking-wider">Biến thể hết hàng (Trang)</p>
-          <p className="mt-2 text-3xl font-extrabold text-rose-600 dark:text-rose-400">{totalOutOfStock}</p>
+
+        <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between shadow-xs">
+          <div>
+            <span className="text-[11px] font-semibold text-zinc-400 uppercase">Đánh giá cao nhất</span>
+            <div className="text-2xl font-bold font-mono text-amber-500 mt-0.5 flex items-center gap-1">
+              {topRatingVal} <span className="text-xs font-mono text-zinc-400 font-normal">/ 5.0</span>
+            </div>
+            {topRatedProduct && (
+              <span className="text-[11px] text-zinc-500 font-medium truncate block max-w-[140px] mt-0.5" title={topRatedProduct.name}>
+                Top: {topRatedProduct.name}
+              </span>
+            )}
+          </div>
+          <Star className="w-7 h-7 text-amber-400 fill-amber-400 shrink-0" />
         </div>
-        <div className="border border-black dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
-          <p className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Sản phẩm đánh giá tốt nhất</p>
-          <p className="mt-2 text-xs font-bold truncate text-zinc-800 dark:text-zinc-200" title={topRated}>
-            {topRated}
-          </p>
+
+        <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between shadow-xs">
+          <div>
+            <span className="text-[11px] font-semibold text-zinc-400 uppercase">Tồn kho 0 (Cần nạp)</span>
+            <div className={`text-2xl font-bold font-mono mt-0.5 ${totalOutOfStock > 0 ? "text-red-600" : "text-emerald-600"}`}>
+              {totalOutOfStock}
+            </div>
+          </div>
+          <Layers className="w-7 h-7 text-zinc-300 dark:text-zinc-700" />
         </div>
       </div>
 
-      {/* ===== FILTER BAR ===== */}
-      <div className="border border-black dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
-          {/* Search Input */}
-          <div className="relative flex-1 min-w-[220px]">
-            <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-3" />
+      {/* ===== SEARCH & FILTERS BAR ===== */}
+      <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-4 shadow-xs">
+        <div className="flex flex-col md:flex-row md:items-center gap-3">
+          {/* Search Box */}
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 absolute left-3 top-2.5 text-zinc-400" />
             <input
               type="text"
-              placeholder="Tìm theo tên sản phẩm, thương hiệu..."
+              placeholder="Tìm kiếm theo tên sản phẩm, hãng..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
                 setPage(0);
               }}
-              className="w-full pl-9 pr-4 py-2 text-sm border border-black dark:border-zinc-700 bg-[#F9F9F9] dark:bg-zinc-800 outline-none focus:border-lime-500"
+              className="w-full pl-9 pr-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
             />
           </div>
 
-          {/* Category Filter */}
+          {/* Filter Category */}
           <select
             value={categorySlug}
             onChange={(e) => {
               setCategorySlug(e.target.value);
               setPage(0);
             }}
-            className="px-3 py-2 text-sm border border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 outline-none cursor-pointer"
+            className="px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium focus:outline-none focus:border-indigo-500 shrink-0"
           >
-            <option value="">-- Tất cả danh mục --</option>
-            {categories.map((cat) => (
-              <option key={cat.id || cat.slug} value={cat.slug}>
-                {cat.name}
+            <option value="">Tất cả danh mục</option>
+            {categories.map((c: Any) => (
+              <option key={c.id || c.slug} value={c.slug}>
+                {c.name}
               </option>
             ))}
           </select>
 
-          {/* Status Filter */}
+          {/* Filter Brand */}
           <select
-            value={statusFilter}
-            onChange={(e) => handleStatusFilterChange(e.target.value)}
-            className="px-3 py-2 text-sm border border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 outline-none cursor-pointer"
-          >
-            <option value="ALL">Tất cả trạng thái</option>
-            <option value="ACTIVE">Đang kinh doanh</option>
-            <option value="INACTIVE">Tạm ẩn</option>
-          </select>
-        </div>
-
-        {(search || categorySlug || statusFilter !== "ALL") && (
-          <button
-            onClick={() => {
-              setSearch("");
-              setCategorySlug("");
-              setBrand("");
-              setStatusFilter("ALL");
+            value={brand}
+            onChange={(e) => {
+              setBrand(e.target.value);
               setPage(0);
             }}
-            className="text-xs font-bold underline text-red-600 dark:text-red-400 hover:opacity-80"
+            className="px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium focus:outline-none focus:border-indigo-500 shrink-0"
           >
-            Xóa bộ lọc
-          </button>
-        )}
+            <option value="">Tất cả thương hiệu</option>
+            <option value="ASUS">ASUS</option>
+            <option value="MSI">MSI</option>
+            <option value="Lenovo">Lenovo</option>
+            <option value="Dell">Dell</option>
+            <option value="HP">HP</option>
+            <option value="Apple">Apple</option>
+            <option value="Acer">Acer</option>
+            <option value="DJI">DJI</option>
+          </select>
+
+          {/* Status Tabs Filter */}
+          <div className="flex items-center rounded-lg border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-100/70 dark:bg-zinc-800 shrink-0">
+            {["ALL", "ACTIVE", "INACTIVE"].map((st) => (
+              <button
+                key={st}
+                onClick={() => handleStatusFilterChange(st)}
+                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                  statusFilter === st
+                    ? "bg-white text-zinc-900 shadow-2xs dark:bg-zinc-700 dark:text-white"
+                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                }`}
+              >
+                {st === "ALL" ? "Tất cả" : st === "ACTIVE" ? "Đang bán" : "Tạm ẩn"}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* ===== PRODUCTS DATA TABLE ===== */}
-      <div className="border border-black dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-x-auto">
-        <table className="w-full text-left text-sm border-collapse">
-          <thead>
-            <tr className="border-b border-black dark:border-zinc-800 bg-[#F2F2F2] dark:bg-zinc-800 text-xs font-mono uppercase tracking-wider">
-              <th className="p-4 w-12 text-center">#</th>
-              <th className="p-4 min-w-[280px]">Sản phẩm</th>
-              <th className="p-4">Danh mục</th>
-              <th className="p-4">Thương hiệu</th>
-              <th className="p-4">Giá từ</th>
-              <th className="p-4 text-center">Đánh giá</th>
-              <th className="p-4 text-center">Trạng thái</th>
-              <th className="p-4 text-right">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-black/10 dark:divide-zinc-800">
-            {productsQuery.isLoading ? (
-              <tr>
-                <td colSpan={8} className="p-12 text-center text-zinc-500 font-medium">
-                  <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
-                  Đang tải danh sách sản phẩm...
-                </td>
-              </tr>
-            ) : rows.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="p-12 text-center text-zinc-500">
-                  Không tìm thấy sản phẩm nào phù hợp.
-                </td>
-              </tr>
-            ) : (
-              rows.map((row, idx) => {
-                const imgUrl = row.imageUrl || row.image || row.images?.[0]?.imageUrl || row.thumbnail || "/figma/product_1.png";
-                const isItemActive = row.isActive !== false && row.active !== false;
+      {/* ===== PRODUCTS MAIN TABLE ===== */}
+      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-xs">
+        {productsQuery.isLoading ? (
+          <div className="p-12 text-center text-xs font-medium text-zinc-500 flex items-center justify-center gap-2">
+            <RefreshCw className="w-4 h-4 animate-spin text-zinc-400" /> Đang tải danh sách sản phẩm...
+          </div>
+        ) : rows.length === 0 ? (
+          <div className="p-12 text-center space-y-3">
+            <Package className="w-9 h-9 text-zinc-300 mx-auto" />
+            <p className="text-xs font-semibold text-zinc-500">Không tìm thấy sản phẩm phù hợp điều kiện lọc.</p>
+            <button
+              onClick={() => {
+                setSearch("");
+                setCategorySlug("");
+                setBrand("");
+                setStatusFilter("ALL");
+              }}
+              className="text-xs font-semibold text-indigo-600 hover:underline"
+            >
+              Xóa các bộ lọc
+            </button>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs text-left border-collapse">
+              <thead>
+                <tr className="bg-zinc-50/70 dark:bg-zinc-800/60 border-b border-zinc-200 dark:border-zinc-800 uppercase text-[11px] font-bold tracking-wider text-zinc-500">
+                  <th className="p-3.5 w-16 text-center">Ảnh</th>
+                  <th className="p-3.5">Tên sản phẩm</th>
+                  <th className="p-3.5">Danh mục & Hãng</th>
+                  <th className="p-3.5">Giá bán khoảng</th>
+                  <th className="p-3.5 text-center">Biến thể</th>
+                  <th className="p-3.5 text-center">Trạng thái</th>
+                  <th className="p-3.5 text-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800 font-sans">
+                {rows.map((row: Any) => {
+                  const active = row.isActive !== false && row.active !== false;
+                  const priceMin = row.priceFrom || row.price || 0;
+                  const priceMax = row.priceTo;
+                  const variantCount = row.variants?.length || 0;
 
-                return (
-                  <tr key={row.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
-                    {/* Index */}
-                    <td className="p-4 text-center font-mono text-zinc-400 text-xs">
-                      {page * size + idx + 1}
-                    </td>
-
-                    {/* Product Main Info */}
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 border border-black/10 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-1 shrink-0 flex items-center justify-center">
-                          <img
-                            src={imgUrl}
-                            alt={row.name}
-                            className="w-full h-full object-contain"
-                          />
+                  return (
+                    <tr
+                      key={row.id}
+                      className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/50 transition-colors"
+                    >
+                      {/* Image */}
+                      <td className="p-3 text-center">
+                        <div className="w-11 h-11 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 relative mx-auto overflow-hidden">
+                          {row.thumbnail ? (
+                            <img
+                              src={row.thumbnail}
+                              alt={row.name}
+                              className="w-full h-full object-contain p-1"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-zinc-300">
+                              <Package className="w-4 h-4" />
+                            </div>
+                          )}
                         </div>
-                        <div className="min-w-0">
-                          <Link
-                            href={`/admin/products/${row.id}/edit`}
-                            className="font-bold text-black dark:text-white hover:underline truncate block max-w-[260px]"
-                            title={row.name}
-                          >
-                            {row.name}
-                          </Link>
-                          <span className="text-[11px] font-mono text-zinc-400 block truncate">
-                            ID: {row.id?.substring(0, 8)}...
-                          </span>
+                      </td>
+
+                      {/* Name & Origin */}
+                      <td className="p-3 space-y-1">
+                        <Link
+                          href={`/admin/products/${row.id}/edit`}
+                          className="font-bold text-sm text-zinc-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors line-clamp-2"
+                        >
+                          {row.name}
+                        </Link>
+                        <div className="flex items-center gap-2 text-[11px] text-zinc-400 font-mono">
+                          <span>Origin: {row.origin || "Chính hãng"}</span>
+                          <span>•</span>
+                          <span>BH: {row.warrantyMonths || 24} thg</span>
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* Category */}
-                    <td className="p-4 font-medium text-zinc-700 dark:text-zinc-300">
-                      {row.categoryName || row.category?.name || "—"}
-                    </td>
+                      {/* Category & Brand */}
+                      <td className="p-3 space-y-0.5">
+                        <span className="font-bold text-zinc-800 dark:text-zinc-200 block text-xs">
+                          {row.brand || "—"}
+                        </span>
+                        <span className="text-[11px] text-zinc-500 block">
+                          {row.categoryName || row.category?.name || "—"}
+                        </span>
+                      </td>
 
-                    {/* Brand */}
-                    <td className="p-4">
-                      <span className="inline-block border border-black/20 dark:border-zinc-700 px-2 py-0.5 text-xs font-mono uppercase bg-zinc-100 dark:bg-zinc-800">
-                        {row.brand || "—"}
-                      </span>
-                    </td>
+                      {/* Price Range */}
+                      <td className="p-3 font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">
+                        {priceMin > 0 ? (
+                          priceMax && priceMax > priceMin ? (
+                            `${priceMin.toLocaleString("vi-VN")} - ${priceMax.toLocaleString("vi-VN")} ₫`
+                          ) : (
+                            `${priceMin.toLocaleString("vi-VN")} ₫`
+                          )
+                        ) : (
+                          "Liên hệ"
+                        )}
+                      </td>
 
-                    {/* Price From */}
-                    <td className="p-4 font-bold text-black dark:text-white font-mono">
-                      {row.priceFrom != null
-                        ? Number(row.priceFrom).toLocaleString("vi-VN") + " ₫"
-                        : row.price != null
-                        ? Number(row.price).toLocaleString("vi-VN") + " ₫"
-                        : "—"}
-                    </td>
-
-                    {/* Rating */}
-                    <td className="p-4 text-center">
-                      <div className="inline-flex items-center gap-1 font-bold text-xs">
-                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                        <span>{row.ratingAvg != null ? Number(row.ratingAvg).toFixed(1) : "5.0"}</span>
-                      </div>
-                    </td>
-
-                    {/* Active Status */}
-                    <td className="p-4 text-center">
-                      <button
-                        onClick={() => setToggleProduct(row)}
-                        className="cursor-pointer transition-transform hover:scale-105"
-                        title="Bấm để đổi trạng thái"
-                      >
-                        <StatusBadge status={isItemActive ? "ACTIVE" : "INACTIVE"} />
-                      </button>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="p-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {/* Quick View Variants */}
+                      {/* Variant Count */}
+                      <td className="p-3 text-center">
                         <button
                           onClick={() => {
                             setSelectedProduct(row);
+                            setModalActiveTab("VARIANTS");
                             setDetailModalOpen(true);
                           }}
-                          className="p-1.5 border border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
-                          title="Xem nhanh chi tiết & biến thể"
+                          className="px-2.5 py-1 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 hover:border-zinc-400 transition-colors"
+                          title="Xem chi tiết biến thể & thông số"
                         >
-                          <Eye className="w-4 h-4" />
+                          {variantCount} biến thể
                         </button>
+                      </td>
 
-                        {/* Edit Button */}
-                        <Link
-                          href={`/admin/products/${row.id}/edit`}
-                          className="p-1.5 border border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-lime-400 hover:text-black transition-colors"
-                          title="Chỉnh sửa sản phẩm"
+                      {/* Status */}
+                      <td className="p-3 text-center">
+                        <button
+                          onClick={() => setToggleProduct(row)}
+                          className="focus:outline-none"
+                          title="Bấm để thay đổi trạng thái"
                         >
-                          <Edit3 className="w-4 h-4" />
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+                          <StatusBadge status={active ? "ACTIVE" : "INACTIVE"} />
+                        </button>
+                      </td>
 
-      {/* ===== PAGINATION ===== */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border border-black dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
-        <div className="flex items-center gap-4 text-xs font-mono text-zinc-500">
-          <div>
-            Hiển thị trang <strong className="text-black dark:text-white">{page + 1}</strong> / {totalPages} (Tổng <strong className="text-black dark:text-white">{totalElements}</strong> sản phẩm)
+                      {/* Actions */}
+                      <td className="p-3 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {/* Quick View Variants */}
+                          <button
+                            onClick={() => {
+                              setSelectedProduct(row);
+                              setModalActiveTab("VARIANTS");
+                              setDetailModalOpen(true);
+                            }}
+                            className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+                            title="Xem chi tiết"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+
+                          {/* Edit Button */}
+                          <Link
+                            href={`/admin/products/${row.id}/edit`}
+                            className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+                            title="Chỉnh sửa"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* ===== PAGINATION FOOTER ===== */}
+        <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-800/40">
+          <div className="text-xs text-zinc-500 font-mono">
+            Trang <strong className="text-zinc-900 dark:text-white">{page + 1}</strong> / {totalPages} (Tổng {totalElements} kết quả)
           </div>
 
-          {/* Page Size Selector */}
-          <div className="flex items-center gap-2">
-            <span>Hiển thị:</span>
-            <select
-              value={size}
-              onChange={(e) => {
-                setSize(Number(e.target.value));
-                setPage(0);
-              }}
-              className="px-2 py-1 border border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 text-black dark:text-white font-mono cursor-pointer outline-none"
+          <div className="flex items-center gap-1.5">
+            <button
+              disabled={page === 0}
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              className="p-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
             >
-              <option value={10}>10 / trang</option>
-              <option value={20}>20 / trang</option>
-              <option value={50}>50 / trang</option>
-              <option value={100}>100 / trang</option>
-            </select>
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              disabled={page >= totalPages - 1}
+              onClick={() => setPage((p) => p + 1)}
+              className="p-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
-        </div>
-
-        <div className="flex items-center gap-1.5">
-          <button
-            disabled={page === 0}
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            className="p-2 border border-black dark:border-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
-            title="Trang trước"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-
-          {/* Page Numbers */}
-          {Array.from({ length: Math.min(5, totalPages) }, (_, idx) => {
-            let pageNum = idx;
-            if (totalPages > 5) {
-              if (page > 2) {
-                pageNum = Math.min(page - 2 + idx, totalPages - 5 + idx);
-              }
-            }
-            return (
-              <button
-                key={pageNum}
-                onClick={() => setPage(pageNum)}
-                className={`w-8 h-8 font-mono text-xs border border-black dark:border-zinc-700 transition-colors ${
-                  page === pageNum
-                    ? "bg-black text-white dark:bg-white dark:text-black font-bold"
-                    : "bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700"
-                }`}
-              >
-                {pageNum + 1}
-              </button>
-            );
-          })}
-
-          <button
-            disabled={page + 1 >= totalPages}
-            onClick={() => setPage((p) => p + 1)}
-            className="p-2 border border-black dark:border-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
-            title="Trang sau"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
         </div>
       </div>
 
-      {/* ===== QUICK VIEW MODAL ===== */}
+      {/* ===== QUICK VIEW & SPECIFICATIONS DIALOG MODAL ===== */}
       {detailModalOpen && selectedProduct && (
         <Dialog open={detailModalOpen} onOpenChange={setDetailModalOpen}>
-          <DialogContent className="max-w-3xl border-2 border-black dark:border-zinc-700 bg-white dark:bg-zinc-900 p-6">
+          <DialogContent className="max-w-4xl rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 space-y-5 shadow-xl">
+            
+            {/* Modal Header */}
             <DialogHeader>
-              <DialogTitle className="text-xl font-bold uppercase tracking-tight flex items-center gap-2">
-                <Package className="w-5 h-5" />
-                <span>{selectedProduct.name}</span>
+              <DialogTitle className="text-lg font-bold flex items-center gap-2 text-zinc-900 dark:text-white">
+                <Package className="w-5 h-5 text-indigo-600" />
+                <span>{fullDetail.name || selectedProduct.name}</span>
               </DialogTitle>
             </DialogHeader>
 
-            <div className="mt-4 space-y-6">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm bg-zinc-50 dark:bg-zinc-800 p-4 border border-black/10 dark:border-zinc-700">
-                <div>
-                  <span className="text-xs text-zinc-400 block font-mono">THƯƠNG HIỆU</span>
-                  <strong>{selectedProduct.brand || "—"}</strong>
-                </div>
-                <div>
-                  <span className="text-xs text-zinc-400 block font-mono">DANH MỤC</span>
-                  <strong>{selectedProduct.categoryName || "—"}</strong>
-                </div>
-                <div>
-                  <span className="text-xs text-zinc-400 block font-mono">XUẤT XỨ</span>
-                  <strong>{selectedProduct.origin || "Chính hãng"}</strong>
-                </div>
-                <div>
-                  <span className="text-xs text-zinc-400 block font-mono">BẢO HÀNH</span>
-                  <strong>{selectedProduct.warrantyMonths || 12} Tháng</strong>
-                </div>
-              </div>
-
-              {/* Variants List Table */}
+            {/* General Meta Banner */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-zinc-50 dark:bg-zinc-800 p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-700">
               <div>
-                <h4 className="text-sm font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <Layers className="w-4 h-4" />
-                  <span>Danh sách Biến thể ({selectedProduct.variants?.length || 0})</span>
-                </h4>
+                <span className="text-[11px] text-zinc-400 block font-semibold uppercase">THƯƠNG HIỆU</span>
+                <strong className="text-zinc-900 dark:text-white">{fullDetail.brand || selectedProduct.brand || "—"}</strong>
+              </div>
+              <div>
+                <span className="text-[11px] text-zinc-400 block font-semibold uppercase">DANH MỤC</span>
+                <strong className="text-zinc-900 dark:text-white">{fullDetail.categoryName || selectedProduct.categoryName || "—"}</strong>
+              </div>
+              <div>
+                <span className="text-[11px] text-zinc-400 block font-semibold uppercase">XUẤT XỨ</span>
+                <strong className="text-zinc-900 dark:text-white">{fullDetail.origin || selectedProduct.origin || "Chính hãng"}</strong>
+              </div>
+              <div>
+                <span className="text-[11px] text-zinc-400 block font-semibold uppercase">BẢO HÀNH</span>
+                <strong className="text-zinc-900 dark:text-white">{fullDetail.warrantyMonths || selectedProduct.warrantyMonths || 24} Tháng</strong>
+              </div>
+            </div>
 
-                {selectedProduct.variants && selectedProduct.variants.length > 0 ? (
-                  <div className="border border-black dark:border-zinc-800 overflow-x-auto">
+            {/* Tabs Selector: VARIANTS vs SPECS */}
+            <div className="flex border-b border-zinc-200 dark:border-zinc-700 gap-2">
+              <button
+                type="button"
+                onClick={() => setModalActiveTab("VARIANTS")}
+                className={`px-4 py-2 text-xs font-semibold flex items-center gap-2 border-b-2 -mb-[1px] transition-colors ${
+                  modalActiveTab === "VARIANTS"
+                    ? "border-zinc-900 text-zinc-900 dark:border-white dark:text-white"
+                    : "border-transparent text-zinc-400 hover:text-zinc-700"
+                }`}
+              >
+                <Layers className="w-4 h-4" />
+                <span>Biến thể & Tồn kho ({fullDetail.variants?.length || 0})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setModalActiveTab("SPECS")}
+                className={`px-4 py-2 text-xs font-semibold flex items-center gap-2 border-b-2 -mb-[1px] transition-colors ${
+                  modalActiveTab === "SPECS"
+                    ? "border-zinc-900 text-zinc-900 dark:border-white dark:text-white"
+                    : "border-transparent text-zinc-400 hover:text-zinc-700"
+                }`}
+              >
+                <Sliders className="w-4 h-4" />
+                <span>Thông số kỹ thuật ({modalSpecs.length})</span>
+              </button>
+            </div>
+
+            {/* TAB 1: VARIANTS TABLE */}
+            {modalActiveTab === "VARIANTS" && (
+              <div>
+                {fullDetail.variants && fullDetail.variants.length > 0 ? (
+                  <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-x-auto max-h-[350px]">
                     <table className="w-full text-xs text-left">
                       <thead>
-                        <tr className="bg-zinc-100 dark:bg-zinc-800 border-b border-black dark:border-zinc-800 font-mono">
-                          <th className="p-2.5">Màu</th>
-                          <th className="p-2.5">Cấu hình (CPU / RAM / SSD)</th>
+                        <tr className="bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-800 font-mono text-zinc-500">
+                          <th className="p-2.5">Màu sắc</th>
+                          <th className="p-2.5">Cấu hình / Thuộc tính</th>
                           <th className="p-2.5 text-right">Giá bán</th>
                           <th className="p-2.5 text-center">Tồn kho</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-black/10 dark:divide-zinc-800">
-                        {selectedProduct.variants.map((v: Any, i: number) => (
-                          <tr key={v.id || i}>
-                            <td className="p-2.5 font-bold">{v.color || "Tiêu chuẩn"}</td>
-                            <td className="p-2.5 text-zinc-600 dark:text-zinc-300">
-                              {[v.cpu, v.ram, v.ssd, v.vga].filter(Boolean).join(" · ") || "—"}
+                      <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                        {fullDetail.variants.map((v: Any, i: number) => {
+                          const attrStr = v.attributes ? Object.values(v.attributes).filter(Boolean).join(" · ") : "";
+                          return (
+                            <tr key={v.id || i}>
+                              <td className="p-2.5 font-bold">{v.color || "Tiêu chuẩn"}</td>
+                              <td className="p-2.5 text-zinc-600 dark:text-zinc-300">
+                                {attrStr || [v.cpu, v.ram, v.ssd, v.vga].filter(Boolean).join(" · ") || "—"}
+                              </td>
+                              <td className="p-2.5 text-right font-bold font-mono text-indigo-600">
+                                {Number(v.price || 0).toLocaleString("vi-VN")} ₫
+                              </td>
+                              <td className="p-2.5 text-center">
+                                <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-md ${v.stock > 0 ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>
+                                  {v.stock > 0 ? `${v.stock} chiếc` : "Hết hàng"}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-xs text-zinc-500 italic p-4 text-center">Chưa có thông tin biến thể.</p>
+                )}
+              </div>
+            )}
+
+            {/* TAB 2: EAV SPECIFICATIONS TABLE */}
+            {modalActiveTab === "SPECS" && (
+              <div>
+                {modalDetailQuery.isLoading ? (
+                  <div className="p-8 text-center text-xs font-mono text-zinc-500 flex items-center justify-center gap-2">
+                    <RefreshCw className="w-4 h-4 animate-spin" /> Đang tải thông số kỹ thuật...
+                  </div>
+                ) : modalSpecs.length === 0 ? (
+                  <div className="p-8 text-center border border-dashed border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl space-y-1">
+                    <Sliders className="w-7 h-7 mx-auto text-zinc-400" />
+                    <p className="text-xs font-semibold text-zinc-500">Sản phẩm này chưa có dữ liệu Thông số kỹ thuật EAV.</p>
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-x-auto max-h-[350px]">
+                    <table className="w-full text-xs text-left">
+                      <thead>
+                        <tr className="bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-800 font-mono text-zinc-500">
+                          <th className="p-2.5 w-1/4">Nhóm</th>
+                          <th className="p-2.5 w-1/4">Thuộc tính</th>
+                          <th className="p-2.5 w-1/3">Giá trị</th>
+                          <th className="p-2.5 text-center">Đơn vị</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                        {modalSpecs.map((s: Any, i: number) => (
+                          <tr key={s.id || i} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                            <td className="p-2.5 font-bold text-indigo-600 dark:text-indigo-400 font-mono">
+                              {s.specGroup || "Thông số chung"}
                             </td>
-                            <td className="p-2.5 text-right font-bold font-mono">
-                              {Number(v.price || 0).toLocaleString("vi-VN")} ₫
+                            <td className="p-2.5 font-bold text-zinc-900 dark:text-zinc-100">
+                              {s.attributeDisplayName || s.attributeName}
                             </td>
-                            <td className="p-2.5 text-center">
-                              <span className={`px-2 py-0.5 text-[10px] font-bold ${v.stock > 0 ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"}`}>
-                                {v.stock > 0 ? `${v.stock} chiếc` : "Hết hàng"}
-                              </span>
+                            <td className="p-2.5 font-medium text-zinc-700 dark:text-zinc-300">
+                              {s.specValue}
+                            </td>
+                            <td className="p-2.5 text-center font-mono text-zinc-400">
+                              {s.specUnit || "—"}
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
-                ) : (
-                  <p className="text-sm text-zinc-500 italic">Chưa có thông tin biến thể.</p>
                 )}
               </div>
+            )}
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-black/10 dark:border-zinc-800">
-                <Link
-                  href={`/admin/products/${selectedProduct.id}/edit`}
-                  className="bg-black text-white dark:bg-white dark:text-black px-4 py-2 text-xs font-bold uppercase tracking-wider hover:bg-lime-400 hover:text-black transition-colors"
-                >
-                  Chỉnh sửa sản phẩm này
-                </Link>
-              </div>
+            {/* Modal Actions Footer */}
+            <div className="flex justify-end gap-2.5 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+              <button
+                type="button"
+                onClick={() => setDetailModalOpen(false)}
+                className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 text-xs font-semibold rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+              >
+                Đóng
+              </button>
+              <Link
+                href={`/admin/products/${selectedProduct.id}/edit`}
+                className="bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 px-4 py-2 text-xs font-semibold rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors flex items-center gap-1.5"
+              >
+                <Edit3 className="w-3.5 h-3.5" /> Chỉnh sửa sản phẩm
+              </Link>
             </div>
+
           </DialogContent>
         </Dialog>
       )}
