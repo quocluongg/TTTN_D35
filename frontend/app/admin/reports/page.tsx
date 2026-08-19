@@ -144,23 +144,25 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          <div className="h-64 flex items-end gap-3 pt-6 border-b border-zinc-200">
+          <div className="h-64 flex items-end gap-2 pt-8 pb-2 border-b border-zinc-200">
             {revenueQuery.isLoading ? (
               <p className="text-sm text-zinc-500">Đang tải dữ liệu doanh thu...</p>
             ) : revenueList.length ? (
               revenueList.map((item, index) => {
                 const rev = Number(item.totalAmount ?? item.totalRevenue ?? item.revenue ?? item.total ?? 0);
-                const heightPercent = Math.max(5, (rev / maxRevenue) * 100);
+                const heightPercent = Math.max(4, (rev / maxRevenue) * 100);
                 return (
-                  <div key={index} className="flex-1 flex flex-col items-center gap-2 group">
-                    <div className="text-[10px] font-mono opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div key={index} className="flex-1 h-full flex flex-col justify-end items-center group relative">
+                    <div className="text-[10px] font-mono font-semibold text-zinc-800 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 bg-white px-1.5 py-0.5 border border-zinc-300 rounded shadow-xs z-10 whitespace-nowrap">
                       {formatVND(rev)}
                     </div>
-                    <div
-                      style={{ height: `${heightPercent}%` }}
-                      className="w-full bg-black hover:bg-lime-500 transition-all rounded-none"
-                    />
-                    <span className="text-[10px] font-mono text-zinc-500 truncate w-full text-center">
+                    <div className="w-full flex-1 flex items-end bg-zinc-50 rounded-t overflow-hidden">
+                      <div
+                        style={{ height: `${heightPercent}%` }}
+                        className="w-full bg-zinc-900 group-hover:bg-emerald-600 transition-all rounded-t"
+                      />
+                    </div>
+                    <span className="text-[10px] font-mono text-zinc-500 truncate w-full text-center mt-1.5">
                       {item.period || item.date || item.label || index + 1}
                     </span>
                   </div>
