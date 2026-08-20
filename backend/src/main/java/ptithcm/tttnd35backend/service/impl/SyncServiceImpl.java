@@ -29,7 +29,7 @@ public class SyncServiceImpl implements ISyncService {
     public void syncProductToRAG(UUID productId) {
         try {
             String response = restClient.post()
-                    .uri(ragApiUrl + "/sync/product/" + productId)
+                    .uri(ragApiUrl + "/admin/sync/product/" + productId)
                     .header("X-API-Key", ragApiKey)
                     .contentType(MediaType.APPLICATION_JSON)
                     .retrieve()
@@ -47,7 +47,7 @@ public class SyncServiceImpl implements ISyncService {
     public void deleteProductFromRAG(UUID productId) {
         try {
             String response = restClient.delete()
-                    .uri(ragApiUrl + "/sync/product/" + productId)
+                    .uri(ragApiUrl + "/admin/sync/product/" + productId)
                     .header("X-API-Key", ragApiKey)
                     .retrieve()
                     .body(String.class);

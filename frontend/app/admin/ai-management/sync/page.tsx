@@ -38,13 +38,13 @@ interface SyncStatusResponse {
 }
 
 async function fetchSyncStatus(): Promise<SyncStatusResponse> {
-  const res = await fetch(`${API_URL}/admin/rag/sync/status`);
+  const res = await fetch(`${API_URL}/admin/sync/status`);
   if (!res.ok) throw new Error("Failed to fetch sync status");
   return res.json();
 }
 
 async function syncProduct(productId: string) {
-  const res = await fetch(`${API_URL}/admin/rag/sync/product/${productId}`, {
+  const res = await fetch(`${API_URL}/admin/sync/product/${productId}`, {
     method: "POST",
   });
   if (!res.ok) throw new Error("Failed to sync product");
@@ -52,7 +52,7 @@ async function syncProduct(productId: string) {
 }
 
 async function syncAll() {
-  const res = await fetch(`${API_URL}/admin/rag/sync/all`, {
+  const res = await fetch(`${API_URL}/admin/sync/all`, {
     method: "POST",
   });
   if (!res.ok) throw new Error("Failed to sync all");
