@@ -2,6 +2,7 @@ package ptithcm.tttnd35backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import ptithcm.tttnd35backend.util.enums.CartSource;
 import lombok.experimental.SuperBuilder;
 
 import java.util.UUID;
