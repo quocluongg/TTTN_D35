@@ -18,7 +18,7 @@ interface ChatLog { timestamp: string; query: string; intent: string; confidence
 interface SyncLog { timestamp: string; product_id: string; product_name: string; action: string; chunks_created: number; status: string; duration_ms: number; }
 
 async function fetchSyncLogs(page: number) {
-  const res = await fetch(`${API_URL}/admin/rag/logs/sync?page=${page}`);
+  const res = await fetch(`${API_URL}/admin/logs/sync?page=${page}`);
   if (!res.ok) throw new Error("Failed");
   return res.json();
 }

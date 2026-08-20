@@ -44,13 +44,13 @@ async function fetchChunks(page: number, pageSize: number, chunkType?: string, b
   if (brand) params.append("brand", brand);
   if (search) params.append("search", search);
 
-  const res = await fetch(`${API_URL}/admin/rag/chunks?${params}`);
+  const res = await fetch(`${API_URL}/admin/chunks?${params}`);
   if (!res.ok) throw new Error("Failed to fetch chunks");
   return res.json();
 }
 
 async function deleteChunk(chunkId: string) {
-  const res = await fetch(`${API_URL}/admin/rag/chunks/${chunkId}`, {
+  const res = await fetch(`${API_URL}/admin/chunks/${chunkId}`, {
     method: "DELETE",
   });
   if (!res.ok) throw new Error("Failed to delete chunk");
@@ -58,7 +58,7 @@ async function deleteChunk(chunkId: string) {
 }
 
 async function rebuildIndex() {
-  const res = await fetch(`${API_URL}/admin/rag/chunks/rebuild`, {
+  const res = await fetch(`${API_URL}/admin/chunks/rebuild`, {
     method: "POST",
   });
   if (!res.ok) throw new Error("Failed to rebuild index");

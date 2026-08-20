@@ -33,7 +33,7 @@ interface RAGStats {
 }
 
 async function fetchStats(): Promise<RAGStats> {
-  const res = await fetch(`${API_URL}/admin/rag/stats`);
+  const res = await fetch(`${API_URL}/admin/stats`);
   if (!res.ok) throw new Error("Failed to fetch stats");
   return res.json();
 }

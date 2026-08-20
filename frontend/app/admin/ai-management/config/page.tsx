@@ -21,13 +21,13 @@ interface SystemConfig {
 }
 
 async function fetchConfig(): Promise<SystemConfig> {
-  const res = await fetch(`${API_URL}/admin/rag/config`);
+  const res = await fetch(`${API_URL}/admin/config`);
   if (!res.ok) throw new Error("Failed to fetch config");
   return res.json();
 }
 
 async function updateConfig(updates: Partial<SystemConfig>) {
-  const res = await fetch(`${API_URL}/admin/rag/config`, {
+  const res = await fetch(`${API_URL}/admin/config`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(updates),

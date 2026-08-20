@@ -14,7 +14,7 @@ const unwrap = (x: any) => x?.data ?? x;
 
 async function fetchPythonAnalytics() {
   try {
-    const res = await fetch(`${API_URL}/admin/rag/analytics`);
+    const res = await fetch(`${API_URL}/admin/analytics`);
     if (!res.ok) return null;
     return await res.json();
   } catch {
