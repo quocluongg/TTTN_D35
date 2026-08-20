@@ -22,6 +22,7 @@ import ptithcm.tttnd35backend.service.ICampaignService;
 import ptithcm.tttnd35backend.service.IOrderService;
 import ptithcm.tttnd35backend.service.IVoucherService;
 import ptithcm.tttnd35backend.service.VoucherResolution;
+import ptithcm.tttnd35backend.util.enums.CartSource;
 import ptithcm.tttnd35backend.util.enums.OrderStatus;
 import ptithcm.tttnd35backend.util.enums.PaymentMethod;
 import ptithcm.tttnd35backend.util.enums.PaymentStatus;
@@ -213,8 +214,10 @@ public class OrderServiceImpl implements IOrderService {
 
         // Gộp số lượng nếu request lỡ trùng variant (vd guest nhập tay 2 dòng cùng 1 sản phẩm).
         Map<UUID, Integer> quantityByVariant = new LinkedHashMap<>();
+        Map<UUID, CartSource> sourceByVariant = new HashMap<>();
         for (OrderItemRequest line : lines) {
             quantityByVariant.merge(line.getVariantId(), line.getQuantity(), Integer::sum);
+            sourceByVariant.putIfAbsent(line.getVariantId(), line.getSource());
         }
 
         BigDecimal totalAmount = BigDecimal.ZERO;
@@ -262,7 +265,7 @@ public class OrderServiceImpl implements IOrderService {
                     .quantity(quantity)
                     .priceAtPurchase(unitPrice)
                     .attributesSnapshot(variant.getAttributes())
-                    .source(line.getSource())
+                    .source(sourceByVariant.getOrDefault(variant.getId(), CartSource.BROWSE))
                     .build());
         }
 
