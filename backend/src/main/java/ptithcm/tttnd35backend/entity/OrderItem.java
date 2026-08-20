@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import ptithcm.tttnd35backend.util.enums.CartSource;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -47,4 +48,10 @@ public class OrderItem extends BaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "attributes_snapshot", columnDefinition = "jsonb")
     private Map<String, String> attributesSnapshot;
+
+    // Nguồn của dòng đơn này (CHATBOT/BROWSE) - copy từ add_to_cart_events khi checkout,
+    // để tính doanh thu & chuyển đổi theo nguồn. NULL = chưa tracking (đơn cũ).
+    @Enumerated(EnumType.STRING)
+    @Column(name = "source")
+    private CartSource source;
 }

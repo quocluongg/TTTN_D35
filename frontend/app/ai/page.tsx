@@ -405,13 +405,46 @@ function RefProductCardFromItem({ product, onAddToCart }: { product: ProductList
                 className="py-2.5 bg-black text-white dark:bg-white dark:text-black font-bold text-xs rounded-lg text-center group-hover:bg-blue-600 dark:group-hover:bg-blue-500 transition-colors flex items-center justify-center gap-1 cursor-pointer"
               >
                 <ShoppingBag size={13} />
-                Thêm giỏ
+                Thêm vào giỏ
               </button>
             )}
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function ReferencedProducts({
+  products,
+  onAddToCart,
+}: {
+  products: ProductListItem[];
+  onAddToCart?: (product: ProductListItem) => void;
+}) {
+  const [visible, setVisible] = useState(2);
+  const canExpand = products.length > visible;
+  const displayed = products.slice(0, visible);
+
+  return (
+    <>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-3">
+        {displayed.map((p, i) => (
+          <RefProductCardFromItem key={i} product={p} onAddToCart={onAddToCart} />
+        ))}
+      </div>
+
+      {products.length > 2 && (
+        <button
+          onClick={() => setVisible((v) => Math.min(v + 4, products.length))}
+          className="mt-3 w-full py-2 text-xs font-semibold text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/60 transition-colors"
+        >
+          {canExpand
+            ? `Xem thêm ${Math.min(4, products.length - visible)} sản phẩm`
+            : "Thu gọn"}
+        </button>
+      )}
+    </>
   );
 }
 
@@ -598,18 +631,44 @@ export default function AIChatPage() {
 
       const data = await res.json();
 
-      // Fetch matching real products from backend database if available
+      // Ưu tiên dùng sản phẩm thật từ phản hồi của AI pipeline (data.products),
+      // kết hợp với kết quả tìm kiếm để có đủ sản phẩm cho nút "Xem thêm".
       let realProducts: ProductListItem[] = [];
       try {
-        const prodRes = await productService.getProducts({ search: userMessage.content, size: 2 });
-        if (prodRes?.data) {
-          const items = prodRes.data.items || prodRes.data.content || (Array.isArray(prodRes.data) ? (prodRes.data as any) : []);
-          if (items && items.length > 0) {
-            realProducts = items.slice(0, 2);
+        const aiProducts: ProductListItem[] = Array.isArray(data.products)
+          ? data.products.map((p: any) => ({
+              id: String(p.id),
+              slug: p.slug || p.id,
+              name: p.name || "Sản phẩm",
+              thumbnail: p.thumbnail || "",
+              brand: p.brand || "",
+              categoryName: p.category_name || p.category || "",
+              priceFrom: p.price_from || 0,
+              ratingAvg: p.rating_avg || p.rating || 4.8,
+              reviewCount: p.review_count || p.reviews_count || 0,
+            }))
+          : [];
+
+        const searchItems: ProductListItem[] = [];
+        try {
+          const prodRes = await productService.getProducts({ search: userMessage.content, size: 6 });
+          const items = (prodRes?.data?.content || prodRes?.data?.items || []) as ProductListItem[];
+          if (Array.isArray(items)) searchItems.push(...items);
+        } catch (e) {
+          console.error("Could not fetch search products:", e);
+        }
+
+        const seen = new Set<string>();
+        const merged: ProductListItem[] = [];
+        for (const p of [...aiProducts, ...searchItems]) {
+          if (p?.id && !seen.has(p.id)) {
+            seen.add(p.id);
+            merged.push(p);
           }
         }
+        realProducts = merged.slice(0, 6);
       } catch (e) {
-        console.error("Could not fetch real products:", e);
+        console.error("Could not build real products:", e);
       }
 
       const assistantMessage: Message = {
@@ -647,9 +706,9 @@ export default function AIChatPage() {
   const lastSession = conversations.length > 0 ? conversations[0] : null;
 
   const mockPreviewImages = [
-    "https://cdn2.fptshop.com.vn/unsafe/360x0/filters:format(webp):quality(75)/Laptop_d170e53d32.png",
-    "https://cdn2.fptshop.com.vn/unsafe/360x0/filters:format(webp):quality(75)/2023_6_8_638218177579178225_macbook-air-m2-15-inch-2023-xanh-1.jpg",
-    "https://cdn2.fptshop.com.vn/unsafe/360x0/filters:format(webp):quality(75)/iphone_15_pro_max_natural_titanium_1_48e64c2084.png",
+    "/figma/product_1.png",
+    "/figma/product_2.png",
+    "/figma/product_3.png",
   ];
 
   const suggestions = [
@@ -923,15 +982,15 @@ export default function AIChatPage() {
                             </span>
                           </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-3">
-                            {msg.realProducts && msg.realProducts.length > 0
-                              ? msg.realProducts.map((p, i) => (
-                                  <RefProductCardFromItem key={i} product={p} onAddToCart={handleAddToCart} />
-                                ))
-                              : msg.sources?.slice(0, 2).map((s, i) => (
-                                  <RefProductCard key={i} source={s} />
-                                ))}
-                          </div>
+                          {msg.realProducts && msg.realProducts.length > 0 ? (
+                            <ReferencedProducts products={msg.realProducts} onAddToCart={handleAddToCart} />
+                          ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-3">
+                              {msg.sources?.slice(0, 2).map((s, i) => (
+                                <RefProductCard key={i} source={s} />
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
 

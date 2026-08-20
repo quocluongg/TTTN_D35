@@ -69,7 +69,8 @@ public class OrderServiceImpl implements IOrderService {
         }
 
         List<OrderItemRequest> lines = cartItems.stream()
-                .map(ci -> OrderItemRequest.builder().variantId(ci.getVariant().getId()).quantity(ci.getQuantity()).build())
+                .map(ci -> OrderItemRequest.builder().variantId(ci.getVariant().getId()).quantity(ci.getQuantity())
+                        .source(ci.getSource()).build())
                 .toList();
 
         String shippingAddress = String.join(", ", address.getDetailAddress(), address.getWard(),
@@ -261,6 +262,7 @@ public class OrderServiceImpl implements IOrderService {
                     .quantity(quantity)
                     .priceAtPurchase(unitPrice)
                     .attributesSnapshot(variant.getAttributes())
+                    .source(line.getSource())
                     .build());
         }
 

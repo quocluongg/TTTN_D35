@@ -7,17 +7,20 @@ import ptithcm.tttnd35backend.dto.request.CartItemQuantityRequest;
 import ptithcm.tttnd35backend.dto.request.CartItemRequest;
 import ptithcm.tttnd35backend.dto.response.CartItemResponse;
 import ptithcm.tttnd35backend.dto.response.CartResponse;
+import ptithcm.tttnd35backend.entity.AddToCartEvent;
 import ptithcm.tttnd35backend.entity.CartItem;
 import ptithcm.tttnd35backend.entity.Product;
 import ptithcm.tttnd35backend.entity.ProductVariant;
 import ptithcm.tttnd35backend.entity.Profile;
 import ptithcm.tttnd35backend.exception.BadRequestException;
 import ptithcm.tttnd35backend.exception.ResourceNotFoundException;
+import ptithcm.tttnd35backend.repository.IAddToCartEventRepository;
 import ptithcm.tttnd35backend.repository.ICartItemRepository;
 import ptithcm.tttnd35backend.repository.IProductRepository;
 import ptithcm.tttnd35backend.repository.IProductVariantRepository;
 import ptithcm.tttnd35backend.service.ICampaignService;
 import ptithcm.tttnd35backend.service.ICartService;
+import ptithcm.tttnd35backend.util.enums.CartSource;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -31,6 +34,7 @@ import java.util.stream.Collectors;
 public class CartServiceImpl implements ICartService {
 
     private final ICartItemRepository cartItemRepository;
+    private final IAddToCartEventRepository addToCartEventRepository;
     private final IProductVariantRepository productVariantRepository;
     private final IProductRepository productRepository;
     private final ICampaignService campaignService;
@@ -57,11 +61,21 @@ public class CartServiceImpl implements ICartService {
                     .profile(Profile.builder().id(profileId).build())
                     .variant(variant)
                     .quantity(newQuantity)
+                    .source(request.getSource() != null ? request.getSource() : CartSource.BROWSE)
                     .build();
         } else {
             item.setQuantity(newQuantity);
         }
         cartItemRepository.save(item);
+
+        // Ghi log sự kiện "thêm vào giỏ" kèm nguồn (CHATBOT/BROWSE) để làm dashboard.
+        addToCartEventRepository.save(AddToCartEvent.builder()
+                .profile(Profile.builder().id(profileId).build())
+                .productId(variant.getProductId())
+                .variantId(variant.getId())
+                .source(request.getSource() != null ? request.getSource() : CartSource.BROWSE)
+                .conversationId(request.getConversationId())
+                .build());
 
         return buildCartResponse(profileId);
     }

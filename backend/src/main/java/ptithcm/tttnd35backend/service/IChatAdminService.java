@@ -39,6 +39,8 @@ public interface IChatAdminService {
 
     List<ChatSourceComparisonResponse> getSourceComparison(LocalDateTime from, LocalDateTime to);
 
+    List<CartSourceStatResponse> getCartSourceStats(LocalDateTime from, LocalDateTime to);
+
     List<ChatRevenuePointResponse> getChatbotRevenue(LocalDateTime from, LocalDateTime to, String groupBy);
 
     List<SensitiveQuestionResponse> getSensitiveQuestions(String search, Boolean isActive);

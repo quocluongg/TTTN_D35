@@ -186,6 +186,19 @@ public class ChatAdminController {
                 .build();
     }
 
+    @GetMapping("/analytics/cart-source")
+    @PreAuthorize("hasAuthority('RAG_VIEW')")
+    public ApiResponse<List<CartSourceStatResponse>> getCartSourceStats(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to
+    ) {
+        return ApiResponse.<List<CartSourceStatResponse>>builder()
+                .success(true)
+                .data(chatAdminService.getCartSourceStats(from, to))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
     @GetMapping("/analytics/revenue")
     @PreAuthorize("hasAuthority('RAG_VIEW')")
     public ApiResponse<List<ChatRevenuePointResponse>> getChatbotRevenue(

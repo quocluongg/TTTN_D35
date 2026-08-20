@@ -45,6 +45,15 @@ export default function RAGDashboardPage() {
     refetchInterval: 30000, // Refresh every 30s
   });
 
+  if (isLoading) {
+    return (
+      <section className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <RefreshCw size={40} className="text-zinc-400 animate-spin" />
+        <p className="text-sm text-zinc-500">Đang tải dữ liệu hệ thống AI…</p>
+      </section>
+    );
+  }
+
   if (error) {
     return (
       <section>

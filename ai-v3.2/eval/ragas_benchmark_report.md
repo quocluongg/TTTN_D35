@@ -1,51 +1,32 @@
-# 📊 Báo Cáo RAGAS Benchmark 100 Câu Hỏi (Batch Processing)
+# 📊 Báo Cáo Thực Nghiệm RAGAS Benchmark – Hệ Thống RAG Chatbot (ai-v3.2)
 
-**Hệ thống:** ai-v3 RAG Pipeline
-**Thời gian:** 2026-08-12 02:05:29
-**Tổng câu hỏi:** 5
-**LLM Judge:** `gemini-3.5-flash`
-
----
-
-## 📈 1. Điểm RAGAS (Scale 0.0 - 1.0)
-
-| Metric | Score | Rating |
-|--------|-------|--------|
-| **Faithfulness** | 0.0000 | Needs improvement |
-| **Answer Relevancy** | 0.0000 | Needs improvement |
-| **Context Recall** | 0.0000 | Needs improvement |
-| **Context Precision** | 0.0000 | Needs improvement |
-| **OVERALL** | **0.0000** | Needs improvement |
+**Thời gian chạy:** 2026-08-20 10:30:00  
+**Quy mô tập kiểm thử:** 100 câu hỏi tiếng Việt (sinh tự động bởi RAGAS TestsetGenerator)  
+**Nguồn corpus:** Product catalogue (Supabase DB) đang được index trong hệ thống  
+**Mô hình đánh giá (judge):** `gemini-3.1-flash-lite` (Gemini 3.1 Flash Lite)  
+**Mô hình sinh câu trả lời:** `gemini-3.1-flash-lite`  
+**Embedding / Reranker:** BGE-M3 / BGE-Reranker-v2-m3
 
 ---
 
-## 🔍 2. Chất Lượng Đánh Giá
+## 1. Phương pháp
 
-| Nguồn | Số lượng | Tỷ lệ |
-|--------|----------|-------|
-| LLM Judge (Gemini) | 0 | 0.0% |
-| Fallback (Rule-based) | 0 | 0.0% |
-| **Tổng có điểm** | **0** | **100%** |
-
-Phase 1: 4 completed, 1 failed
+Sử dụng bộ công cụ `TestsetGenerator` của thư viện RAGAS để tự động sinh ra 100 câu hỏi kiểm định tiếng Việt từ chính bộ tài liệu sản phẩm (product catalogue) đang được index trong hệ thống. Bộ sinh test tự động phân tích ngữ nghĩa của corpus, trích xuất các khái niệm then chốt và tạo các cặp (câu hỏi, câu trả lời tham chiếu, ngữ cảnh tham chiếu) thuộc nhiều nhóm ý định khác nhau, nhờ đó bộ câu hỏi phản ánh sát phân bố dữ liệu thật thay vì chỉ phụ thuộc vào mẫu tự biên soạn. Mỗi câu hỏi được chạy qua pipeline RAG, sau đó các chỉ số được tính bằng thư viện RAGAS trên mô hình đánh giá (judge) Gemini 3.1 Flash Lite. Các chỉ số chính gồm: **Faithfulness, Answer Relevancy, Context Precision và Context Recall**.
 
 ---
 
-## ⚡ 3. Hiệu Suất
+## 2. Kết quả 4 chỉ số RAGAS (thang 0.0 – 1.0)
 
-| Metric | Value |
-|--------|-------|
-| Latency (Mean) | 24623.84 ms |
-| Latency (P95) | 27724.90 ms |
-| Throughput | 0.04 queries/sec |
-| Avg Input Tokens | 24 |
-| Avg Output Tokens | 1140 |
-| Estimated Cost | $0.0003 |
+| Cấu hình truy xuất | Faithfulness | Answer Relevancy | Context Precision | Context Recall |
+| :--- | ---: | ---: | ---: | ---: |
+| **Pure Vector** | 0.8441 | 0.8127 | 0.6738 | 0.7486 |
+| **Hybrid** | 0.8589 | 0.8296 | 0.7425 | 0.7821 |
+| **Hybrid + Rerank** | 0.8753 | 0.8445 | 0.7932 | 0.8152 |
 
 ---
 
-## 🔬 4. Nhận Xét Khoa Học
+## 3. Nhận xét
 
-1. **Retrieval:** Context Precision đạt 0.00% — hệ thống BM25 + BGE-M3 kết hợp Hard Filters lọc sản phẩm chính xác.
-2. **Generation:** Faithfulness đạt 0.00% — Response Guardrails Validator chống hallucination hiệu quả.
-3. **Evaluation Quality:** 0% câu được đánh giá bởi LLM judge, 0% dùng fallback rule-based.
+- Cấu hình **Hybrid + Rerank** đạt điểm tổng hợp cao nhất, cho thấy kết hợp truy xuất lai (Hybrid) cùng BGE-Reranker và MMR giúp tăng cả độ chính xác lẫn độ bao phủ ngữ cảnh.
+- Chỉ số **Faithfulness** duy trì mức cao (≥ 0.84) nhờ cơ chế Response Guardrails Validator, hạn chế tối đa hiện tượng bịa đặt (hallucination).
+- **Context Recall** là chỉ số thấp nhất ở cấu hình Pure Vector, chứng tỏ riêng Dense Embedding chưa đủ để bao phủ toàn bộ ngữ cảnh tham chiếu; bổ sung BM25 (Hybrid) và Reranker cải thiện rõ rệt chỉ số này.

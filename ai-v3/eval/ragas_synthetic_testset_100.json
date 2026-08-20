@@ -1,0 +1,1627 @@
+[
+  {
+    "id": 1,
+    "question": "Tư vấn cho mình chiếc MacBook thương hiệu Apple tầm giá khoảng 26 triệu để Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều?",
+    "ground_truth": "Trong tầm giá 26 triệu, chiếc Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) là lựa chọn hàng đầu. Máy được trang bị Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ, thiết kế chuyên biệt cho nhu cầu Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều.",
+    "reference_contexts": [
+      "Danh mục: MacBook | Thương hiệu: Apple | Tên: Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) | Giá: 26,490,000đ | Cấu hình: Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ | Ứng dụng: Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 2,
+    "question": "Tư vấn cho mình chiếc Laptop Gaming thương hiệu ASUS tầm giá khoảng 35 triệu để Chơi game AAA, Đồ họa 3D, Lập trình nặng?",
+    "ground_truth": "Trong tầm giá 35 triệu, chiếc Laptop ASUS ROG Strix G16 G614JV-N4035W là lựa chọn hàng đầu. Máy được trang bị Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz, thiết kế chuyên biệt cho nhu cầu Chơi game AAA, Đồ họa 3D, Lập trình nặng.",
+    "reference_contexts": [
+      "Danh mục: Laptop Gaming | Thương hiệu: ASUS | Tên: Laptop ASUS ROG Strix G16 G614JV-N4035W | Giá: 34,990,000đ | Cấu hình: Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz | Ứng dụng: Chơi game AAA, Đồ họa 3D, Lập trình nặng"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 3,
+    "question": "Tư vấn cho mình chiếc Màn hình thương hiệu LG tầm giá khoảng 7 triệu để Chơi game bắn súng FPS, Đồ họa màu sắc chuẩn?",
+    "ground_truth": "Trong tầm giá 7 triệu, chiếc Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz là lựa chọn hàng đầu. Máy được trang bị 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99%, thiết kế chuyên biệt cho nhu cầu Chơi game bắn súng FPS, Đồ họa màu sắc chuẩn.",
+    "reference_contexts": [
+      "Danh mục: Màn hình | Thương hiệu: LG | Tên: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Giá: 6,890,000đ | Cấu hình: 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99% | Ứng dụng: Chơi game bắn súng FPS, Đồ họa màu sắc chuẩn"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 4,
+    "question": "Tư vấn cho mình chiếc Laptop Văn phòng thương hiệu Dell tầm giá khoảng 29 triệu để Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg?",
+    "ground_truth": "Trong tầm giá 29 triệu, chiếc Laptop Dell XPS 13 9315 là lựa chọn hàng đầu. Máy được trang bị Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits, thiết kế chuyên biệt cho nhu cầu Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg.",
+    "reference_contexts": [
+      "Danh mục: Laptop Văn phòng | Thương hiệu: Dell | Tên: Laptop Dell XPS 13 9315 | Giá: 28,990,000đ | Cấu hình: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits | Ứng dụng: Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 5,
+    "question": "Tư vấn cho mình chiếc Laptop Văn phòng thương hiệu Dell tầm giá khoảng 29 triệu để Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg?",
+    "ground_truth": "Trong tầm giá 29 triệu, chiếc Laptop Dell XPS 13 9315 là lựa chọn hàng đầu. Máy được trang bị Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits, thiết kế chuyên biệt cho nhu cầu Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg.",
+    "reference_contexts": [
+      "Danh mục: Laptop Văn phòng | Thương hiệu: Dell | Tên: Laptop Dell XPS 13 9315 | Giá: 28,990,000đ | Cấu hình: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits | Ứng dụng: Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 6,
+    "question": "Tư vấn cho mình chiếc Laptop Gaming thương hiệu Lenovo tầm giá khoảng 32 triệu để Gaming chuyên nghiệp, Render video 4K, Thiết kế kiến trúc?",
+    "ground_truth": "Trong tầm giá 32 triệu, chiếc Laptop Lenovo Legion 5 Pro 16ARH7H là lựa chọn hàng đầu. Máy được trang bị AMD Ryzen 7 6800H, RAM 16GB DDR5, SSD 1TB NVMe, RTX 3060 6GB, Màn hình 16 inch 2.5K 165Hz HDR400, thiết kế chuyên biệt cho nhu cầu Gaming chuyên nghiệp, Render video 4K, Thiết kế kiến trúc.",
+    "reference_contexts": [
+      "Danh mục: Laptop Gaming | Thương hiệu: Lenovo | Tên: Laptop Lenovo Legion 5 Pro 16ARH7H | Giá: 31,500,000đ | Cấu hình: AMD Ryzen 7 6800H, RAM 16GB DDR5, SSD 1TB NVMe, RTX 3060 6GB, Màn hình 16 inch 2.5K 165Hz HDR400 | Ứng dụng: Gaming chuyên nghiệp, Render video 4K, Thiết kế kiến trúc"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 7,
+    "question": "Tư vấn cho mình chiếc MacBook thương hiệu Apple tầm giá khoảng 26 triệu để Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều?",
+    "ground_truth": "Trong tầm giá 26 triệu, chiếc Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) là lựa chọn hàng đầu. Máy được trang bị Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ, thiết kế chuyên biệt cho nhu cầu Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều.",
+    "reference_contexts": [
+      "Danh mục: MacBook | Thương hiệu: Apple | Tên: Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) | Giá: 26,490,000đ | Cấu hình: Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ | Ứng dụng: Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 8,
+    "question": "Tư vấn cho mình chiếc MacBook thương hiệu Apple tầm giá khoảng 26 triệu để Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều?",
+    "ground_truth": "Trong tầm giá 26 triệu, chiếc Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) là lựa chọn hàng đầu. Máy được trang bị Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ, thiết kế chuyên biệt cho nhu cầu Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều.",
+    "reference_contexts": [
+      "Danh mục: MacBook | Thương hiệu: Apple | Tên: Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) | Giá: 26,490,000đ | Cấu hình: Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ | Ứng dụng: Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 9,
+    "question": "Tư vấn cho mình chiếc Laptop Văn phòng thương hiệu Acer tầm giá khoảng 12 triệu để Tin học văn phòng, Excel nặng, Học tập online?",
+    "ground_truth": "Trong tầm giá 12 triệu, chiếc Laptop Acer Aspire Lite AL14-51M-50W6 là lựa chọn hàng đầu. Máy được trang bị Intel Core i5-1235U, RAM 16GB DDR4, SSD 512GB, Intel Iris Xe, Màn hình 14 inch FHD IPS, thiết kế chuyên biệt cho nhu cầu Tin học văn phòng, Excel nặng, Học tập online.",
+    "reference_contexts": [
+      "Danh mục: Laptop Văn phòng | Thương hiệu: Acer | Tên: Laptop Acer Aspire Lite AL14-51M-50W6 | Giá: 12,490,000đ | Cấu hình: Intel Core i5-1235U, RAM 16GB DDR4, SSD 512GB, Intel Iris Xe, Màn hình 14 inch FHD IPS | Ứng dụng: Tin học văn phòng, Excel nặng, Học tập online"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 10,
+    "question": "Tư vấn cho mình chiếc Laptop Gaming thương hiệu ASUS tầm giá khoảng 35 triệu để Chơi game AAA, Đồ họa 3D, Lập trình nặng?",
+    "ground_truth": "Trong tầm giá 35 triệu, chiếc Laptop ASUS ROG Strix G16 G614JV-N4035W là lựa chọn hàng đầu. Máy được trang bị Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz, thiết kế chuyên biệt cho nhu cầu Chơi game AAA, Đồ họa 3D, Lập trình nặng.",
+    "reference_contexts": [
+      "Danh mục: Laptop Gaming | Thương hiệu: ASUS | Tên: Laptop ASUS ROG Strix G16 G614JV-N4035W | Giá: 34,990,000đ | Cấu hình: Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz | Ứng dụng: Chơi game AAA, Đồ họa 3D, Lập trình nặng"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 11,
+    "question": "Tư vấn cho mình chiếc Laptop Gaming thương hiệu ASUS tầm giá khoảng 35 triệu để Chơi game AAA, Đồ họa 3D, Lập trình nặng?",
+    "ground_truth": "Trong tầm giá 35 triệu, chiếc Laptop ASUS ROG Strix G16 G614JV-N4035W là lựa chọn hàng đầu. Máy được trang bị Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz, thiết kế chuyên biệt cho nhu cầu Chơi game AAA, Đồ họa 3D, Lập trình nặng.",
+    "reference_contexts": [
+      "Danh mục: Laptop Gaming | Thương hiệu: ASUS | Tên: Laptop ASUS ROG Strix G16 G614JV-N4035W | Giá: 34,990,000đ | Cấu hình: Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz | Ứng dụng: Chơi game AAA, Đồ họa 3D, Lập trình nặng"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 12,
+    "question": "Tư vấn cho mình chiếc MacBook thương hiệu Apple tầm giá khoảng 26 triệu để Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều?",
+    "ground_truth": "Trong tầm giá 26 triệu, chiếc Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) là lựa chọn hàng đầu. Máy được trang bị Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ, thiết kế chuyên biệt cho nhu cầu Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều.",
+    "reference_contexts": [
+      "Danh mục: MacBook | Thương hiệu: Apple | Tên: Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) | Giá: 26,490,000đ | Cấu hình: Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ | Ứng dụng: Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 13,
+    "question": "Tư vấn cho mình chiếc Laptop Văn phòng thương hiệu Dell tầm giá khoảng 29 triệu để Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg?",
+    "ground_truth": "Trong tầm giá 29 triệu, chiếc Laptop Dell XPS 13 9315 là lựa chọn hàng đầu. Máy được trang bị Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits, thiết kế chuyên biệt cho nhu cầu Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg.",
+    "reference_contexts": [
+      "Danh mục: Laptop Văn phòng | Thương hiệu: Dell | Tên: Laptop Dell XPS 13 9315 | Giá: 28,990,000đ | Cấu hình: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits | Ứng dụng: Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 14,
+    "question": "Tư vấn cho mình chiếc Laptop Văn phòng thương hiệu Dell tầm giá khoảng 29 triệu để Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg?",
+    "ground_truth": "Trong tầm giá 29 triệu, chiếc Laptop Dell XPS 13 9315 là lựa chọn hàng đầu. Máy được trang bị Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits, thiết kế chuyên biệt cho nhu cầu Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg.",
+    "reference_contexts": [
+      "Danh mục: Laptop Văn phòng | Thương hiệu: Dell | Tên: Laptop Dell XPS 13 9315 | Giá: 28,990,000đ | Cấu hình: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits | Ứng dụng: Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 15,
+    "question": "Tư vấn cho mình chiếc Laptop Gaming thương hiệu ASUS tầm giá khoảng 35 triệu để Chơi game AAA, Đồ họa 3D, Lập trình nặng?",
+    "ground_truth": "Trong tầm giá 35 triệu, chiếc Laptop ASUS ROG Strix G16 G614JV-N4035W là lựa chọn hàng đầu. Máy được trang bị Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz, thiết kế chuyên biệt cho nhu cầu Chơi game AAA, Đồ họa 3D, Lập trình nặng.",
+    "reference_contexts": [
+      "Danh mục: Laptop Gaming | Thương hiệu: ASUS | Tên: Laptop ASUS ROG Strix G16 G614JV-N4035W | Giá: 34,990,000đ | Cấu hình: Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz | Ứng dụng: Chơi game AAA, Đồ họa 3D, Lập trình nặng"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 16,
+    "question": "Tư vấn cho mình chiếc Laptop Văn phòng thương hiệu Dell tầm giá khoảng 29 triệu để Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg?",
+    "ground_truth": "Trong tầm giá 29 triệu, chiếc Laptop Dell XPS 13 9315 là lựa chọn hàng đầu. Máy được trang bị Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits, thiết kế chuyên biệt cho nhu cầu Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg.",
+    "reference_contexts": [
+      "Danh mục: Laptop Văn phòng | Thương hiệu: Dell | Tên: Laptop Dell XPS 13 9315 | Giá: 28,990,000đ | Cấu hình: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits | Ứng dụng: Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 17,
+    "question": "Tư vấn cho mình chiếc Laptop Văn phòng thương hiệu Acer tầm giá khoảng 12 triệu để Tin học văn phòng, Excel nặng, Học tập online?",
+    "ground_truth": "Trong tầm giá 12 triệu, chiếc Laptop Acer Aspire Lite AL14-51M-50W6 là lựa chọn hàng đầu. Máy được trang bị Intel Core i5-1235U, RAM 16GB DDR4, SSD 512GB, Intel Iris Xe, Màn hình 14 inch FHD IPS, thiết kế chuyên biệt cho nhu cầu Tin học văn phòng, Excel nặng, Học tập online.",
+    "reference_contexts": [
+      "Danh mục: Laptop Văn phòng | Thương hiệu: Acer | Tên: Laptop Acer Aspire Lite AL14-51M-50W6 | Giá: 12,490,000đ | Cấu hình: Intel Core i5-1235U, RAM 16GB DDR4, SSD 512GB, Intel Iris Xe, Màn hình 14 inch FHD IPS | Ứng dụng: Tin học văn phòng, Excel nặng, Học tập online"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 18,
+    "question": "Tư vấn cho mình chiếc Laptop Văn phòng thương hiệu Dell tầm giá khoảng 29 triệu để Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg?",
+    "ground_truth": "Trong tầm giá 29 triệu, chiếc Laptop Dell XPS 13 9315 là lựa chọn hàng đầu. Máy được trang bị Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits, thiết kế chuyên biệt cho nhu cầu Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg.",
+    "reference_contexts": [
+      "Danh mục: Laptop Văn phòng | Thương hiệu: Dell | Tên: Laptop Dell XPS 13 9315 | Giá: 28,990,000đ | Cấu hình: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits | Ứng dụng: Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 19,
+    "question": "Tư vấn cho mình chiếc MacBook thương hiệu Apple tầm giá khoảng 50 triệu để Lập trình viên, Producer, Dựng phim 8K, Thiết kế 3D chuyên nghiệp?",
+    "ground_truth": "Trong tầm giá 50 triệu, chiếc Apple MacBook Pro 14 inch M3 Pro 2023 (RAM 18GB / SSD 512GB) là lựa chọn hàng đầu. Máy được trang bị Chip M3 Pro 11-core CPU 14-core GPU, RAM 18GB Unified, SSD 512GB, Liquid Retina XDR 120Hz ProMotion, thiết kế chuyên biệt cho nhu cầu Lập trình viên, Producer, Dựng phim 8K, Thiết kế 3D chuyên nghiệp.",
+    "reference_contexts": [
+      "Danh mục: MacBook | Thương hiệu: Apple | Tên: Apple MacBook Pro 14 inch M3 Pro 2023 (RAM 18GB / SSD 512GB) | Giá: 49,990,000đ | Cấu hình: Chip M3 Pro 11-core CPU 14-core GPU, RAM 18GB Unified, SSD 512GB, Liquid Retina XDR 120Hz ProMotion | Ứng dụng: Lập trình viên, Producer, Dựng phim 8K, Thiết kế 3D chuyên nghiệp"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 20,
+    "question": "Tư vấn cho mình chiếc Màn hình thương hiệu LG tầm giá khoảng 7 triệu để Chơi game bắn súng FPS, Đồ họa màu sắc chuẩn?",
+    "ground_truth": "Trong tầm giá 7 triệu, chiếc Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz là lựa chọn hàng đầu. Máy được trang bị 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99%, thiết kế chuyên biệt cho nhu cầu Chơi game bắn súng FPS, Đồ họa màu sắc chuẩn.",
+    "reference_contexts": [
+      "Danh mục: Màn hình | Thương hiệu: LG | Tên: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Giá: 6,890,000đ | Cấu hình: 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99% | Ứng dụng: Chơi game bắn súng FPS, Đồ họa màu sắc chuẩn"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 21,
+    "question": "Tư vấn cho mình chiếc Laptop Gaming thương hiệu ASUS tầm giá khoảng 35 triệu để Chơi game AAA, Đồ họa 3D, Lập trình nặng?",
+    "ground_truth": "Trong tầm giá 35 triệu, chiếc Laptop ASUS ROG Strix G16 G614JV-N4035W là lựa chọn hàng đầu. Máy được trang bị Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz, thiết kế chuyên biệt cho nhu cầu Chơi game AAA, Đồ họa 3D, Lập trình nặng.",
+    "reference_contexts": [
+      "Danh mục: Laptop Gaming | Thương hiệu: ASUS | Tên: Laptop ASUS ROG Strix G16 G614JV-N4035W | Giá: 34,990,000đ | Cấu hình: Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz | Ứng dụng: Chơi game AAA, Đồ họa 3D, Lập trình nặng"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 22,
+    "question": "Tư vấn cho mình chiếc Laptop Gaming thương hiệu Lenovo tầm giá khoảng 32 triệu để Gaming chuyên nghiệp, Render video 4K, Thiết kế kiến trúc?",
+    "ground_truth": "Trong tầm giá 32 triệu, chiếc Laptop Lenovo Legion 5 Pro 16ARH7H là lựa chọn hàng đầu. Máy được trang bị AMD Ryzen 7 6800H, RAM 16GB DDR5, SSD 1TB NVMe, RTX 3060 6GB, Màn hình 16 inch 2.5K 165Hz HDR400, thiết kế chuyên biệt cho nhu cầu Gaming chuyên nghiệp, Render video 4K, Thiết kế kiến trúc.",
+    "reference_contexts": [
+      "Danh mục: Laptop Gaming | Thương hiệu: Lenovo | Tên: Laptop Lenovo Legion 5 Pro 16ARH7H | Giá: 31,500,000đ | Cấu hình: AMD Ryzen 7 6800H, RAM 16GB DDR5, SSD 1TB NVMe, RTX 3060 6GB, Màn hình 16 inch 2.5K 165Hz HDR400 | Ứng dụng: Gaming chuyên nghiệp, Render video 4K, Thiết kế kiến trúc"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 23,
+    "question": "Tư vấn cho mình chiếc Laptop Văn phòng thương hiệu Acer tầm giá khoảng 12 triệu để Tin học văn phòng, Excel nặng, Học tập online?",
+    "ground_truth": "Trong tầm giá 12 triệu, chiếc Laptop Acer Aspire Lite AL14-51M-50W6 là lựa chọn hàng đầu. Máy được trang bị Intel Core i5-1235U, RAM 16GB DDR4, SSD 512GB, Intel Iris Xe, Màn hình 14 inch FHD IPS, thiết kế chuyên biệt cho nhu cầu Tin học văn phòng, Excel nặng, Học tập online.",
+    "reference_contexts": [
+      "Danh mục: Laptop Văn phòng | Thương hiệu: Acer | Tên: Laptop Acer Aspire Lite AL14-51M-50W6 | Giá: 12,490,000đ | Cấu hình: Intel Core i5-1235U, RAM 16GB DDR4, SSD 512GB, Intel Iris Xe, Màn hình 14 inch FHD IPS | Ứng dụng: Tin học văn phòng, Excel nặng, Học tập online"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 24,
+    "question": "Tư vấn cho mình chiếc Laptop Gaming thương hiệu HP tầm giá khoảng 20 triệu để Học sinh sinh viên chơi game tầm trung, Học tập?",
+    "ground_truth": "Trong tầm giá 20 triệu, chiếc Laptop HP Victus 16-e1107AX là lựa chọn hàng đầu. Máy được trang bị AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz, thiết kế chuyên biệt cho nhu cầu Học sinh sinh viên chơi game tầm trung, Học tập.",
+    "reference_contexts": [
+      "Danh mục: Laptop Gaming | Thương hiệu: HP | Tên: Laptop HP Victus 16-e1107AX | Giá: 19,990,000đ | Cấu hình: AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz | Ứng dụng: Học sinh sinh viên chơi game tầm trung, Học tập"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 25,
+    "question": "Tư vấn cho mình chiếc Màn hình thương hiệu LG tầm giá khoảng 7 triệu để Chơi game bắn súng FPS, Đồ họa màu sắc chuẩn?",
+    "ground_truth": "Trong tầm giá 7 triệu, chiếc Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz là lựa chọn hàng đầu. Máy được trang bị 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99%, thiết kế chuyên biệt cho nhu cầu Chơi game bắn súng FPS, Đồ họa màu sắc chuẩn.",
+    "reference_contexts": [
+      "Danh mục: Màn hình | Thương hiệu: LG | Tên: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Giá: 6,890,000đ | Cấu hình: 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99% | Ứng dụng: Chơi game bắn súng FPS, Đồ họa màu sắc chuẩn"
+    ],
+    "intent": "PURCHASE_CONSULTATION",
+    "question_type": "reasoning_recommendation",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 26,
+    "question": "So sánh giúp mình giữa Laptop Lenovo Legion 5 Pro 16ARH7H và Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB), nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Laptop Lenovo Legion 5 Pro 16ARH7H (Giá: 31,500,000đ, AMD Ryzen 7 6800H, RAM 16GB DDR5, SSD 1TB NVMe, RTX 3060 6GB, Màn hình 16 inch 2.5K 165Hz HDR400) và Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) (Giá: 26,490,000đ, Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ). Mẫu Lenovo thích hợp cho Gaming chuyên nghiệp, Render video 4K, Thiết kế kiến trúc, trong khi mẫu Apple tối ưu cho Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Laptop Lenovo Legion 5 Pro 16ARH7H | Giá: 31,500,000đ | Thông số: AMD Ryzen 7 6800H, RAM 16GB DDR5, SSD 1TB NVMe, RTX 3060 6GB, Màn hình 16 inch 2.5K 165Hz HDR400 | Bảo hành: 36 tháng Premium Care Lenovo",
+      "Thông tin sản phẩm B: Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) | Giá: 26,490,000đ | Thông số: Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ | Bảo hành: 12 tháng chính hãng Apple Vietnam, Hỗ trợ Care+"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 27,
+    "question": "So sánh giúp mình giữa Laptop HP Victus 16-e1107AX và Laptop ASUS ROG Strix G16 G614JV-N4035W, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Laptop HP Victus 16-e1107AX (Giá: 19,990,000đ, AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz) và Laptop ASUS ROG Strix G16 G614JV-N4035W (Giá: 34,990,000đ, Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz). Mẫu HP thích hợp cho Học sinh sinh viên chơi game tầm trung, Học tập, trong khi mẫu ASUS tối ưu cho Chơi game AAA, Đồ họa 3D, Lập trình nặng.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Laptop HP Victus 16-e1107AX | Giá: 19,990,000đ | Thông số: AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz | Bảo hành: 12 tháng bảo hành tận nhà HP",
+      "Thông tin sản phẩm B: Laptop ASUS ROG Strix G16 G614JV-N4035W | Giá: 34,990,000đ | Thông số: Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz | Bảo hành: 24 tháng chính hãng, 1 đổi 1 trong 30 ngày nếu lỗi NSX"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 28,
+    "question": "So sánh giúp mình giữa Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) và Laptop Dell XPS 13 9315, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) (Giá: 26,490,000đ, Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ) và Laptop Dell XPS 13 9315 (Giá: 28,990,000đ, Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits). Mẫu Apple thích hợp cho Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều, trong khi mẫu Dell tối ưu cho Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) | Giá: 26,490,000đ | Thông số: Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ | Bảo hành: 12 tháng chính hãng Apple Vietnam, Hỗ trợ Care+",
+      "Thông tin sản phẩm B: Laptop Dell XPS 13 9315 | Giá: 28,990,000đ | Thông số: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits | Bảo hành: 12 tháng ProSupport Dell tận nơi"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 29,
+    "question": "So sánh giúp mình giữa Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) và Laptop Lenovo Legion 5 Pro 16ARH7H, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) (Giá: 26,490,000đ, Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ) và Laptop Lenovo Legion 5 Pro 16ARH7H (Giá: 31,500,000đ, AMD Ryzen 7 6800H, RAM 16GB DDR5, SSD 1TB NVMe, RTX 3060 6GB, Màn hình 16 inch 2.5K 165Hz HDR400). Mẫu Apple thích hợp cho Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều, trong khi mẫu Lenovo tối ưu cho Gaming chuyên nghiệp, Render video 4K, Thiết kế kiến trúc.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) | Giá: 26,490,000đ | Thông số: Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ | Bảo hành: 12 tháng chính hãng Apple Vietnam, Hỗ trợ Care+",
+      "Thông tin sản phẩm B: Laptop Lenovo Legion 5 Pro 16ARH7H | Giá: 31,500,000đ | Thông số: AMD Ryzen 7 6800H, RAM 16GB DDR5, SSD 1TB NVMe, RTX 3060 6GB, Màn hình 16 inch 2.5K 165Hz HDR400 | Bảo hành: 36 tháng Premium Care Lenovo"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 30,
+    "question": "So sánh giúp mình giữa Laptop HP Victus 16-e1107AX và Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Laptop HP Victus 16-e1107AX (Giá: 19,990,000đ, AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz) và Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz (Giá: 6,890,000đ, 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99%). Mẫu HP thích hợp cho Học sinh sinh viên chơi game tầm trung, Học tập, trong khi mẫu LG tối ưu cho Chơi game bắn súng FPS, Đồ họa màu sắc chuẩn.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Laptop HP Victus 16-e1107AX | Giá: 19,990,000đ | Thông số: AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz | Bảo hành: 12 tháng bảo hành tận nhà HP",
+      "Thông tin sản phẩm B: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Giá: 6,890,000đ | Thông số: 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99% | Bảo hành: 24 tháng bảo hành chính hãng LG"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 31,
+    "question": "So sánh giúp mình giữa Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz và Laptop Acer Aspire Lite AL14-51M-50W6, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz (Giá: 6,890,000đ, 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99%) và Laptop Acer Aspire Lite AL14-51M-50W6 (Giá: 12,490,000đ, Intel Core i5-1235U, RAM 16GB DDR4, SSD 512GB, Intel Iris Xe, Màn hình 14 inch FHD IPS). Mẫu LG thích hợp cho Chơi game bắn súng FPS, Đồ họa màu sắc chuẩn, trong khi mẫu Acer tối ưu cho Tin học văn phòng, Excel nặng, Học tập online.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Giá: 6,890,000đ | Thông số: 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99% | Bảo hành: 24 tháng bảo hành chính hãng LG",
+      "Thông tin sản phẩm B: Laptop Acer Aspire Lite AL14-51M-50W6 | Giá: 12,490,000đ | Thông số: Intel Core i5-1235U, RAM 16GB DDR4, SSD 512GB, Intel Iris Xe, Màn hình 14 inch FHD IPS | Bảo hành: 12 tháng bảo hành 3S1 bảo hành nhanh"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 32,
+    "question": "So sánh giúp mình giữa Laptop ASUS ROG Strix G16 G614JV-N4035W và Laptop HP Victus 16-e1107AX, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Laptop ASUS ROG Strix G16 G614JV-N4035W (Giá: 34,990,000đ, Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz) và Laptop HP Victus 16-e1107AX (Giá: 19,990,000đ, AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz). Mẫu ASUS thích hợp cho Chơi game AAA, Đồ họa 3D, Lập trình nặng, trong khi mẫu HP tối ưu cho Học sinh sinh viên chơi game tầm trung, Học tập.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Laptop ASUS ROG Strix G16 G614JV-N4035W | Giá: 34,990,000đ | Thông số: Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz | Bảo hành: 24 tháng chính hãng, 1 đổi 1 trong 30 ngày nếu lỗi NSX",
+      "Thông tin sản phẩm B: Laptop HP Victus 16-e1107AX | Giá: 19,990,000đ | Thông số: AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz | Bảo hành: 12 tháng bảo hành tận nhà HP"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 33,
+    "question": "So sánh giúp mình giữa Apple MacBook Pro 14 inch M3 Pro 2023 (RAM 18GB / SSD 512GB) và Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Apple MacBook Pro 14 inch M3 Pro 2023 (RAM 18GB / SSD 512GB) (Giá: 49,990,000đ, Chip M3 Pro 11-core CPU 14-core GPU, RAM 18GB Unified, SSD 512GB, Liquid Retina XDR 120Hz ProMotion) và Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz (Giá: 6,890,000đ, 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99%). Mẫu Apple thích hợp cho Lập trình viên, Producer, Dựng phim 8K, Thiết kế 3D chuyên nghiệp, trong khi mẫu LG tối ưu cho Chơi game bắn súng FPS, Đồ họa màu sắc chuẩn.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Apple MacBook Pro 14 inch M3 Pro 2023 (RAM 18GB / SSD 512GB) | Giá: 49,990,000đ | Thông số: Chip M3 Pro 11-core CPU 14-core GPU, RAM 18GB Unified, SSD 512GB, Liquid Retina XDR 120Hz ProMotion | Bảo hành: 12 tháng chính hãng Apple Vietnam",
+      "Thông tin sản phẩm B: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Giá: 6,890,000đ | Thông số: 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99% | Bảo hành: 24 tháng bảo hành chính hãng LG"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 34,
+    "question": "So sánh giúp mình giữa Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) và Laptop Dell XPS 13 9315, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) (Giá: 26,490,000đ, Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ) và Laptop Dell XPS 13 9315 (Giá: 28,990,000đ, Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits). Mẫu Apple thích hợp cho Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều, trong khi mẫu Dell tối ưu cho Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) | Giá: 26,490,000đ | Thông số: Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ | Bảo hành: 12 tháng chính hãng Apple Vietnam, Hỗ trợ Care+",
+      "Thông tin sản phẩm B: Laptop Dell XPS 13 9315 | Giá: 28,990,000đ | Thông số: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits | Bảo hành: 12 tháng ProSupport Dell tận nơi"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 35,
+    "question": "So sánh giúp mình giữa Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) và Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) (Giá: 26,490,000đ, Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ) và Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz (Giá: 6,890,000đ, 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99%). Mẫu Apple thích hợp cho Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều, trong khi mẫu LG tối ưu cho Chơi game bắn súng FPS, Đồ họa màu sắc chuẩn.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) | Giá: 26,490,000đ | Thông số: Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ | Bảo hành: 12 tháng chính hãng Apple Vietnam, Hỗ trợ Care+",
+      "Thông tin sản phẩm B: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Giá: 6,890,000đ | Thông số: 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99% | Bảo hành: 24 tháng bảo hành chính hãng LG"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 36,
+    "question": "So sánh giúp mình giữa Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz và Laptop Acer Aspire Lite AL14-51M-50W6, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz (Giá: 6,890,000đ, 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99%) và Laptop Acer Aspire Lite AL14-51M-50W6 (Giá: 12,490,000đ, Intel Core i5-1235U, RAM 16GB DDR4, SSD 512GB, Intel Iris Xe, Màn hình 14 inch FHD IPS). Mẫu LG thích hợp cho Chơi game bắn súng FPS, Đồ họa màu sắc chuẩn, trong khi mẫu Acer tối ưu cho Tin học văn phòng, Excel nặng, Học tập online.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Giá: 6,890,000đ | Thông số: 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99% | Bảo hành: 24 tháng bảo hành chính hãng LG",
+      "Thông tin sản phẩm B: Laptop Acer Aspire Lite AL14-51M-50W6 | Giá: 12,490,000đ | Thông số: Intel Core i5-1235U, RAM 16GB DDR4, SSD 512GB, Intel Iris Xe, Màn hình 14 inch FHD IPS | Bảo hành: 12 tháng bảo hành 3S1 bảo hành nhanh"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 37,
+    "question": "So sánh giúp mình giữa Laptop HP Victus 16-e1107AX và Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Laptop HP Victus 16-e1107AX (Giá: 19,990,000đ, AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz) và Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz (Giá: 6,890,000đ, 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99%). Mẫu HP thích hợp cho Học sinh sinh viên chơi game tầm trung, Học tập, trong khi mẫu LG tối ưu cho Chơi game bắn súng FPS, Đồ họa màu sắc chuẩn.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Laptop HP Victus 16-e1107AX | Giá: 19,990,000đ | Thông số: AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz | Bảo hành: 12 tháng bảo hành tận nhà HP",
+      "Thông tin sản phẩm B: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Giá: 6,890,000đ | Thông số: 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99% | Bảo hành: 24 tháng bảo hành chính hãng LG"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 38,
+    "question": "So sánh giúp mình giữa Laptop Dell XPS 13 9315 và Laptop HP Victus 16-e1107AX, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Laptop Dell XPS 13 9315 (Giá: 28,990,000đ, Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits) và Laptop HP Victus 16-e1107AX (Giá: 19,990,000đ, AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz). Mẫu Dell thích hợp cho Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg, trong khi mẫu HP tối ưu cho Học sinh sinh viên chơi game tầm trung, Học tập.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Laptop Dell XPS 13 9315 | Giá: 28,990,000đ | Thông số: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits | Bảo hành: 12 tháng ProSupport Dell tận nơi",
+      "Thông tin sản phẩm B: Laptop HP Victus 16-e1107AX | Giá: 19,990,000đ | Thông số: AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz | Bảo hành: 12 tháng bảo hành tận nhà HP"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 39,
+    "question": "So sánh giúp mình giữa Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) và Laptop ASUS ROG Strix G16 G614JV-N4035W, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) (Giá: 26,490,000đ, Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ) và Laptop ASUS ROG Strix G16 G614JV-N4035W (Giá: 34,990,000đ, Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz). Mẫu Apple thích hợp cho Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều, trong khi mẫu ASUS tối ưu cho Chơi game AAA, Đồ họa 3D, Lập trình nặng.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) | Giá: 26,490,000đ | Thông số: Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ | Bảo hành: 12 tháng chính hãng Apple Vietnam, Hỗ trợ Care+",
+      "Thông tin sản phẩm B: Laptop ASUS ROG Strix G16 G614JV-N4035W | Giá: 34,990,000đ | Thông số: Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz | Bảo hành: 24 tháng chính hãng, 1 đổi 1 trong 30 ngày nếu lỗi NSX"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 40,
+    "question": "So sánh giúp mình giữa Laptop Dell XPS 13 9315 và Laptop Acer Aspire Lite AL14-51M-50W6, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Laptop Dell XPS 13 9315 (Giá: 28,990,000đ, Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits) và Laptop Acer Aspire Lite AL14-51M-50W6 (Giá: 12,490,000đ, Intel Core i5-1235U, RAM 16GB DDR4, SSD 512GB, Intel Iris Xe, Màn hình 14 inch FHD IPS). Mẫu Dell thích hợp cho Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg, trong khi mẫu Acer tối ưu cho Tin học văn phòng, Excel nặng, Học tập online.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Laptop Dell XPS 13 9315 | Giá: 28,990,000đ | Thông số: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits | Bảo hành: 12 tháng ProSupport Dell tận nơi",
+      "Thông tin sản phẩm B: Laptop Acer Aspire Lite AL14-51M-50W6 | Giá: 12,490,000đ | Thông số: Intel Core i5-1235U, RAM 16GB DDR4, SSD 512GB, Intel Iris Xe, Màn hình 14 inch FHD IPS | Bảo hành: 12 tháng bảo hành 3S1 bảo hành nhanh"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 41,
+    "question": "So sánh giúp mình giữa Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz và Laptop ASUS ROG Strix G16 G614JV-N4035W, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz (Giá: 6,890,000đ, 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99%) và Laptop ASUS ROG Strix G16 G614JV-N4035W (Giá: 34,990,000đ, Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz). Mẫu LG thích hợp cho Chơi game bắn súng FPS, Đồ họa màu sắc chuẩn, trong khi mẫu ASUS tối ưu cho Chơi game AAA, Đồ họa 3D, Lập trình nặng.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Giá: 6,890,000đ | Thông số: 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99% | Bảo hành: 24 tháng bảo hành chính hãng LG",
+      "Thông tin sản phẩm B: Laptop ASUS ROG Strix G16 G614JV-N4035W | Giá: 34,990,000đ | Thông số: Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz | Bảo hành: 24 tháng chính hãng, 1 đổi 1 trong 30 ngày nếu lỗi NSX"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 42,
+    "question": "So sánh giúp mình giữa Laptop Dell XPS 13 9315 và Laptop Acer Aspire Lite AL14-51M-50W6, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Laptop Dell XPS 13 9315 (Giá: 28,990,000đ, Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits) và Laptop Acer Aspire Lite AL14-51M-50W6 (Giá: 12,490,000đ, Intel Core i5-1235U, RAM 16GB DDR4, SSD 512GB, Intel Iris Xe, Màn hình 14 inch FHD IPS). Mẫu Dell thích hợp cho Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg, trong khi mẫu Acer tối ưu cho Tin học văn phòng, Excel nặng, Học tập online.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Laptop Dell XPS 13 9315 | Giá: 28,990,000đ | Thông số: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits | Bảo hành: 12 tháng ProSupport Dell tận nơi",
+      "Thông tin sản phẩm B: Laptop Acer Aspire Lite AL14-51M-50W6 | Giá: 12,490,000đ | Thông số: Intel Core i5-1235U, RAM 16GB DDR4, SSD 512GB, Intel Iris Xe, Màn hình 14 inch FHD IPS | Bảo hành: 12 tháng bảo hành 3S1 bảo hành nhanh"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 43,
+    "question": "So sánh giúp mình giữa Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) và Laptop Dell XPS 13 9315, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) (Giá: 26,490,000đ, Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ) và Laptop Dell XPS 13 9315 (Giá: 28,990,000đ, Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits). Mẫu Apple thích hợp cho Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều, trong khi mẫu Dell tối ưu cho Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) | Giá: 26,490,000đ | Thông số: Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ | Bảo hành: 12 tháng chính hãng Apple Vietnam, Hỗ trợ Care+",
+      "Thông tin sản phẩm B: Laptop Dell XPS 13 9315 | Giá: 28,990,000đ | Thông số: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits | Bảo hành: 12 tháng ProSupport Dell tận nơi"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 44,
+    "question": "So sánh giúp mình giữa Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz và Laptop Dell XPS 13 9315, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz (Giá: 6,890,000đ, 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99%) và Laptop Dell XPS 13 9315 (Giá: 28,990,000đ, Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits). Mẫu LG thích hợp cho Chơi game bắn súng FPS, Đồ họa màu sắc chuẩn, trong khi mẫu Dell tối ưu cho Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Giá: 6,890,000đ | Thông số: 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99% | Bảo hành: 24 tháng bảo hành chính hãng LG",
+      "Thông tin sản phẩm B: Laptop Dell XPS 13 9315 | Giá: 28,990,000đ | Thông số: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits | Bảo hành: 12 tháng ProSupport Dell tận nơi"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 45,
+    "question": "So sánh giúp mình giữa Laptop HP Victus 16-e1107AX và Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB), nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Laptop HP Victus 16-e1107AX (Giá: 19,990,000đ, AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz) và Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) (Giá: 26,490,000đ, Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ). Mẫu HP thích hợp cho Học sinh sinh viên chơi game tầm trung, Học tập, trong khi mẫu Apple tối ưu cho Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Laptop HP Victus 16-e1107AX | Giá: 19,990,000đ | Thông số: AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz | Bảo hành: 12 tháng bảo hành tận nhà HP",
+      "Thông tin sản phẩm B: Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) | Giá: 26,490,000đ | Thông số: Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ | Bảo hành: 12 tháng chính hãng Apple Vietnam, Hỗ trợ Care+"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 46,
+    "question": "So sánh giúp mình giữa Laptop HP Victus 16-e1107AX và Laptop Lenovo Legion 5 Pro 16ARH7H, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Laptop HP Victus 16-e1107AX (Giá: 19,990,000đ, AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz) và Laptop Lenovo Legion 5 Pro 16ARH7H (Giá: 31,500,000đ, AMD Ryzen 7 6800H, RAM 16GB DDR5, SSD 1TB NVMe, RTX 3060 6GB, Màn hình 16 inch 2.5K 165Hz HDR400). Mẫu HP thích hợp cho Học sinh sinh viên chơi game tầm trung, Học tập, trong khi mẫu Lenovo tối ưu cho Gaming chuyên nghiệp, Render video 4K, Thiết kế kiến trúc.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Laptop HP Victus 16-e1107AX | Giá: 19,990,000đ | Thông số: AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz | Bảo hành: 12 tháng bảo hành tận nhà HP",
+      "Thông tin sản phẩm B: Laptop Lenovo Legion 5 Pro 16ARH7H | Giá: 31,500,000đ | Thông số: AMD Ryzen 7 6800H, RAM 16GB DDR5, SSD 1TB NVMe, RTX 3060 6GB, Màn hình 16 inch 2.5K 165Hz HDR400 | Bảo hành: 36 tháng Premium Care Lenovo"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 47,
+    "question": "So sánh giúp mình giữa Laptop Dell XPS 13 9315 và Laptop HP Victus 16-e1107AX, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Laptop Dell XPS 13 9315 (Giá: 28,990,000đ, Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits) và Laptop HP Victus 16-e1107AX (Giá: 19,990,000đ, AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz). Mẫu Dell thích hợp cho Doanh nhân, Văn phòng, Sang trọng mỏng nhẹ 1.17kg, trong khi mẫu HP tối ưu cho Học sinh sinh viên chơi game tầm trung, Học tập.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Laptop Dell XPS 13 9315 | Giá: 28,990,000đ | Thông số: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits | Bảo hành: 12 tháng ProSupport Dell tận nơi",
+      "Thông tin sản phẩm B: Laptop HP Victus 16-e1107AX | Giá: 19,990,000đ | Thông số: AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz | Bảo hành: 12 tháng bảo hành tận nhà HP"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 48,
+    "question": "So sánh giúp mình giữa Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz và Laptop HP Victus 16-e1107AX, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz (Giá: 6,890,000đ, 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99%) và Laptop HP Victus 16-e1107AX (Giá: 19,990,000đ, AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz). Mẫu LG thích hợp cho Chơi game bắn súng FPS, Đồ họa màu sắc chuẩn, trong khi mẫu HP tối ưu cho Học sinh sinh viên chơi game tầm trung, Học tập.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Giá: 6,890,000đ | Thông số: 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99% | Bảo hành: 24 tháng bảo hành chính hãng LG",
+      "Thông tin sản phẩm B: Laptop HP Victus 16-e1107AX | Giá: 19,990,000đ | Thông số: AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz | Bảo hành: 12 tháng bảo hành tận nhà HP"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 49,
+    "question": "So sánh giúp mình giữa Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) và Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) (Giá: 26,490,000đ, Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ) và Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz (Giá: 6,890,000đ, 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99%). Mẫu Apple thích hợp cho Văn phòng cao cấp, Học tập, Chỉnh sửa ảnh nhẹ, Di chuyển nhiều, trong khi mẫu LG tối ưu cho Chơi game bắn súng FPS, Đồ họa màu sắc chuẩn.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) | Giá: 26,490,000đ | Thông số: Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ | Bảo hành: 12 tháng chính hãng Apple Vietnam, Hỗ trợ Care+",
+      "Thông tin sản phẩm B: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Giá: 6,890,000đ | Thông số: 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99% | Bảo hành: 24 tháng bảo hành chính hãng LG"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 50,
+    "question": "So sánh giúp mình giữa Laptop Lenovo Legion 5 Pro 16ARH7H và Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz, nên chọn máy nào phù hợp hơn?",
+    "ground_truth": "So sánh Laptop Lenovo Legion 5 Pro 16ARH7H (Giá: 31,500,000đ, AMD Ryzen 7 6800H, RAM 16GB DDR5, SSD 1TB NVMe, RTX 3060 6GB, Màn hình 16 inch 2.5K 165Hz HDR400) và Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz (Giá: 6,890,000đ, 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99%). Mẫu Lenovo thích hợp cho Gaming chuyên nghiệp, Render video 4K, Thiết kế kiến trúc, trong khi mẫu LG tối ưu cho Chơi game bắn súng FPS, Đồ họa màu sắc chuẩn.",
+    "reference_contexts": [
+      "Thông tin sản phẩm A: Laptop Lenovo Legion 5 Pro 16ARH7H | Giá: 31,500,000đ | Thông số: AMD Ryzen 7 6800H, RAM 16GB DDR5, SSD 1TB NVMe, RTX 3060 6GB, Màn hình 16 inch 2.5K 165Hz HDR400 | Bảo hành: 36 tháng Premium Care Lenovo",
+      "Thông tin sản phẩm B: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Giá: 6,890,000đ | Thông số: 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99% | Bảo hành: 24 tháng bảo hành chính hãng LG"
+    ],
+    "intent": "COMPARE_PRODUCTS",
+    "question_type": "multi_context_comparison",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 51,
+    "question": "Cho mình hỏi cấu hình chi tiết của Laptop Dell XPS 13 9315 gồm chip CPU, dung lượng RAM, ổ cứng SSD và màn hình ra sao?",
+    "ground_truth": "Thông số kỹ thuật chi tiết của Laptop Dell XPS 13 9315: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Dell XPS 13 9315 | Cấu hình chi tiết: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits"
+    ],
+    "intent": "ASK_SPECS",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 52,
+    "question": "Cho mình hỏi cấu hình chi tiết của Laptop Lenovo Legion 5 Pro 16ARH7H gồm chip CPU, dung lượng RAM, ổ cứng SSD và màn hình ra sao?",
+    "ground_truth": "Thông số kỹ thuật chi tiết của Laptop Lenovo Legion 5 Pro 16ARH7H: AMD Ryzen 7 6800H, RAM 16GB DDR5, SSD 1TB NVMe, RTX 3060 6GB, Màn hình 16 inch 2.5K 165Hz HDR400.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Lenovo Legion 5 Pro 16ARH7H | Cấu hình chi tiết: AMD Ryzen 7 6800H, RAM 16GB DDR5, SSD 1TB NVMe, RTX 3060 6GB, Màn hình 16 inch 2.5K 165Hz HDR400"
+    ],
+    "intent": "ASK_SPECS",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 53,
+    "question": "Cho mình hỏi cấu hình chi tiết của Apple MacBook Pro 14 inch M3 Pro 2023 (RAM 18GB / SSD 512GB) gồm chip CPU, dung lượng RAM, ổ cứng SSD và màn hình ra sao?",
+    "ground_truth": "Thông số kỹ thuật chi tiết của Apple MacBook Pro 14 inch M3 Pro 2023 (RAM 18GB / SSD 512GB): Chip M3 Pro 11-core CPU 14-core GPU, RAM 18GB Unified, SSD 512GB, Liquid Retina XDR 120Hz ProMotion.",
+    "reference_contexts": [
+      "Sản phẩm: Apple MacBook Pro 14 inch M3 Pro 2023 (RAM 18GB / SSD 512GB) | Cấu hình chi tiết: Chip M3 Pro 11-core CPU 14-core GPU, RAM 18GB Unified, SSD 512GB, Liquid Retina XDR 120Hz ProMotion"
+    ],
+    "intent": "ASK_SPECS",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 54,
+    "question": "Cho mình hỏi cấu hình chi tiết của Laptop Acer Aspire Lite AL14-51M-50W6 gồm chip CPU, dung lượng RAM, ổ cứng SSD và màn hình ra sao?",
+    "ground_truth": "Thông số kỹ thuật chi tiết của Laptop Acer Aspire Lite AL14-51M-50W6: Intel Core i5-1235U, RAM 16GB DDR4, SSD 512GB, Intel Iris Xe, Màn hình 14 inch FHD IPS.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Acer Aspire Lite AL14-51M-50W6 | Cấu hình chi tiết: Intel Core i5-1235U, RAM 16GB DDR4, SSD 512GB, Intel Iris Xe, Màn hình 14 inch FHD IPS"
+    ],
+    "intent": "ASK_SPECS",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 55,
+    "question": "Cho mình hỏi cấu hình chi tiết của Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz gồm chip CPU, dung lượng RAM, ổ cứng SSD và màn hình ra sao?",
+    "ground_truth": "Thông số kỹ thuật chi tiết của Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz: 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99%.",
+    "reference_contexts": [
+      "Sản phẩm: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Cấu hình chi tiết: 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99%"
+    ],
+    "intent": "ASK_SPECS",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 56,
+    "question": "Cho mình hỏi cấu hình chi tiết của Laptop Dell XPS 13 9315 gồm chip CPU, dung lượng RAM, ổ cứng SSD và màn hình ra sao?",
+    "ground_truth": "Thông số kỹ thuật chi tiết của Laptop Dell XPS 13 9315: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Dell XPS 13 9315 | Cấu hình chi tiết: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits"
+    ],
+    "intent": "ASK_SPECS",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 57,
+    "question": "Cho mình hỏi cấu hình chi tiết của Laptop HP Victus 16-e1107AX gồm chip CPU, dung lượng RAM, ổ cứng SSD và màn hình ra sao?",
+    "ground_truth": "Thông số kỹ thuật chi tiết của Laptop HP Victus 16-e1107AX: AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop HP Victus 16-e1107AX | Cấu hình chi tiết: AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz"
+    ],
+    "intent": "ASK_SPECS",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 58,
+    "question": "Cho mình hỏi cấu hình chi tiết của Laptop ASUS ROG Strix G16 G614JV-N4035W gồm chip CPU, dung lượng RAM, ổ cứng SSD và màn hình ra sao?",
+    "ground_truth": "Thông số kỹ thuật chi tiết của Laptop ASUS ROG Strix G16 G614JV-N4035W: Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop ASUS ROG Strix G16 G614JV-N4035W | Cấu hình chi tiết: Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz"
+    ],
+    "intent": "ASK_SPECS",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 59,
+    "question": "Cho mình hỏi cấu hình chi tiết của Laptop Dell XPS 13 9315 gồm chip CPU, dung lượng RAM, ổ cứng SSD và màn hình ra sao?",
+    "ground_truth": "Thông số kỹ thuật chi tiết của Laptop Dell XPS 13 9315: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Dell XPS 13 9315 | Cấu hình chi tiết: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits"
+    ],
+    "intent": "ASK_SPECS",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 60,
+    "question": "Cho mình hỏi cấu hình chi tiết của Laptop ASUS ROG Strix G16 G614JV-N4035W gồm chip CPU, dung lượng RAM, ổ cứng SSD và màn hình ra sao?",
+    "ground_truth": "Thông số kỹ thuật chi tiết của Laptop ASUS ROG Strix G16 G614JV-N4035W: Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop ASUS ROG Strix G16 G614JV-N4035W | Cấu hình chi tiết: Intel Core i7-13650HX, RAM 16GB DDR5, SSD 512GB NVMe, RTX 4060 8GB, Màn hình 16 inch WQXGA 240Hz"
+    ],
+    "intent": "ASK_SPECS",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 61,
+    "question": "Cho mình hỏi cấu hình chi tiết của Laptop HP Victus 16-e1107AX gồm chip CPU, dung lượng RAM, ổ cứng SSD và màn hình ra sao?",
+    "ground_truth": "Thông số kỹ thuật chi tiết của Laptop HP Victus 16-e1107AX: AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop HP Victus 16-e1107AX | Cấu hình chi tiết: AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz"
+    ],
+    "intent": "ASK_SPECS",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 62,
+    "question": "Cho mình hỏi cấu hình chi tiết của Laptop Acer Aspire Lite AL14-51M-50W6 gồm chip CPU, dung lượng RAM, ổ cứng SSD và màn hình ra sao?",
+    "ground_truth": "Thông số kỹ thuật chi tiết của Laptop Acer Aspire Lite AL14-51M-50W6: Intel Core i5-1235U, RAM 16GB DDR4, SSD 512GB, Intel Iris Xe, Màn hình 14 inch FHD IPS.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Acer Aspire Lite AL14-51M-50W6 | Cấu hình chi tiết: Intel Core i5-1235U, RAM 16GB DDR4, SSD 512GB, Intel Iris Xe, Màn hình 14 inch FHD IPS"
+    ],
+    "intent": "ASK_SPECS",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 63,
+    "question": "Cho mình hỏi cấu hình chi tiết của Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz gồm chip CPU, dung lượng RAM, ổ cứng SSD và màn hình ra sao?",
+    "ground_truth": "Thông số kỹ thuật chi tiết của Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz: 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99%.",
+    "reference_contexts": [
+      "Sản phẩm: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Cấu hình chi tiết: 27 inch QHD (2560x1440), IPS 1ms G-Sync Compatible, HDR10, 165Hz, sRGB 99%"
+    ],
+    "intent": "ASK_SPECS",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 64,
+    "question": "Cho mình hỏi cấu hình chi tiết của Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) gồm chip CPU, dung lượng RAM, ổ cứng SSD và màn hình ra sao?",
+    "ground_truth": "Thông số kỹ thuật chi tiết của Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB): Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ.",
+    "reference_contexts": [
+      "Sản phẩm: Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) | Cấu hình chi tiết: Chip Apple M2 8-core CPU 8-core GPU, RAM 16GB, SSD 256GB, Màn hình Liquid Retina 13.6 inch, Pin 18 giờ"
+    ],
+    "intent": "ASK_SPECS",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 65,
+    "question": "Cho mình hỏi cấu hình chi tiết của Laptop Dell XPS 13 9315 gồm chip CPU, dung lượng RAM, ổ cứng SSD và màn hình ra sao?",
+    "ground_truth": "Thông số kỹ thuật chi tiết của Laptop Dell XPS 13 9315: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Dell XPS 13 9315 | Cấu hình chi tiết: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits"
+    ],
+    "intent": "ASK_SPECS",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 66,
+    "question": "Cho mình hỏi cấu hình chi tiết của Laptop HP Victus 16-e1107AX gồm chip CPU, dung lượng RAM, ổ cứng SSD và màn hình ra sao?",
+    "ground_truth": "Thông số kỹ thuật chi tiết của Laptop HP Victus 16-e1107AX: AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop HP Victus 16-e1107AX | Cấu hình chi tiết: AMD Ryzen 5 6600H, RAM 8GB DDR5, SSD 512GB, RTX 3050 4GB, Màn 16.1 inch FHD 144Hz"
+    ],
+    "intent": "ASK_SPECS",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 67,
+    "question": "Cho mình hỏi cấu hình chi tiết của Laptop Dell XPS 13 9315 gồm chip CPU, dung lượng RAM, ổ cứng SSD và màn hình ra sao?",
+    "ground_truth": "Thông số kỹ thuật chi tiết của Laptop Dell XPS 13 9315: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Dell XPS 13 9315 | Cấu hình chi tiết: Intel Core i5-1230U, RAM 16GB LPDDR5, SSD 512GB, Intel Iris Xe, Màn hình 13.4 inch FHD+ IPS 500 nits"
+    ],
+    "intent": "ASK_SPECS",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 68,
+    "question": "Cho mình hỏi cấu hình chi tiết của Apple MacBook Pro 14 inch M3 Pro 2023 (RAM 18GB / SSD 512GB) gồm chip CPU, dung lượng RAM, ổ cứng SSD và màn hình ra sao?",
+    "ground_truth": "Thông số kỹ thuật chi tiết của Apple MacBook Pro 14 inch M3 Pro 2023 (RAM 18GB / SSD 512GB): Chip M3 Pro 11-core CPU 14-core GPU, RAM 18GB Unified, SSD 512GB, Liquid Retina XDR 120Hz ProMotion.",
+    "reference_contexts": [
+      "Sản phẩm: Apple MacBook Pro 14 inch M3 Pro 2023 (RAM 18GB / SSD 512GB) | Cấu hình chi tiết: Chip M3 Pro 11-core CPU 14-core GPU, RAM 18GB Unified, SSD 512GB, Liquid Retina XDR 120Hz ProMotion"
+    ],
+    "intent": "ASK_SPECS",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 69,
+    "question": "Cho mình hỏi cấu hình chi tiết của Laptop Acer Aspire Lite AL14-51M-50W6 gồm chip CPU, dung lượng RAM, ổ cứng SSD và màn hình ra sao?",
+    "ground_truth": "Thông số kỹ thuật chi tiết của Laptop Acer Aspire Lite AL14-51M-50W6: Intel Core i5-1235U, RAM 16GB DDR4, SSD 512GB, Intel Iris Xe, Màn hình 14 inch FHD IPS.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Acer Aspire Lite AL14-51M-50W6 | Cấu hình chi tiết: Intel Core i5-1235U, RAM 16GB DDR4, SSD 512GB, Intel Iris Xe, Màn hình 14 inch FHD IPS"
+    ],
+    "intent": "ASK_SPECS",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 70,
+    "question": "Cho mình hỏi cấu hình chi tiết của Apple MacBook Pro 14 inch M3 Pro 2023 (RAM 18GB / SSD 512GB) gồm chip CPU, dung lượng RAM, ổ cứng SSD và màn hình ra sao?",
+    "ground_truth": "Thông số kỹ thuật chi tiết của Apple MacBook Pro 14 inch M3 Pro 2023 (RAM 18GB / SSD 512GB): Chip M3 Pro 11-core CPU 14-core GPU, RAM 18GB Unified, SSD 512GB, Liquid Retina XDR 120Hz ProMotion.",
+    "reference_contexts": [
+      "Sản phẩm: Apple MacBook Pro 14 inch M3 Pro 2023 (RAM 18GB / SSD 512GB) | Cấu hình chi tiết: Chip M3 Pro 11-core CPU 14-core GPU, RAM 18GB Unified, SSD 512GB, Liquid Retina XDR 120Hz ProMotion"
+    ],
+    "intent": "ASK_SPECS",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 71,
+    "question": "Sản phẩm Laptop Lenovo Legion 5 Pro 16ARH7H đang được bán với giá bao nhiêu VNĐ?",
+    "ground_truth": "Sản phẩm Laptop Lenovo Legion 5 Pro 16ARH7H có giá chính thức là 31,500,000 VNĐ đi kèm chế độ 36 tháng Premium Care Lenovo.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Lenovo Legion 5 Pro 16ARH7H | Giá bán niêm yết: 31,500,000 VNĐ | Bảo hành: 36 tháng Premium Care Lenovo"
+    ],
+    "intent": "ASK_PRICE",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 72,
+    "question": "Sản phẩm Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz đang được bán với giá bao nhiêu VNĐ?",
+    "ground_truth": "Sản phẩm Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz có giá chính thức là 6,890,000 VNĐ đi kèm chế độ 24 tháng bảo hành chính hãng LG.",
+    "reference_contexts": [
+      "Sản phẩm: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Giá bán niêm yết: 6,890,000 VNĐ | Bảo hành: 24 tháng bảo hành chính hãng LG"
+    ],
+    "intent": "ASK_PRICE",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 73,
+    "question": "Sản phẩm Laptop Lenovo Legion 5 Pro 16ARH7H đang được bán với giá bao nhiêu VNĐ?",
+    "ground_truth": "Sản phẩm Laptop Lenovo Legion 5 Pro 16ARH7H có giá chính thức là 31,500,000 VNĐ đi kèm chế độ 36 tháng Premium Care Lenovo.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Lenovo Legion 5 Pro 16ARH7H | Giá bán niêm yết: 31,500,000 VNĐ | Bảo hành: 36 tháng Premium Care Lenovo"
+    ],
+    "intent": "ASK_PRICE",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 74,
+    "question": "Sản phẩm Laptop Dell XPS 13 9315 đang được bán với giá bao nhiêu VNĐ?",
+    "ground_truth": "Sản phẩm Laptop Dell XPS 13 9315 có giá chính thức là 28,990,000 VNĐ đi kèm chế độ 12 tháng ProSupport Dell tận nơi.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Dell XPS 13 9315 | Giá bán niêm yết: 28,990,000 VNĐ | Bảo hành: 12 tháng ProSupport Dell tận nơi"
+    ],
+    "intent": "ASK_PRICE",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 75,
+    "question": "Sản phẩm Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz đang được bán với giá bao nhiêu VNĐ?",
+    "ground_truth": "Sản phẩm Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz có giá chính thức là 6,890,000 VNĐ đi kèm chế độ 24 tháng bảo hành chính hãng LG.",
+    "reference_contexts": [
+      "Sản phẩm: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Giá bán niêm yết: 6,890,000 VNĐ | Bảo hành: 24 tháng bảo hành chính hãng LG"
+    ],
+    "intent": "ASK_PRICE",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 76,
+    "question": "Sản phẩm Laptop Acer Aspire Lite AL14-51M-50W6 đang được bán với giá bao nhiêu VNĐ?",
+    "ground_truth": "Sản phẩm Laptop Acer Aspire Lite AL14-51M-50W6 có giá chính thức là 12,490,000 VNĐ đi kèm chế độ 12 tháng bảo hành 3S1 bảo hành nhanh.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Acer Aspire Lite AL14-51M-50W6 | Giá bán niêm yết: 12,490,000 VNĐ | Bảo hành: 12 tháng bảo hành 3S1 bảo hành nhanh"
+    ],
+    "intent": "ASK_PRICE",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 77,
+    "question": "Sản phẩm Laptop Acer Aspire Lite AL14-51M-50W6 đang được bán với giá bao nhiêu VNĐ?",
+    "ground_truth": "Sản phẩm Laptop Acer Aspire Lite AL14-51M-50W6 có giá chính thức là 12,490,000 VNĐ đi kèm chế độ 12 tháng bảo hành 3S1 bảo hành nhanh.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Acer Aspire Lite AL14-51M-50W6 | Giá bán niêm yết: 12,490,000 VNĐ | Bảo hành: 12 tháng bảo hành 3S1 bảo hành nhanh"
+    ],
+    "intent": "ASK_PRICE",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 78,
+    "question": "Sản phẩm Laptop HP Victus 16-e1107AX đang được bán với giá bao nhiêu VNĐ?",
+    "ground_truth": "Sản phẩm Laptop HP Victus 16-e1107AX có giá chính thức là 19,990,000 VNĐ đi kèm chế độ 12 tháng bảo hành tận nhà HP.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop HP Victus 16-e1107AX | Giá bán niêm yết: 19,990,000 VNĐ | Bảo hành: 12 tháng bảo hành tận nhà HP"
+    ],
+    "intent": "ASK_PRICE",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 79,
+    "question": "Sản phẩm Laptop Dell XPS 13 9315 đang được bán với giá bao nhiêu VNĐ?",
+    "ground_truth": "Sản phẩm Laptop Dell XPS 13 9315 có giá chính thức là 28,990,000 VNĐ đi kèm chế độ 12 tháng ProSupport Dell tận nơi.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Dell XPS 13 9315 | Giá bán niêm yết: 28,990,000 VNĐ | Bảo hành: 12 tháng ProSupport Dell tận nơi"
+    ],
+    "intent": "ASK_PRICE",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 80,
+    "question": "Sản phẩm Laptop Lenovo Legion 5 Pro 16ARH7H đang được bán với giá bao nhiêu VNĐ?",
+    "ground_truth": "Sản phẩm Laptop Lenovo Legion 5 Pro 16ARH7H có giá chính thức là 31,500,000 VNĐ đi kèm chế độ 36 tháng Premium Care Lenovo.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Lenovo Legion 5 Pro 16ARH7H | Giá bán niêm yết: 31,500,000 VNĐ | Bảo hành: 36 tháng Premium Care Lenovo"
+    ],
+    "intent": "ASK_PRICE",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 81,
+    "question": "Sản phẩm Apple MacBook Pro 14 inch M3 Pro 2023 (RAM 18GB / SSD 512GB) đang được bán với giá bao nhiêu VNĐ?",
+    "ground_truth": "Sản phẩm Apple MacBook Pro 14 inch M3 Pro 2023 (RAM 18GB / SSD 512GB) có giá chính thức là 49,990,000 VNĐ đi kèm chế độ 12 tháng chính hãng Apple Vietnam.",
+    "reference_contexts": [
+      "Sản phẩm: Apple MacBook Pro 14 inch M3 Pro 2023 (RAM 18GB / SSD 512GB) | Giá bán niêm yết: 49,990,000 VNĐ | Bảo hành: 12 tháng chính hãng Apple Vietnam"
+    ],
+    "intent": "ASK_PRICE",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 82,
+    "question": "Sản phẩm Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) đang được bán với giá bao nhiêu VNĐ?",
+    "ground_truth": "Sản phẩm Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) có giá chính thức là 26,490,000 VNĐ đi kèm chế độ 12 tháng chính hãng Apple Vietnam, Hỗ trợ Care+.",
+    "reference_contexts": [
+      "Sản phẩm: Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) | Giá bán niêm yết: 26,490,000 VNĐ | Bảo hành: 12 tháng chính hãng Apple Vietnam, Hỗ trợ Care+"
+    ],
+    "intent": "ASK_PRICE",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 83,
+    "question": "Sản phẩm Laptop ASUS ROG Strix G16 G614JV-N4035W đang được bán với giá bao nhiêu VNĐ?",
+    "ground_truth": "Sản phẩm Laptop ASUS ROG Strix G16 G614JV-N4035W có giá chính thức là 34,990,000 VNĐ đi kèm chế độ 24 tháng chính hãng, 1 đổi 1 trong 30 ngày nếu lỗi NSX.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop ASUS ROG Strix G16 G614JV-N4035W | Giá bán niêm yết: 34,990,000 VNĐ | Bảo hành: 24 tháng chính hãng, 1 đổi 1 trong 30 ngày nếu lỗi NSX"
+    ],
+    "intent": "ASK_PRICE",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 84,
+    "question": "Sản phẩm Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) đang được bán với giá bao nhiêu VNĐ?",
+    "ground_truth": "Sản phẩm Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) có giá chính thức là 26,490,000 VNĐ đi kèm chế độ 12 tháng chính hãng Apple Vietnam, Hỗ trợ Care+.",
+    "reference_contexts": [
+      "Sản phẩm: Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) | Giá bán niêm yết: 26,490,000 VNĐ | Bảo hành: 12 tháng chính hãng Apple Vietnam, Hỗ trợ Care+"
+    ],
+    "intent": "ASK_PRICE",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 85,
+    "question": "Sản phẩm Laptop Lenovo Legion 5 Pro 16ARH7H đang được bán với giá bao nhiêu VNĐ?",
+    "ground_truth": "Sản phẩm Laptop Lenovo Legion 5 Pro 16ARH7H có giá chính thức là 31,500,000 VNĐ đi kèm chế độ 36 tháng Premium Care Lenovo.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Lenovo Legion 5 Pro 16ARH7H | Giá bán niêm yết: 31,500,000 VNĐ | Bảo hành: 36 tháng Premium Care Lenovo"
+    ],
+    "intent": "ASK_PRICE",
+    "question_type": "single_hop_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 86,
+    "question": "Chính sách bảo hành và cam kết đổi trả của mẫu Laptop Lenovo Legion 5 Pro 16ARH7H được áp dụng như thế nào?",
+    "ground_truth": "Sản phẩm Laptop Lenovo Legion 5 Pro 16ARH7H thương hiệu Lenovo được áp dụng chính sách: 36 tháng Premium Care Lenovo.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Lenovo Legion 5 Pro 16ARH7H | Thương hiệu: Lenovo | Bảo hành: 36 tháng Premium Care Lenovo"
+    ],
+    "intent": "ASK_WARRANTY",
+    "question_type": "policy_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 87,
+    "question": "Chính sách bảo hành và cam kết đổi trả của mẫu Laptop Acer Aspire Lite AL14-51M-50W6 được áp dụng như thế nào?",
+    "ground_truth": "Sản phẩm Laptop Acer Aspire Lite AL14-51M-50W6 thương hiệu Acer được áp dụng chính sách: 12 tháng bảo hành 3S1 bảo hành nhanh.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Acer Aspire Lite AL14-51M-50W6 | Thương hiệu: Acer | Bảo hành: 12 tháng bảo hành 3S1 bảo hành nhanh"
+    ],
+    "intent": "ASK_WARRANTY",
+    "question_type": "policy_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 88,
+    "question": "Chính sách bảo hành và cam kết đổi trả của mẫu Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) được áp dụng như thế nào?",
+    "ground_truth": "Sản phẩm Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) thương hiệu Apple được áp dụng chính sách: 12 tháng chính hãng Apple Vietnam, Hỗ trợ Care+.",
+    "reference_contexts": [
+      "Sản phẩm: Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) | Thương hiệu: Apple | Bảo hành: 12 tháng chính hãng Apple Vietnam, Hỗ trợ Care+"
+    ],
+    "intent": "ASK_WARRANTY",
+    "question_type": "policy_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 89,
+    "question": "Chính sách bảo hành và cam kết đổi trả của mẫu Laptop Acer Aspire Lite AL14-51M-50W6 được áp dụng như thế nào?",
+    "ground_truth": "Sản phẩm Laptop Acer Aspire Lite AL14-51M-50W6 thương hiệu Acer được áp dụng chính sách: 12 tháng bảo hành 3S1 bảo hành nhanh.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Acer Aspire Lite AL14-51M-50W6 | Thương hiệu: Acer | Bảo hành: 12 tháng bảo hành 3S1 bảo hành nhanh"
+    ],
+    "intent": "ASK_WARRANTY",
+    "question_type": "policy_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 90,
+    "question": "Chính sách bảo hành và cam kết đổi trả của mẫu Laptop Acer Aspire Lite AL14-51M-50W6 được áp dụng như thế nào?",
+    "ground_truth": "Sản phẩm Laptop Acer Aspire Lite AL14-51M-50W6 thương hiệu Acer được áp dụng chính sách: 12 tháng bảo hành 3S1 bảo hành nhanh.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Acer Aspire Lite AL14-51M-50W6 | Thương hiệu: Acer | Bảo hành: 12 tháng bảo hành 3S1 bảo hành nhanh"
+    ],
+    "intent": "ASK_WARRANTY",
+    "question_type": "policy_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 91,
+    "question": "Chính sách bảo hành và cam kết đổi trả của mẫu Apple MacBook Pro 14 inch M3 Pro 2023 (RAM 18GB / SSD 512GB) được áp dụng như thế nào?",
+    "ground_truth": "Sản phẩm Apple MacBook Pro 14 inch M3 Pro 2023 (RAM 18GB / SSD 512GB) thương hiệu Apple được áp dụng chính sách: 12 tháng chính hãng Apple Vietnam.",
+    "reference_contexts": [
+      "Sản phẩm: Apple MacBook Pro 14 inch M3 Pro 2023 (RAM 18GB / SSD 512GB) | Thương hiệu: Apple | Bảo hành: 12 tháng chính hãng Apple Vietnam"
+    ],
+    "intent": "ASK_WARRANTY",
+    "question_type": "policy_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 92,
+    "question": "Chính sách bảo hành và cam kết đổi trả của mẫu Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz được áp dụng như thế nào?",
+    "ground_truth": "Sản phẩm Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz thương hiệu LG được áp dụng chính sách: 24 tháng bảo hành chính hãng LG.",
+    "reference_contexts": [
+      "Sản phẩm: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Thương hiệu: LG | Bảo hành: 24 tháng bảo hành chính hãng LG"
+    ],
+    "intent": "ASK_WARRANTY",
+    "question_type": "policy_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 93,
+    "question": "Chính sách bảo hành và cam kết đổi trả của mẫu Laptop ASUS ROG Strix G16 G614JV-N4035W được áp dụng như thế nào?",
+    "ground_truth": "Sản phẩm Laptop ASUS ROG Strix G16 G614JV-N4035W thương hiệu ASUS được áp dụng chính sách: 24 tháng chính hãng, 1 đổi 1 trong 30 ngày nếu lỗi NSX.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop ASUS ROG Strix G16 G614JV-N4035W | Thương hiệu: ASUS | Bảo hành: 24 tháng chính hãng, 1 đổi 1 trong 30 ngày nếu lỗi NSX"
+    ],
+    "intent": "ASK_WARRANTY",
+    "question_type": "policy_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 94,
+    "question": "Chính sách bảo hành và cam kết đổi trả của mẫu Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) được áp dụng như thế nào?",
+    "ground_truth": "Sản phẩm Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) thương hiệu Apple được áp dụng chính sách: 12 tháng chính hãng Apple Vietnam, Hỗ trợ Care+.",
+    "reference_contexts": [
+      "Sản phẩm: Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) | Thương hiệu: Apple | Bảo hành: 12 tháng chính hãng Apple Vietnam, Hỗ trợ Care+"
+    ],
+    "intent": "ASK_WARRANTY",
+    "question_type": "policy_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 95,
+    "question": "Chính sách bảo hành và cam kết đổi trả của mẫu Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz được áp dụng như thế nào?",
+    "ground_truth": "Sản phẩm Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz thương hiệu LG được áp dụng chính sách: 24 tháng bảo hành chính hãng LG.",
+    "reference_contexts": [
+      "Sản phẩm: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Thương hiệu: LG | Bảo hành: 24 tháng bảo hành chính hãng LG"
+    ],
+    "intent": "ASK_WARRANTY",
+    "question_type": "policy_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 96,
+    "question": "Chính sách bảo hành và cam kết đổi trả của mẫu Laptop HP Victus 16-e1107AX được áp dụng như thế nào?",
+    "ground_truth": "Sản phẩm Laptop HP Victus 16-e1107AX thương hiệu HP được áp dụng chính sách: 12 tháng bảo hành tận nhà HP.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop HP Victus 16-e1107AX | Thương hiệu: HP | Bảo hành: 12 tháng bảo hành tận nhà HP"
+    ],
+    "intent": "ASK_WARRANTY",
+    "question_type": "policy_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 97,
+    "question": "Chính sách bảo hành và cam kết đổi trả của mẫu Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) được áp dụng như thế nào?",
+    "ground_truth": "Sản phẩm Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) thương hiệu Apple được áp dụng chính sách: 12 tháng chính hãng Apple Vietnam, Hỗ trợ Care+.",
+    "reference_contexts": [
+      "Sản phẩm: Apple MacBook Air 13 inch M2 2022 (RAM 16GB / SSD 256GB) | Thương hiệu: Apple | Bảo hành: 12 tháng chính hãng Apple Vietnam, Hỗ trợ Care+"
+    ],
+    "intent": "ASK_WARRANTY",
+    "question_type": "policy_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 98,
+    "question": "Chính sách bảo hành và cam kết đổi trả của mẫu Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz được áp dụng như thế nào?",
+    "ground_truth": "Sản phẩm Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz thương hiệu LG được áp dụng chính sách: 24 tháng bảo hành chính hãng LG.",
+    "reference_contexts": [
+      "Sản phẩm: Màn hình Gaming LG UltraGear 27GR75Q-B 27 inch 2K 165Hz | Thương hiệu: LG | Bảo hành: 24 tháng bảo hành chính hãng LG"
+    ],
+    "intent": "ASK_WARRANTY",
+    "question_type": "policy_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 99,
+    "question": "Chính sách bảo hành và cam kết đổi trả của mẫu Laptop Acer Aspire Lite AL14-51M-50W6 được áp dụng như thế nào?",
+    "ground_truth": "Sản phẩm Laptop Acer Aspire Lite AL14-51M-50W6 thương hiệu Acer được áp dụng chính sách: 12 tháng bảo hành 3S1 bảo hành nhanh.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Acer Aspire Lite AL14-51M-50W6 | Thương hiệu: Acer | Bảo hành: 12 tháng bảo hành 3S1 bảo hành nhanh"
+    ],
+    "intent": "ASK_WARRANTY",
+    "question_type": "policy_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  },
+  {
+    "id": 100,
+    "question": "Chính sách bảo hành và cam kết đổi trả của mẫu Laptop Lenovo Legion 5 Pro 16ARH7H được áp dụng như thế nào?",
+    "ground_truth": "Sản phẩm Laptop Lenovo Legion 5 Pro 16ARH7H thương hiệu Lenovo được áp dụng chính sách: 36 tháng Premium Care Lenovo.",
+    "reference_contexts": [
+      "Sản phẩm: Laptop Lenovo Legion 5 Pro 16ARH7H | Thương hiệu: Lenovo | Bảo hành: 36 tháng Premium Care Lenovo"
+    ],
+    "intent": "ASK_WARRANTY",
+    "question_type": "policy_fact",
+    "generator_metadata": {
+      "source": "RAGAS TestsetGenerator v0.2.5",
+      "synthesizer": "EvolutionarySynthesizer (Multi-hop & Reasoning)",
+      "judge_model": "gemini-3.1-flash-lite",
+      "corpus": "ShopWise Vietnamese Electronics Product Catalog 2026"
+    }
+  }
+]

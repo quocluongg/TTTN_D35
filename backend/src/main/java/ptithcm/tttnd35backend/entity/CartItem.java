@@ -3,6 +3,7 @@ package ptithcm.tttnd35backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import ptithcm.tttnd35backend.util.enums.CartSource;
 
 import java.util.UUID;
 
@@ -30,4 +31,10 @@ public class CartItem extends BaseEntity {
 
     @Column(nullable = false)
     private int quantity;
+
+    // Nguồn thêm vào giỏ: CHATBOT (từ gợi ý bot) hoặc BROWSE (duyệt web bình thường).
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private CartSource source = CartSource.BROWSE;
 }

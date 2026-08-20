@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -18,7 +18,7 @@ interface ChatLog { timestamp: string; query: string; intent: string; confidence
 interface SyncLog { timestamp: string; product_id: string; product_name: string; action: string; chunks_created: number; status: string; duration_ms: number; }
 
 async function fetchSyncLogs(page: number) {
-  const res = await fetch(${API_URL}/admin/rag/logs/sync?page=);
+  const res = await fetch(`${API_URL}/admin/rag/logs/sync?page=${page}`);
   if (!res.ok) throw new Error("Failed");
   return res.json();
 }
@@ -118,7 +118,7 @@ export default function LogsPage() {
   const fmtDuration = (s: string, e: string) => {
     if (!s || !e) return "—";
     const ms = new Date(e).getTime() - new Date(s).getTime();
-    return ${Math.floor(ms / 60000)}p s;
+    return `${Math.floor(ms / 60000)} phút`;
   };
 
   const openDetail = (conv: any) => { setSelectedConv(conv); setDetailOpen(true); };
@@ -146,7 +146,7 @@ export default function LogsPage() {
       <div className="flex gap-1 border-b border-zinc-200">
         {tabs.map((t) => (
           <button key={t.key} onClick={() => setActiveTab(t.key as any)}
-            className={lex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors }>
+            className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors">
             <t.icon size={15} />{t.label}
           </button>
         ))}
@@ -159,7 +159,7 @@ export default function LogsPage() {
           <div className="flex gap-2 flex-wrap">
             {statusTabs.map((s) => (
               <button key={s.value} onClick={() => { setStatusFilter(s.value); setConvPage(0); }}
-                className={px-3 py-1.5 rounded-full text-xs font-medium transition-colors }>
+                className="px-3 py-1.5 rounded-full text-xs font-medium transition-colors">
                 {s.label}
                 {s.value === "HANDOFF" && conversations.filter((c: any) => c.status === "HANDOFF").length > 0 && !statusFilter && (
                   <span className="ml-1.5 bg-amber-500 text-white rounded-full px-1.5 py-0.5 text-[10px]">
@@ -195,7 +195,7 @@ export default function LogsPage() {
                         <div className="text-xs text-zinc-400 mt-0.5">{conv.sessionId?.slice(0, 20)}...</div>
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className={inline-block px-2.5 py-0.5 rounded-full text-xs font-medium }>
+                        <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium">
                           {conv.status === "ACTIVE" ? "Đang chat" : conv.status === "HANDOFF" ? "Chờ tiếp quản" : "Đã đóng"}
                         </span>
                       </td>
@@ -256,7 +256,7 @@ export default function LogsPage() {
                       </div>
                     </div>
                   </div>
-                  <span className={	ext-xs font-medium px-2 py-1 rounded-full }>{log.status}</span>
+                  <span className="text-xs font-medium px-2 py-1 rounded-full">{log.status}</span>
                 </div>
               ))}
             </div>
@@ -272,7 +272,7 @@ export default function LogsPage() {
               <MessageSquare size={18} />
               Chi tiết hội thoại
               {selectedConv && (
-                <span className={ml-2 text-xs px-2.5 py-0.5 rounded-full font-medium }>
+                <span className="ml-2 text-xs px-2.5 py-0.5 rounded-full font-medium">
                   {selectedConv.status}
                 </span>
               )}
@@ -313,22 +313,22 @@ export default function LogsPage() {
                   <div className="text-center py-6 text-zinc-400 text-sm">Không có tin nhắn</div>
                 ) : (
                   messages.map((msg: any) => (
-                    <div key={msg.id} className={lex gap-3 }>
-                      <div className={w-7 h-7 rounded-full flex items-center justify-center shrink-0 }>
+                    <div key={msg.id} className="flex gap-3">
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0">
                         {msg.role === "USER" ? <User size={13} className="text-zinc-600" /> : <Bot size={13} className="text-white" />}
                       </div>
-                      <div className={lex-1 max-w-[80%] }>
-                        <div className={ounded-xl px-3 py-2.5 text-sm }>
+                      <div className="flex-1 max-w-[80%]">
+                        <div className="rounded-xl px-3 py-2.5 text-sm">
                           {msg.content}
                         </div>
                         <div className="flex items-center gap-2 mt-1">
                           {msg.intent && (
-                            <span className={	ext-[10px] px-1.5 py-0.5 rounded }>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded">
                               {msg.intent}
                             </span>
                           )}
                           {msg.flagStatus && msg.flagStatus !== "NONE" && (
-                            <span className={	ext-[10px] font-medium }>
+                            <span className="text-[10px] font-medium">
                               🚩 {msg.flagStatus}
                             </span>
                           )}

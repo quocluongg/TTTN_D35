@@ -625,6 +625,56 @@ public class ChatAdminServiceImpl implements IChatAdminService {
         return val != null ? ((Number) val).doubleValue() : null;
     }
 
+    @Override
+    public List<CartSourceStatResponse> getCartSourceStats(LocalDateTime from, LocalDateTime to) {
+        String sql = """
+                SELECT source,
+                       COALESCE(SUM(add_to_cart), 0) AS add_to_cart,
+                       COALESCE(SUM(orders_placed), 0) AS orders_placed,
+                       COALESCE(SUM(revenue), 0) AS revenue
+                FROM (
+                    SELECT COALESCE(source, 'BROWSE') AS source,
+                           COUNT(*) AS add_to_cart, 0 AS orders_placed, 0.0 AS revenue
+                    FROM add_to_cart_events
+                    WHERE (:f IS NULL OR created_at >= CAST(:f AS TIMESTAMP))
+                      AND (:t IS NULL OR created_at <= CAST(:t AS TIMESTAMP))
+                    GROUP BY COALESCE(source, 'BROWSE')
+                    UNION ALL
+                    SELECT COALESCE(source, 'BROWSE') AS source,
+                           0 AS add_to_cart,
+                           COUNT(DISTINCT order_id) AS orders_placed,
+                           COALESCE(SUM(price_at_purchase * quantity), 0) AS revenue
+                    FROM order_items
+                    WHERE (:f IS NULL OR created_at >= CAST(:f AS TIMESTAMP))
+                      AND (:t IS NULL OR created_at <= CAST(:t AS TIMESTAMP))
+                    GROUP BY COALESCE(source, 'BROWSE')
+                ) t
+                GROUP BY source
+                ORDER BY source ASC
+                """;
+        Query query = entityManager.createNativeQuery(sql);
+        query.setParameter("f", from);
+        query.setParameter("t", to);
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = query.getResultList();
+        List<CartSourceStatResponse> result = new ArrayList<>();
+        for (Object[] row : rows) {
+            String source = (String) row[0];
+            long addToCart = row[1] != null ? ((Number) row[1]).longValue() : 0L;
+            long orders = row[2] != null ? ((Number) row[2]).longValue() : 0L;
+            double revenue = row[3] != null ? ((Number) row[3]).doubleValue() : 0.0;
+            double convRate = addToCart > 0 ? orders * 100.0 / addToCart : 0.0;
+            result.add(CartSourceStatResponse.builder()
+                    .source(source)
+                    .addToCart(addToCart)
+                    .ordersPlaced(orders)
+                    .conversionRate(round2(convRate))
+                    .revenue(round2(revenue))
+                    .build());
+        }
+        return result;
+    }
+
     private double round2(double value) {
         return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP).doubleValue();
     }
