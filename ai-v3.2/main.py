@@ -279,6 +279,7 @@ async def rag_chat_endpoint(
         conv_id = conversation_id or body.get("conversation_id")
         p_id = parent_id or body.get("parent_id")
         k_val = top_k or body.get("top_k", 5)
+        history = body.get("history")
 
         pipeline = get_rag_pipeline()
         start = time.time()
@@ -286,7 +287,8 @@ async def rag_chat_endpoint(
             query=str(query_text).strip(),
             top_k=k_val,
             conversation_id=conv_id,
-            parent_id=p_id
+            parent_id=p_id,
+            history=history
         )
         latency_ms = int((time.time() - start) * 1000)
 

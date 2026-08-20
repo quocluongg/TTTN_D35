@@ -89,7 +89,8 @@ class RAGChatbotPipeline:
         user_profile: Optional[Dict[str, Any]] = None,
         top_k: int = 5,
         conversation_id: Optional[str] = None,
-        parent_id: Optional[str] = None
+        parent_id: Optional[str] = None,
+        history: Optional[List[Dict[str, Any]]] = None
     ) -> Dict[str, Any]:
         """
         Xử lý câu hỏi người dùng qua 8 bước và liên kết chuỗi tin nhắn trong Conversation.
@@ -101,12 +102,17 @@ class RAGChatbotPipeline:
         if not conversation_id:
             conversation_id = self.conv_manager.create_conversation(metadata={"source": "api"})
 
-        # Lấy chuỗi lịch sử tin nhắn liên kết trước đó
-        conversation_history = self.conv_manager.get_conversation_history(
-            conversation_id=conversation_id,
-            last_message_id=parent_id,
-            max_turns=6
-        )
+        # Ưu tiên dùng lịch sử do frontend gửi kèm (đảm bảo liên kết ngữ cảnh xuyên
+        # process/worker, không phụ thuộc bộ nhớ trong-process của server). Nếu không
+        # có, fallback truy xuất từ ConversationManager.
+        if history:
+            conversation_history = history
+        else:
+            conversation_history = self.conv_manager.get_conversation_history(
+                conversation_id=conversation_id,
+                last_message_id=parent_id,
+                max_turns=6
+            )
 
         # 1. Lưu user message vào chuỗi liên kết
         user_msg = self.conv_manager.add_message(

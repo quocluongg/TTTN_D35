@@ -614,15 +614,21 @@ export default function AIChatPage() {
         }
       }
 
-      // Send message
+      // Send message kèm lịch sử các lượt trước để bot nhớ ngữ cảnh cuộc hội thoại.
       const params = new URLSearchParams();
       if (convId) params.append("conversation_id", convId);
       params.append("user_id", userId);
 
+      // Lấy các lượt đã có (chưa bao gồm tin nhắn user vừa gửi) làm lịch sử.
+      const history = messages
+        .filter((m) => m.role === "user" || m.role === "assistant")
+        .slice(-12)
+        .map((m) => ({ role: m.role, content: m.content }));
+
       const res = await fetch(`${AI_API_URL}/chat?${params}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: userMessage.content }),
+        body: JSON.stringify({ query: userMessage.content, history }),
       });
 
       if (!res.ok) {
