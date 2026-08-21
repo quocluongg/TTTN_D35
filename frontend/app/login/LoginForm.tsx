@@ -16,16 +16,56 @@ export default function LoginForm() {
   const googleTokenClient = useRef<any>(null);
 
   useEffect(() => {
-    // Process Google Redirect Callback if URL hash contains id_token
+    // 1. Process Google Redirect Callback if URL hash contains id_token
     if (typeof window !== "undefined" && window.location.hash) {
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const idToken = hashParams.get("id_token");
+      const idToken = hashParams.get("id_token") || hashParams.get("credential");
 
       if (idToken) {
         window.history.replaceState(null, "", window.location.pathname);
         googleLogin(idToken);
+        return;
       }
     }
+
+    // 2. Initialize GIS (Google Identity Services) with redirect mode
+    const clientId = getGoogleClientId();
+    if (!clientId) return;
+
+    let cancelled = false;
+    loadGoogleScript()
+      .then((google) => {
+        if (cancelled || !google?.accounts?.id) return;
+
+        google.accounts.id.initialize({
+          client_id: clientId,
+          ux_mode: "redirect",
+          login_uri: typeof window !== "undefined" ? window.location.origin + "/login" : undefined,
+          callback: (response: any) => {
+            if (response?.credential) {
+              googleLogin(response.credential);
+            }
+          },
+        });
+
+        const btnContainer = document.getElementById("google-official-btn");
+        if (btnContainer) {
+          google.accounts.id.renderButton(btnContainer, {
+            type: "standard",
+            theme: "outline",
+            size: "large",
+            text: "signin_with",
+            shape: "rectangular",
+            logo_alignment: "left",
+            width: "380",
+          });
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
   }, [googleLogin]);
 
   const handleGoogleLogin = () => {
@@ -35,19 +75,29 @@ export default function LoginForm() {
       return;
     }
 
-    const redirectUri = window.location.origin + window.location.pathname;
-    const nonce = Date.now().toString();
+    // If official Google GIS button exists, click it
+    const innerBtn = document.querySelector("#google-official-btn div[role=button]") as HTMLElement;
+    if (innerBtn) {
+      innerBtn.click();
+      return;
+    }
 
-    // Standard Google OAuth2 Authorization Endpoint (Full page redirect flow)
-    const googleAuthUrl =
-      `https://accounts.google.com/o/oauth2/v2/auth?` +
-      `client_id=${encodeURIComponent(clientId)}` +
-      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-      `&response_type=id_token` +
-      `&scope=${encodeURIComponent("openid email profile")}` +
-      `&nonce=${encodeURIComponent(nonce)}`;
+    if (typeof window !== "undefined" && (window as any).google?.accounts?.id) {
+      (window as any).google.accounts.id.prompt();
+    } else {
+      const redirectUri = window.location.origin + "/login";
+      const nonce = Date.now().toString();
+      const googleAuthUrl =
+        `https://accounts.google.com/o/oauth2/v2/auth?` +
+        `client_id=${encodeURIComponent(clientId)}` +
+        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+        `&response_type=id_token` +
+        `&scope=${encodeURIComponent("openid email profile")}` +
+        `&prompt=select_account` +
+        `&nonce=${encodeURIComponent(nonce)}`;
 
-    window.location.href = googleAuthUrl;
+      window.location.href = googleAuthUrl;
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -200,6 +250,9 @@ export default function LoginForm() {
               </>
             )}
           </button>
+
+          {/* Hidden container for official Google Identity Services button */}
+          <div id="google-official-btn" className="hidden" />
 
           {/* Secondary Button */}
           <Link
