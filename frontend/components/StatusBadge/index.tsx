@@ -11,7 +11,7 @@ const STATUS_CONFIG: Record<string, { label: string; style: string }> = {
   CANCELLED: { label: "ĐÃ HỦY", style: "bg-rose-50 text-rose-700 border-rose-200" },
   ACTIVE: { label: "HOẠT ĐỘNG", style: "bg-emerald-50 text-emerald-700 border-emerald-200" },
   PUBLISHED: { label: "ĐÃ XUẤT BẢN", style: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  INACTIVE: { label: "NGƯNG HOẠT ĐỘNG", style: "bg-zinc-100 text-zinc-600 border-zinc-200" },
+  INACTIVE: { label: "ĐÃ KHÓA", style: "bg-rose-50 text-rose-700 border-rose-200" },
   DRAFT: { label: "BẢN NHÁP", style: "bg-zinc-100 text-zinc-600 border-zinc-200" },
   LOCKED: { label: "ĐÃ KHÓA", style: "bg-rose-50 text-rose-700 border-rose-200" },
   PAID: { label: "ĐÃ THANH TOÁN", style: "bg-emerald-50 text-emerald-700 border-emerald-200" },
