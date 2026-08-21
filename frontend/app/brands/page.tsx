@@ -305,6 +305,7 @@ export default function BrandsPage() {
                   </span>
                 </div>
               </Link>
+            ))}
           </div>
         </section>
       </div>
