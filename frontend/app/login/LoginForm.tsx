@@ -16,37 +16,38 @@ export default function LoginForm() {
   const googleTokenClient = useRef<any>(null);
 
   useEffect(() => {
-    const clientId = getGoogleClientId();
-    if (!clientId) return;
+    // Process Google Redirect Callback if URL hash contains id_token
+    if (typeof window !== "undefined" && window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const idToken = hashParams.get("id_token");
 
-    let cancelled = false;
-    loadGoogleScript()
-      .then((google) => {
-        if (cancelled || !google?.accounts?.oauth2) return;
-        // Dùng luồng OAuth2 popup (không dùng FedCM/One Tap) để tránh lỗi
-        // "FedCM get() rejects with AbortError" trên một số trình duyệt.
-        // scope "openid" giúp callback trả về luôn id_token để gửi lên backend.
-        googleTokenClient.current = google.accounts.oauth2.initTokenClient({
-          client_id: clientId,
-          scope: "openid email profile",
-          callback: (tokenResponse: any) => {
-            if (tokenResponse?.id_token) {
-              googleLogin(tokenResponse.id_token);
-            } else if (tokenResponse?.error) {
-              console.error("Google login error:", tokenResponse.error);
-            }
-          },
-        });
-      })
-      .catch(() => {});
-
-    return () => {
-      cancelled = true;
-    };
+      if (idToken) {
+        window.history.replaceState(null, "", window.location.pathname);
+        googleLogin(idToken);
+      }
+    }
   }, [googleLogin]);
 
   const handleGoogleLogin = () => {
-    googleTokenClient.current?.requestAccessToken();
+    const clientId = getGoogleClientId();
+    if (!clientId) {
+      setErrorMsg("Google Client ID chưa được cấu hình.");
+      return;
+    }
+
+    const redirectUri = window.location.origin + window.location.pathname;
+    const nonce = Date.now().toString();
+
+    // Standard Google OAuth2 Authorization Endpoint (Full page redirect flow)
+    const googleAuthUrl =
+      `https://accounts.google.com/o/oauth2/v2/auth?` +
+      `client_id=${encodeURIComponent(clientId)}` +
+      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+      `&response_type=id_token` +
+      `&scope=${encodeURIComponent("openid email profile")}` +
+      `&nonce=${encodeURIComponent(nonce)}`;
+
+    window.location.href = googleAuthUrl;
   };
 
   const handleSubmit = (e: React.FormEvent) => {

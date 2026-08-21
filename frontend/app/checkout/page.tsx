@@ -144,7 +144,8 @@ export default function CheckoutPage() {
         }
       } else if (paymentMethod === "VNPAY") {
         if (paymentRes.paymentUrl) {
-          window.location.assign(paymentRes.paymentUrl);
+          window.open(paymentRes.paymentUrl, "_blank");
+          router.push(`/payment?status=pending&orderId=${orderId}`);
         } else {
           router.push(`/payment?status=success&orderId=${orderId}`);
         }
