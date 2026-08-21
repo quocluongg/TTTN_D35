@@ -84,15 +84,24 @@ export default function AdminOrdersPage() {
   // Fetch danh sách đơn hàng
   const ordersQuery = useQuery({
     queryKey: ["admin-orders-list"],
-    queryFn: () => adminOrderService.list({ size: 100 }),
+    queryFn: () => adminOrderService.list({ page: 0, size: 100 }),
   });
 
   const extractArray = (res: any): any[] => {
     if (!res) return [];
-    const val = res?.data ?? res;
-    if (Array.isArray(val)) return val;
-    if (Array.isArray(val?.content)) return val.content;
+    if (Array.isArray(res)) return res;
+    if (Array.isArray(res?.data)) return res.data;
     if (Array.isArray(res?.content)) return res.content;
+    if (Array.isArray(res?.items)) return res.items;
+    if (Array.isArray(res?.data?.content)) return res.data.content;
+    if (Array.isArray(res?.data?.items)) return res.data.items;
+    if (Array.isArray(res?.data?.data)) return res.data.data;
+    if (res?.data && typeof res.data === "object") {
+      const inner = res.data;
+      if (Array.isArray(inner.content)) return inner.content;
+      if (Array.isArray(inner.items)) return inner.items;
+      if (Array.isArray(inner.data)) return inner.data;
+    }
     return [];
   };
 
@@ -225,6 +234,19 @@ export default function AdminOrdersPage() {
         {ordersQuery.isLoading ? (
           <div className="p-16 text-center text-xs font-mono text-zinc-400 flex items-center justify-center gap-2">
             <RefreshCw size={14} className="animate-spin" /> Đang tải danh sách đơn hàng...
+          </div>
+        ) : ordersQuery.isError ? (
+          <div className="p-12 text-center text-xs text-rose-600 bg-rose-50/50 space-y-2">
+            <p className="font-bold text-sm">Không thể tải danh sách đơn hàng từ Server</p>
+            <p className="text-zinc-500 font-mono">
+              {(ordersQuery.error as any)?.message || "Vui lòng kiểm tra quyền truy cập tài khoản (ORDER_VIEW) hoặc kết nối mạng."}
+            </p>
+            <button
+              onClick={() => ordersQuery.refetch()}
+              className="mt-2 px-3 py-1.5 bg-rose-600 text-white rounded-lg text-xs font-bold hover:bg-rose-700 transition-colors"
+            >
+              Thử lại
+            </button>
           </div>
         ) : filteredOrders.length === 0 ? (
           <div className="p-16 text-center text-xs text-zinc-500">
