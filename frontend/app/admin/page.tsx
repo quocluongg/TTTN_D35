@@ -270,37 +270,18 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Chart Bars Area */}
-          <div className="h-64 flex items-end gap-2 pt-8 pb-2 border-b border-zinc-100">
+          {/* Line Chart Area */}
+          <div className="pt-2 pb-1 border-b border-zinc-100">
             {revenueQuery.isLoading ? (
-              <div className="w-full h-full flex items-center justify-center text-xs text-zinc-400 font-mono">
+              <div className="w-full h-64 flex items-center justify-center text-xs text-zinc-400 font-mono">
                 <RefreshCw size={14} className="animate-spin mr-2" /> Đang tải biểu đồ...
               </div>
-            ) : revenueList.length ? (
-              revenueList.map((item: any, index: number) => {
-                const rev = Number(item.totalAmount ?? item.revenue ?? item.total ?? 0);
-                const heightPercent = Math.max(6, (rev / maxRevenue) * 100);
-                return (
-                  <div key={index} className="flex-1 h-full flex flex-col justify-end items-center group relative">
-                    <div className="text-[10px] font-mono font-semibold text-zinc-900 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-7 bg-white px-2 py-0.5 border border-zinc-200 rounded shadow-sm z-10 whitespace-nowrap">
-                      {formatVND(rev)} ({item.orderCount || 1} đơn)
-                    </div>
-                    <div className="w-full flex-1 flex items-end bg-zinc-50 rounded-t overflow-hidden">
-                      <div
-                        style={{ height: `${heightPercent}%` }}
-                        className="w-full bg-zinc-900 group-hover:bg-emerald-500 transition-all rounded-t"
-                      />
-                    </div>
-                    <span className="text-[10px] font-mono text-zinc-500 truncate w-full text-center mt-2">
-                      {item.period || item.date || index + 1}
-                    </span>
-                  </div>
-                );
-              })
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-xs text-zinc-400">
-                Chưa có dữ liệu doanh thu cho mốc thời gian này.
-              </div>
+              <RevenueLineChart
+                revenueList={revenueList}
+                maxRevenue={maxRevenue}
+                formatVND={formatVND}
+              />
             )}
           </div>
 
@@ -309,8 +290,12 @@ export default function AdminDashboardPage() {
             <span>
               Tổng doanh thu lọc được: <strong className="text-zinc-900 font-mono">{formattedRevenue}</strong>
             </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-sm bg-zinc-900" /> Đã hoàn tất & Thanh toán
+            <span className="flex items-center gap-2">
+              <span className="flex items-center gap-1">
+                <span className="w-3 h-1 rounded-full bg-emerald-500" /> Biểu đồ Đường (Line Chart)
+              </span>
+              <span className="text-zinc-300">|</span>
+              <span className="text-zinc-400">Đã hoàn tất & Thanh toán</span>
             </span>
           </div>
         </div>
@@ -494,6 +479,188 @@ export default function AdminDashboardPage() {
         </div>
       </div>
     </section>
+  );
+}
+
+function RevenueLineChart({
+  revenueList,
+  maxRevenue,
+  formatVND,
+}: {
+  revenueList: any[];
+  maxRevenue: number;
+  formatVND: (v: number) => string;
+}) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  if (!revenueList || revenueList.length === 0) {
+    return (
+      <div className="w-full h-64 flex items-center justify-center text-xs text-zinc-400">
+        Chưa có dữ liệu doanh thu cho mốc thời gian này.
+      </div>
+    );
+  }
+
+  const width = 750;
+  const height = 230;
+  const padding = { top: 25, right: 25, bottom: 40, left: 70 };
+  const chartW = width - padding.left - padding.right;
+  const chartH = height - padding.top - padding.bottom;
+
+  const points = revenueList.map((item: any, i: number) => {
+    const rev = Number(item.totalAmount ?? item.revenue ?? item.total ?? 0);
+    const x =
+      revenueList.length === 1
+        ? padding.left + chartW / 2
+        : padding.left + (i / (revenueList.length - 1)) * chartW;
+    const y = padding.top + chartH - (maxRevenue > 0 ? (rev / maxRevenue) * chartH : 0);
+    return {
+      x,
+      y,
+      rev,
+      period: item.period || item.date || `${i + 1}`,
+      orderCount: item.orderCount || 1,
+    };
+  });
+
+  // Calculate smooth cubic path
+  let linePath = "";
+  if (points.length === 1) {
+    linePath = `M ${points[0].x} ${points[0].y}`;
+  } else if (points.length === 2) {
+    linePath = `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y}`;
+  } else {
+    linePath = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[i === 0 ? i : i - 1];
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const p3 = points[i + 2 < points.length ? i + 2 : i + 1];
+
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+      linePath += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+    }
+  }
+
+  const firstPt = points[0];
+  const lastPt = points[points.length - 1];
+  const areaPath = `${linePath} L ${lastPt.x.toFixed(1)} ${(height - padding.bottom).toFixed(1)} L ${firstPt.x.toFixed(1)} ${(height - padding.bottom).toFixed(1)} Z`;
+
+  // Y-axis ticks
+  const yTicks = [1, 0.75, 0.5, 0.25, 0].map((ratio) => ({
+    ratio,
+    val: maxRevenue * ratio,
+    y: padding.top + chartH * (1 - ratio),
+  }));
+
+  const activePt = hoveredIndex !== null ? points[hoveredIndex] : points[points.length - 1];
+
+  return (
+    <div className="relative w-full overflow-hidden space-y-2">
+      {/* Active Point Hover Badge */}
+      {activePt && (
+        <div className="flex items-center justify-between text-xs px-3 py-1.5 bg-emerald-50/80 text-emerald-900 border border-emerald-200/80 rounded-lg">
+          <span className="font-medium text-emerald-800">Mốc {activePt.period}:</span>
+          <span className="font-bold font-mono text-emerald-700">
+            {formatVND(activePt.rev)} ({activePt.orderCount} đơn hàng)
+          </span>
+        </div>
+      )}
+
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto overflow-visible select-none">
+        <defs>
+          <linearGradient id="revenueLineGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+          </linearGradient>
+        </defs>
+
+        {/* Y Gridlines & Labels */}
+        {yTicks.map((t, idx) => (
+          <g key={idx}>
+            <line
+              x1={padding.left}
+              y1={t.y}
+              x2={width - padding.right}
+              y2={t.y}
+              stroke="#f4f4f5"
+              strokeDasharray={t.ratio === 0 ? "none" : "4 4"}
+              strokeWidth="1"
+            />
+            <text
+              x={padding.left - 8}
+              y={t.y + 3}
+              textAnchor="end"
+              className="text-[10px] fill-zinc-400 font-mono font-medium"
+            >
+              {t.val >= 1000000 ? `${(t.val / 1000000).toFixed(0)}M` : t.val > 0 ? `${(t.val / 1000).toFixed(0)}k` : "0"}
+            </text>
+          </g>
+        ))}
+
+        {/* Gradient Area Fill */}
+        <path d={areaPath} fill="url(#revenueLineGradient)" />
+
+        {/* Smooth Line */}
+        <path
+          d={linePath}
+          fill="none"
+          stroke="#10b981"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
+        {/* Points & Interactive Elements */}
+        {points.map((pt, idx) => {
+          const isHovered = hoveredIndex === idx;
+          return (
+            <g key={idx} className="cursor-pointer" onMouseEnter={() => setHoveredIndex(idx)}>
+              {/* Vertical Guide Line on Hover */}
+              {isHovered && (
+                <line
+                  x1={pt.x}
+                  y1={padding.top}
+                  x2={pt.x}
+                  y2={height - padding.bottom}
+                  stroke="#10b981"
+                  strokeDasharray="3 3"
+                  strokeWidth="1.5"
+                  opacity="0.6"
+                />
+              )}
+
+              {/* Point Circle */}
+              <circle
+                cx={pt.x}
+                cy={pt.y}
+                r={isHovered ? "6.5" : "4"}
+                fill={isHovered ? "#059669" : "#10b981"}
+                stroke="#ffffff"
+                strokeWidth={isHovered ? "3" : "2"}
+                className="transition-all duration-150"
+              />
+
+              {/* X-axis Label */}
+              <text
+                x={pt.x}
+                y={height - 10}
+                textAnchor="middle"
+                className={`text-[10px] font-mono transition-colors ${
+                  isHovered ? "fill-zinc-900 font-bold" : "fill-zinc-400 font-medium"
+                }`}
+              >
+                {pt.period.length > 10 ? pt.period.slice(5) : pt.period}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
   );
 }
 
