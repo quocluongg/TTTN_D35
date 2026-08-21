@@ -1,1 +1,3 @@
-export const adminAttributeKeyService = (await import("./index")).adminApi.attributeKeys;
+import { adminApi } from "./index";
+export const adminAttributeKeyService = adminApi.attributeKeys;
+

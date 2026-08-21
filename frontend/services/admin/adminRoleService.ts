@@ -1,1 +1,3 @@
-export const adminRoleService = (await import("./index")).adminApi.roles;
+import { adminApi } from "./index";
+export const adminRoleService = adminApi.roles;
+

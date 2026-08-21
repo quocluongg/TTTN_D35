@@ -164,7 +164,7 @@ export default function AdminOrdersPage() {
               <div className="p-16 text-center text-zinc-500 font-medium">Đang tải chi tiết xử lý đơn hàng...</div>
             ) : (
               <div className="overflow-y-auto flex-1 p-6 space-y-6 text-black">
-                
+
                 {/* 1. VISUAL WORKFLOW TRACKER (E-COMMERCE STEPS) */}
                 <div className="border border-black p-5 bg-zinc-50 space-y-4">
                   <div className="flex justify-between items-center">
@@ -185,13 +185,12 @@ export default function AdminOrdersPage() {
                       return (
                         <div
                           key={step.key}
-                          className={`border p-3 flex flex-col justify-between transition-all ${
-                            state === "current"
+                          className={`border p-3 flex flex-col justify-between transition-all ${state === "current"
                               ? "border-2 border-black bg-white shadow-md font-bold"
                               : state === "completed"
-                              ? "border-zinc-300 bg-zinc-100/70 text-zinc-700"
-                              : "border-dashed border-zinc-300 opacity-50 bg-white"
-                          }`}
+                                ? "border-zinc-300 bg-zinc-100/70 text-zinc-700"
+                                : "border-dashed border-zinc-300 opacity-50 bg-white"
+                            }`}
                         >
                           <div className="flex justify-between items-start">
                             <Icon size={18} className={state === "current" ? "text-black" : "text-zinc-500"} />
@@ -319,7 +318,7 @@ export default function AdminOrdersPage() {
                   <h4 className="font-extrabold text-xs uppercase tracking-wider flex items-center gap-2">
                     <FileText size={15} /> Chi tiết sản phẩm trong đơn ({orderDetail.items?.length || 0} món)
                   </h4>
-                  
+
                   <div className="border border-black overflow-x-auto bg-white">
                     <table className="w-full text-xs text-left">
                       <thead>

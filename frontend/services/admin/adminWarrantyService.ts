@@ -1,1 +1,3 @@
-export const adminWarrantyService = (await import("./index")).adminApi.warranty;
+import { adminApi } from "./index";
+export const adminWarrantyService = adminApi.warranty;
+

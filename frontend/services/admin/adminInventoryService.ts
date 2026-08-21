@@ -1,1 +1,3 @@
-export const adminInventoryService = (await import("./index")).adminApi.inventory;
+import { adminApi } from "./index";
+export const adminInventoryService = adminApi.inventory;
+

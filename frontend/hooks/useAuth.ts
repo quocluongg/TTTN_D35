@@ -9,6 +9,48 @@ import { useAuthStore } from "@/store/authStore";
 
 export const CURRENT_USER_KEY = ["currentUser"];
 
+// ─── Xử lý chung khi login thành công (email/password hoặc Google) ─────────────
+function handleLoginSuccess(
+  response: ApiResponse<TokenResponse>,
+  router: ReturnType<typeof useRouter>,
+  queryClient: ReturnType<typeof useQueryClient>
+) {
+  const tokenData = response?.data;
+
+  if (tokenData?.accessToken) {
+    Cookies.set("token", tokenData.accessToken, { expires: 7 });
+    useAuthStore.getState().setAuth(tokenData.accessToken);
+  }
+
+  if (tokenData?.user) {
+    const rawRole = tokenData.user.role;
+    const normalizedRole = Array.isArray(rawRole)
+      ? String((rawRole as any)[0] || "").toUpperCase()
+      : String(rawRole || "").toUpperCase();
+
+    Cookies.set(
+      "user",
+      JSON.stringify({
+        name: tokenData.user.fullName,
+        email: tokenData.user.email,
+        role: normalizedRole,
+        avatar: tokenData.user.avatarUrl,
+      }),
+      { expires: 7 }
+    );
+  }
+
+  queryClient.invalidateQueries({ queryKey: CURRENT_USER_KEY });
+  notifySuccess("Đăng nhập thành công!");
+
+  const roleStr = JSON.stringify(tokenData?.user?.role || "").toUpperCase();
+  if (roleStr.includes("ADMIN") || roleStr.includes("EMPLOYEE")) {
+    router.push("/admin");
+  } else {
+    router.push("/");
+  }
+}
+
 // ─── Đăng nhập ────────────────────────────────────────────────────────────────
 export const useLogin = () => {
   const router = useRouter();
@@ -16,47 +58,32 @@ export const useLogin = () => {
 
   return useMutation({
     mutationFn: authService.login,
-    onSuccess: (response: ApiResponse<TokenResponse>) => {
-      const tokenData = response?.data;
-
-      if (tokenData?.accessToken) {
-        Cookies.set("token", tokenData.accessToken, { expires: 7 });
-        useAuthStore.getState().setAuth(tokenData.accessToken);
-      }
-
-      if (tokenData?.user) {
-        const rawRole = tokenData.user.role;
-        const normalizedRole = Array.isArray(rawRole)
-          ? String((rawRole as any)[0] || "").toUpperCase()
-          : String(rawRole || "").toUpperCase();
-
-        Cookies.set(
-          "user",
-          JSON.stringify({
-            name: tokenData.user.fullName,
-            email: tokenData.user.email,
-            role: normalizedRole,
-            avatar: tokenData.user.avatarUrl,
-          }),
-          { expires: 7 }
-        );
-      }
-
-      queryClient.invalidateQueries({ queryKey: CURRENT_USER_KEY });
-      notifySuccess("Đăng nhập thành công!");
-
-      const roleStr = JSON.stringify(tokenData?.user?.role || "").toUpperCase();
-      if (roleStr.includes("ADMIN") || roleStr.includes("EMPLOYEE")) {
-        router.push("/admin");
-      } else {
-        router.push("/");
-      }
-    },
+    onSuccess: (response: ApiResponse<TokenResponse>) =>
+      handleLoginSuccess(response, router, queryClient),
     onError: (error: any) => {
       const message =
         error?.message ||
         error?.response?.data?.message ||
         "Email hoặc mật khẩu không đúng. Vui lòng thử lại!";
+      notifyError(message);
+    },
+  });
+};
+
+// ─── Đăng nhập bằng Google (idToken từ Google Identity Services) ───────────────
+export const useGoogleLogin = () => {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (idToken: string) => authService.googleLogin(idToken),
+    onSuccess: (response: ApiResponse<TokenResponse>) =>
+      handleLoginSuccess(response, router, queryClient),
+    onError: (error: any) => {
+      const message =
+        error?.message ||
+        error?.response?.data?.message ||
+        "Đăng nhập bằng Google thất bại. Vui lòng thử lại!";
       notifyError(message);
     },
   });

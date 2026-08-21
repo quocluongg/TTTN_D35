@@ -22,7 +22,7 @@ public class AdminOrderController {
     private final IOrderService orderService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ORDER_VIEW_ALL')")
+    @PreAuthorize("hasAnyAuthority('ORDER_VIEW','ORDER_VIEW_ALL')")
     public ApiResponse<PageResponse<OrderResponse>> getAll(
             @RequestParam(required = false) OrderStatus status,
             @RequestParam(defaultValue = "0") int page,
@@ -35,7 +35,7 @@ public class AdminOrderController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('ORDER_VIEW_ALL')")
+    @PreAuthorize("hasAnyAuthority('ORDER_VIEW','ORDER_VIEW_ALL')")
     public ApiResponse<OrderResponse> getById(@PathVariable UUID id) {
         return ApiResponse.<OrderResponse>builder()
                 .success(true)
@@ -44,10 +44,12 @@ public class AdminOrderController {
                 .build();
     }
 
-    // status=CANCELLED sẽ tự hoàn kho + hoàn voucher (xem OrderServiceImpl.updateStatus).
+    // status=CANCELLED sẽ tự hoàn kho + hoàn voucher (xem
+    // OrderServiceImpl.updateStatus).
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('ORDER_UPDATE_STATUS')")
-    public ApiResponse<OrderResponse> updateStatus(@PathVariable UUID id, @RequestBody @Valid OrderStatusUpdateRequest request) {
+    @PreAuthorize("hasAnyAuthority('ORDER_UPDATE','ORDER_UPDATE_STATUS')")
+    public ApiResponse<OrderResponse> updateStatus(@PathVariable UUID id,
+            @RequestBody @Valid OrderStatusUpdateRequest request) {
         return ApiResponse.<OrderResponse>builder()
                 .success(true)
                 .message("Đã cập nhật trạng thái đơn hàng")

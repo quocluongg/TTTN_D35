@@ -95,4 +95,12 @@ export const authService = {
   }): Promise<ApiResponse<null>> => {
     return http.post("/auth/reset-password", data);
   },
+
+  /**
+   * POST /auth/google-login — idToken lấy từ Google Identity Services phía client.
+   * Backend tự verify token với Google rồi cấp accessToken của hệ thống.
+   */
+  googleLogin: async (idToken: string): Promise<ApiResponse<TokenResponse>> => {
+    return http.post("/auth/google-login", { idToken });
+  },
 };

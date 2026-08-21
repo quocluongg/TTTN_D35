@@ -1,1 +1,3 @@
-export const adminVoucherService = (await import("./index")).adminApi.vouchers;
+import { adminApi } from "./index";
+export const adminVoucherService = adminApi.vouchers;
+

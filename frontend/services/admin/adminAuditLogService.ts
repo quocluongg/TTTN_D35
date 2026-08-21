@@ -1,1 +1,3 @@
-export const adminAuditLogService = (await import("./index")).adminApi.auditLogs;
+import { adminApi } from "./index";
+export const adminAuditLogService = adminApi.auditLogs;
+

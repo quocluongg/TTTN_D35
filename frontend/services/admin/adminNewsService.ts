@@ -1,1 +1,3 @@
-export const adminNewsService = (await import("./index")).adminApi.news;
+import { adminApi } from "./index";
+export const adminNewsService = adminApi.news;
+

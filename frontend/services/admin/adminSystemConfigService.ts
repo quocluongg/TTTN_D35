@@ -1,1 +1,3 @@
-export const adminSystemConfigService = (await import("./index")).adminApi.systemConfigs;
+import { adminApi } from "./index";
+export const adminSystemConfigService = adminApi.systemConfigs;
+

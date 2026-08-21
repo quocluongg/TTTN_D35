@@ -1,1 +1,3 @@
-export const adminCampaignService = (await import("./index")).adminApi.campaigns;
+import { adminApi } from "./index";
+export const adminCampaignService = adminApi.campaigns;
+

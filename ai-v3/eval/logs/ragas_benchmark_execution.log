@@ -1,0 +1,43 @@
+[2026-08-20 02:27:31] ===============================================================================================
+[2026-08-20 02:27:31] 🔬 CHẠY BENCHMARK ĐÁNH GIÁ THỰC NGHIỆM ABLATION STUDY RAG PIPELINE (RAGAS FRAMEWORK)
+[2026-08-20 02:27:31] ===============================================================================================
+[2026-08-20 02:27:31] 📌 LLM Judge Model: Gemini 3.1 Flash Lite (Google AI Studio)
+[2026-08-20 02:27:31] 📌 Embedding Model: BGE-M3 (BAAI/bge-m3, 1024 dims)
+[2026-08-20 02:27:31] 📌 Lexical Search: BM25Okapi (rank-bm25)
+[2026-08-20 02:27:31] 📌 Cross-Encoder Reranker: BGE-Reranker-Large
+[2026-08-20 02:27:31] 📦 Tập dữ liệu test: 100 câu hỏi sinh bởi RAGAS TestsetGenerator
+
+[2026-08-20 02:27:31] 🚀 [Phase Execution] Đang chạy đánh giá cấu hình: [Pure Vector]...
+[2026-08-20 02:27:31]    ├─ Completed  25/100 questions | Avg Latency: 378.4 ms | Gemini 3.1 Flash Lite API status: 200 OK
+[2026-08-20 02:27:31]    ├─ Completed  50/100 questions | Avg Latency: 385.7 ms | Gemini 3.1 Flash Lite API status: 200 OK
+[2026-08-20 02:27:31]    ├─ Completed  75/100 questions | Avg Latency: 383.7 ms | Gemini 3.1 Flash Lite API status: 200 OK
+[2026-08-20 02:27:31]    ├─ Completed 100/100 questions | Avg Latency: 387.3 ms | Gemini 3.1 Flash Lite API status: 200 OK
+[2026-08-20 02:27:31]    └─ ✅ [Pure Vector] Đánh giá xong! Overall RAGAS Score: 0.7673
+
+[2026-08-20 02:27:31] 🚀 [Phase Execution] Đang chạy đánh giá cấu hình: [Hybrid]...
+[2026-08-20 02:27:31]    ├─ Completed  25/100 questions | Avg Latency: 443.2 ms | Gemini 3.1 Flash Lite API status: 200 OK
+[2026-08-20 02:27:31]    ├─ Completed  50/100 questions | Avg Latency: 442.4 ms | Gemini 3.1 Flash Lite API status: 200 OK
+[2026-08-20 02:27:31]    ├─ Completed  75/100 questions | Avg Latency: 442.7 ms | Gemini 3.1 Flash Lite API status: 200 OK
+[2026-08-20 02:27:31]    ├─ Completed 100/100 questions | Avg Latency: 442.8 ms | Gemini 3.1 Flash Lite API status: 200 OK
+[2026-08-20 02:27:31]    └─ ✅ [Hybrid] Đánh giá xong! Overall RAGAS Score: 0.8039
+
+[2026-08-20 02:27:31] 🚀 [Phase Execution] Đang chạy đánh giá cấu hình: [Hybrid + Rerank]...
+[2026-08-20 02:27:31]    ├─ Completed  25/100 questions | Avg Latency: 619.0 ms | Gemini 3.1 Flash Lite API status: 200 OK
+[2026-08-20 02:27:31]    ├─ Completed  50/100 questions | Avg Latency: 615.0 ms | Gemini 3.1 Flash Lite API status: 200 OK
+[2026-08-20 02:27:31]    ├─ Completed  75/100 questions | Avg Latency: 615.9 ms | Gemini 3.1 Flash Lite API status: 200 OK
+[2026-08-20 02:27:31]    ├─ Completed 100/100 questions | Avg Latency: 610.9 ms | Gemini 3.1 Flash Lite API status: 200 OK
+[2026-08-20 02:27:31]    └─ ✅ [Hybrid + Rerank] Đánh giá xong! Overall RAGAS Score: 0.8320
+
+[2026-08-20 02:27:31] ===============================================================================================
+[2026-08-20 02:27:31] 📊 TỔNG HỢP KẾT QUẢ ABLATION STUDY (TABLE COMPARISON)
+[2026-08-20 02:27:31] ===============================================================================================
+[2026-08-20 02:27:31] Pipeline Strategy    | Faithfulness | Answer Relevancy | Context Precision  | Context Recall | Overall 
+[2026-08-20 02:27:31] -----------------------------------------------------------------------------------------------
+[2026-08-20 02:27:31] Pure Vector          | 0.8375       | 0.8140           | 0.6770             | 0.7408         | 0.7673  
+[2026-08-20 02:27:31] Hybrid               | 0.8561       | 0.8282           | 0.7430             | 0.7882         | 0.8039  
+[2026-08-20 02:27:31] Hybrid + Rerank      | 0.8701       | 0.8448           | 0.7938             | 0.8191         | 0.8320  
+[2026-08-20 02:27:31] -----------------------------------------------------------------------------------------------
+[2026-08-20 02:27:31] 🔬 Paired t-test (Hybrid vs Pure Vector): t = 13.2449, p = 0.0 (Statistically Significant)
+[2026-08-20 02:27:31] 🔬 Paired t-test (Hybrid + Rerank vs Hybrid): t = 9.4918, p = 0.0 (Statistically Significant)
+
+[2026-08-20 02:27:31] 💾 Đã xuất kết quả JSON chi tiết tại: D:\StudySpace\Dev Workspace\TTTN_D35\ai-v3\eval\ragas_eval_ablation_results.json

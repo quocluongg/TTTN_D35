@@ -49,7 +49,8 @@ public class WarrantyServiceImpl implements IWarrantyService {
     @Transactional(readOnly = true)
     public WarrantyCardResponse lookupWarranty(String phone, String serial) {
         WarrantyCard card = warrantyCardRepository.findByCustomerPhoneAndSerialNumber(phone, serial)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiếu bảo hành khớp với thông tin cung cấp"));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Không tìm thấy phiếu bảo hành khớp với thông tin cung cấp"));
 
         var response = warrantyMapper.toResponse(card);
         var histories = warrantyHistoryRepository.findByWarrantyCardIdOrderByRequestDateDesc(card.getId());
@@ -59,7 +60,8 @@ public class WarrantyServiceImpl implements IWarrantyService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<WarrantyCardResponse> getAdminWarrantyCards(WarrantyStatus status, String search, Pageable pageable) {
+    public PageResponse<WarrantyCardResponse> getAdminWarrantyCards(WarrantyStatus status, String search,
+            Pageable pageable) {
         var spec = WarrantySpecifications.withFilter(status, search);
         var page = warrantyCardRepository.findAll(spec, pageable);
 
@@ -132,8 +134,10 @@ public class WarrantyServiceImpl implements IWarrantyService {
         WarrantyCard card = warrantyCardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiếu bảo hành với id: " + id));
 
-        if (status != null) card.setStatus(status);
-        if (notes != null) card.setNotes(notes);
+        if (status != null)
+            card.setStatus(status);
+        if (notes != null)
+            card.setNotes(notes);
 
         WarrantyCard saved = warrantyCardRepository.save(card);
         var response = warrantyMapper.toResponse(saved);
@@ -162,19 +166,24 @@ public class WarrantyServiceImpl implements IWarrantyService {
     }
 
     @Override
-    public WarrantyHistoryResponse updateWarrantyHistory(UUID cardId, UUID historyId, WarrantyHistoryRequest request, UUID currentUserId) {
+    public WarrantyHistoryResponse updateWarrantyHistory(UUID cardId, UUID historyId, WarrantyHistoryRequest request,
+            UUID currentUserId) {
         WarrantyHistory history = warrantyHistoryRepository.findById(historyId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lịch sử bảo hành với id: " + historyId));
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Không tìm thấy lịch sử bảo hành với id: " + historyId));
 
         if (!history.getWarrantyCard().getId().equals(cardId)) {
             throw new ResourceNotFoundException("Lịch sử bảo hành không thuộc phiếu bảo hành này");
         }
 
-        if (request.issueDescription() != null) history.setIssueDescription(request.issueDescription());
-        if (request.repairAction() != null) history.setRepairAction(request.repairAction());
+        if (request.issueDescription() != null)
+            history.setIssueDescription(request.issueDescription());
+        if (request.repairAction() != null)
+            history.setRepairAction(request.repairAction());
 
         if (request.status() != null) {
-            if (request.status() == WarrantyRepairStatus.COMPLETED && history.getStatus() != WarrantyRepairStatus.COMPLETED) {
+            if (request.status() == WarrantyRepairStatus.COMPLETED
+                    && history.getStatus() != WarrantyRepairStatus.COMPLETED) {
                 history.setCompletedAt(LocalDateTime.now());
             }
             history.setStatus(request.status());
@@ -191,13 +200,16 @@ public class WarrantyServiceImpl implements IWarrantyService {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void generateWarrantyCardsFromOrder(Order order) {
-        if (order == null || order.getId() == null) return;
+        if (order == null || order.getId() == null)
+            return;
 
         try {
             List<OrderItem> items = orderItemRepository.findAllByOrderId(order.getId());
-            if (items.isEmpty()) return;
+            if (items.isEmpty())
+                return;
 
-            LocalDate purchaseDate = order.getCreatedAt() != null ? order.getCreatedAt().toLocalDate() : LocalDate.now();
+            LocalDate purchaseDate = order.getCreatedAt() != null ? order.getCreatedAt().toLocalDate()
+                    : LocalDate.now();
 
             List<UUID> productIds = items.stream().map(OrderItem::getProductId).toList();
             var productMap = productRepository.findAllById(productIds).stream()
@@ -205,12 +217,15 @@ public class WarrantyServiceImpl implements IWarrantyService {
 
             for (OrderItem item : items) {
                 Product product = productMap.get(item.getProductId());
-                if (product == null) continue;
+                if (product == null)
+                    continue;
 
                 Integer months = product.getWarrantyMonths();
-                if (months == null || months <= 0) continue;
+                if (months == null || months <= 0)
+                    continue;
 
-                if (warrantyCardRepository.existsByOrderItemId(item.getId())) continue;
+                if (warrantyCardRepository.existsByOrderItemId(item.getId()))
+                    continue;
 
                 String serial = generateUniqueSerial();
                 String pName = product.getName();

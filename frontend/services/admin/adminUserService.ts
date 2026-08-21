@@ -1,1 +1,3 @@
-export const adminUserService = (await import("./index")).adminApi.users;
+import { adminApi } from "./index";
+export const adminUserService = adminApi.users;
+

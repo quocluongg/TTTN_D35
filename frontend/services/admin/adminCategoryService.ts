@@ -1,1 +1,3 @@
-export const adminCategoryService = (await import("./index")).adminApi.categories;
+import { adminApi } from "./index";
+export const adminCategoryService = adminApi.categories;
+
