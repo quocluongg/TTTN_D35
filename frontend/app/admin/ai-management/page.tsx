@@ -126,7 +126,7 @@ export default function RAGDashboardPage() {
 
   const serviceCards = [
     {
-      label: "Google Gemini 1.5/2.0 LLM",
+      label: "Google Gemini 3.1 Flash Lite",
       description: "Mô hình sinh câu trả lời tư vấn sản phẩm thông minh",
       status: stats?.gemini_status,
       icon: Bot,
