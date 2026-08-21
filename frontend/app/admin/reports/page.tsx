@@ -574,7 +574,7 @@ function RevenueLineChart({
 
   const width = 800;
   const height = 240;
-  const padding = { top: 25, right: 25, bottom: 40, left: 75 };
+  const padding = { top: 25, right: 25, bottom: 45, left: 75 };
   const chartW = width - padding.left - padding.right;
   const chartH = height - padding.top - padding.bottom;
 
@@ -593,6 +593,23 @@ function RevenueLineChart({
       orderCount: item.orderCount || 1,
     };
   });
+
+  // Calculate label step to prevent X-axis text overlap
+  const maxVisibleLabels = 8;
+  const labelStep = Math.max(1, Math.ceil(points.length / maxVisibleLabels));
+
+  const formatLabelText = (periodStr: string) => {
+    if (!periodStr) return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(periodStr)) {
+      const parts = periodStr.split("-");
+      return `${parts[2]}/${parts[1]}`;
+    }
+    if (/^\d{4}-\d{2}$/.test(periodStr)) {
+      const parts = periodStr.split("-");
+      return `T${parts[1]}/${parts[0].slice(2)}`;
+    }
+    return periodStr;
+  };
 
   // Calculate smooth cubic path
   let linePath = "";
@@ -634,7 +651,7 @@ function RevenueLineChart({
     <div className="relative w-full overflow-hidden space-y-2">
       {/* Active Point Hover Badge */}
       {activePt && (
-        <div className="flex items-center justify-between text-xs px-3.5 py-2 bg-emerald-50/80 text-emerald-900 border border-emerald-200/80 rounded-xl">
+        <div className="flex items-center justify-between text-xs px-3.5 py-2 bg-emerald-50/80 text-emerald-900 border border-emerald-200/80 rounded-xl transition-all">
           <span className="font-medium text-emerald-800">Mốc {activePt.period}:</span>
           <span className="font-bold font-mono text-emerald-700">
             {formatVND(activePt.rev)} ({activePt.orderCount} đơn hàng)
@@ -645,7 +662,7 @@ function RevenueLineChart({
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto overflow-visible select-none">
         <defs>
           <linearGradient id="reportsRevenueGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
+            <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
             <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
           </linearGradient>
         </defs>
@@ -676,12 +693,12 @@ function RevenueLineChart({
         {/* Gradient Area Fill */}
         <path d={areaPath} fill="url(#reportsRevenueGradient)" />
 
-        {/* Smooth Line */}
+        {/* Sleek Refined Line */}
         <path
           d={linePath}
           fill="none"
           stroke="#10b981"
-          strokeWidth="3"
+          strokeWidth="1.75"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
@@ -689,6 +706,8 @@ function RevenueLineChart({
         {/* Points & Interactive Elements */}
         {points.map((pt, idx) => {
           const isHovered = hoveredIndex === idx;
+          const showLabel = idx % labelStep === 0 || idx === points.length - 1;
+
           return (
             <g key={idx} className="cursor-pointer" onMouseEnter={() => setHoveredIndex(idx)}>
               {/* Vertical Guide Line on Hover */}
@@ -700,7 +719,7 @@ function RevenueLineChart({
                   y2={height - padding.bottom}
                   stroke="#10b981"
                   strokeDasharray="3 3"
-                  strokeWidth="1.5"
+                  strokeWidth="1.25"
                   opacity="0.6"
                 />
               )}
@@ -709,24 +728,26 @@ function RevenueLineChart({
               <circle
                 cx={pt.x}
                 cy={pt.y}
-                r={isHovered ? "6.5" : "4"}
+                r={isHovered ? "5" : "2.5"}
                 fill={isHovered ? "#059669" : "#10b981"}
                 stroke="#ffffff"
-                strokeWidth={isHovered ? "3" : "2"}
+                strokeWidth="1.5"
                 className="transition-all duration-150"
               />
 
-              {/* X-axis Label */}
-              <text
-                x={pt.x}
-                y={height - 10}
-                textAnchor="middle"
-                className={`text-[10px] font-mono transition-colors ${
-                  isHovered ? "fill-zinc-900 font-bold" : "fill-zinc-400 font-medium"
-                }`}
-              >
-                {pt.period.length > 10 ? pt.period.slice(5) : pt.period}
-              </text>
+              {/* Non-overlapping X-axis Date Label */}
+              {showLabel && (
+                <text
+                  x={pt.x}
+                  y={height - 12}
+                  textAnchor="middle"
+                  className={`text-[10px] font-mono transition-colors ${
+                    isHovered ? "fill-zinc-900 font-bold" : "fill-zinc-400 font-medium"
+                  }`}
+                >
+                  {formatLabelText(pt.period)}
+                </text>
+              )}
             </g>
           );
         })}

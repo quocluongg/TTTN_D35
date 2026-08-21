@@ -518,6 +518,23 @@ function RevenueLineChart({
     };
   });
 
+  // Calculate label step to prevent X-axis text overlap
+  const maxVisibleLabels = 8;
+  const labelStep = Math.max(1, Math.ceil(points.length / maxVisibleLabels));
+
+  const formatLabelText = (periodStr: string) => {
+    if (!periodStr) return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(periodStr)) {
+      const parts = periodStr.split("-");
+      return `${parts[2]}/${parts[1]}`;
+    }
+    if (/^\d{4}-\d{2}$/.test(periodStr)) {
+      const parts = periodStr.split("-");
+      return `T${parts[1]}/${parts[0].slice(2)}`;
+    }
+    return periodStr;
+  };
+
   // Calculate smooth cubic path
   let linePath = "";
   if (points.length === 1) {
@@ -569,7 +586,7 @@ function RevenueLineChart({
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto overflow-visible select-none">
         <defs>
           <linearGradient id="revenueLineGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
+            <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
             <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
           </linearGradient>
         </defs>
@@ -600,12 +617,12 @@ function RevenueLineChart({
         {/* Gradient Area Fill */}
         <path d={areaPath} fill="url(#revenueLineGradient)" />
 
-        {/* Smooth Line */}
+        {/* Sleek Line */}
         <path
           d={linePath}
           fill="none"
           stroke="#10b981"
-          strokeWidth="3"
+          strokeWidth="1.75"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
@@ -613,6 +630,8 @@ function RevenueLineChart({
         {/* Points & Interactive Elements */}
         {points.map((pt, idx) => {
           const isHovered = hoveredIndex === idx;
+          const showLabel = idx % labelStep === 0 || idx === points.length - 1;
+
           return (
             <g key={idx} className="cursor-pointer" onMouseEnter={() => setHoveredIndex(idx)}>
               {/* Vertical Guide Line on Hover */}
@@ -624,7 +643,7 @@ function RevenueLineChart({
                   y2={height - padding.bottom}
                   stroke="#10b981"
                   strokeDasharray="3 3"
-                  strokeWidth="1.5"
+                  strokeWidth="1.25"
                   opacity="0.6"
                 />
               )}
@@ -633,24 +652,26 @@ function RevenueLineChart({
               <circle
                 cx={pt.x}
                 cy={pt.y}
-                r={isHovered ? "6.5" : "4"}
+                r={isHovered ? "5" : "2.5"}
                 fill={isHovered ? "#059669" : "#10b981"}
                 stroke="#ffffff"
-                strokeWidth={isHovered ? "3" : "2"}
+                strokeWidth="1.5"
                 className="transition-all duration-150"
               />
 
               {/* X-axis Label */}
-              <text
-                x={pt.x}
-                y={height - 10}
-                textAnchor="middle"
-                className={`text-[10px] font-mono transition-colors ${
-                  isHovered ? "fill-zinc-900 font-bold" : "fill-zinc-400 font-medium"
-                }`}
-              >
-                {pt.period.length > 10 ? pt.period.slice(5) : pt.period}
-              </text>
+              {showLabel && (
+                <text
+                  x={pt.x}
+                  y={height - 12}
+                  textAnchor="middle"
+                  className={`text-[10px] font-mono transition-colors ${
+                    isHovered ? "fill-zinc-900 font-bold" : "fill-zinc-400 font-medium"
+                  }`}
+                >
+                  {formatLabelText(pt.period)}
+                </text>
+              )}
             </g>
           );
         })}
