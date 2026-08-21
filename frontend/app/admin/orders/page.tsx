@@ -87,10 +87,19 @@ export default function AdminOrdersPage() {
     queryFn: () => adminOrderService.list({ size: 100 }),
   });
 
-  const rawOrders: any[] = unwrap(ordersQuery.data)?.content || unwrap(ordersQuery.data) || [];
+  const extractArray = (res: any): any[] => {
+    if (!res) return [];
+    const val = res?.data ?? res;
+    if (Array.isArray(val)) return val;
+    if (Array.isArray(val?.content)) return val.content;
+    if (Array.isArray(res?.content)) return res.content;
+    return [];
+  };
+
+  const rawOrders = extractArray(ordersQuery.data);
 
   // Filtered orders
-  const filteredOrders = rawOrders.filter((order) => {
+  const filteredOrders = rawOrders.filter((order: any) => {
     const matchStatus = selectedStatusTab === "ALL" || order.status === selectedStatusTab;
     const q = searchQuery.toLowerCase().trim();
     const matchQuery =
