@@ -95,12 +95,6 @@ export default function RAGDashboardPage() {
       color: "bg-green-500",
     },
     {
-      label: "FAISS Vectors",
-      value: stats?.faiss_vectors ?? "—",
-      icon: Zap,
-      color: "bg-purple-500",
-    },
-    {
       label: "BM25 Documents",
       value: stats?.bm25_documents ?? "—",
       icon: Activity,
@@ -167,7 +161,7 @@ export default function RAGDashboardPage() {
         <div>
           <h1 className="text-[28px] font-medium">RAG System Management</h1>
           <p className="mt-1 text-sm text-zinc-600">
-            Quản lý hệ thống AI Chatbot - FAISS + Supabase + Gemini
+            Quản lý hệ thống AI Chatbot - Supabase + Gemini
           </p>
         </div>
         <button

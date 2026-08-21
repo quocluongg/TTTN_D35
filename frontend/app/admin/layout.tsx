@@ -37,7 +37,6 @@ const nav = [
   ["/admin/cms", "Homepage CMS", LayoutTemplate],
   ["/admin/chat", "Chatbot", MessageSquare],
   ["/admin/reports", "Báo cáo", BarChart3],
-  ["/admin/settings", "Cấu hình", Settings],
   ["/admin/audit-logs", "Audit logs", FileText],
   ["/admin/ai-management", "RAG / AI", Brain],
 ] as const;
