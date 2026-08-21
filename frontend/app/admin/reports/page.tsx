@@ -33,8 +33,8 @@ export default function ReportsPage() {
   const [lowStockThreshold, setLowStockThreshold] = useState(10);
 
   const cleanParams = {
-    from: range.from || undefined,
-    to: range.to || undefined,
+    from: range.from ? `${range.from}T00:00:00` : undefined,
+    to: range.to ? `${range.to}T23:59:59` : undefined,
   };
 
   // Reports Queries
@@ -530,7 +530,7 @@ export default function ReportsPage() {
                       <td className="p-4 font-semibold text-zinc-900">{r.productName}</td>
                       <td className="p-4 text-center">
                         <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 font-bold font-mono text-xs border border-amber-200">
-                          Còn {r.stock} SP
+                          Còn {r.stockQuantity ?? r.stock ?? 0} SP
                         </span>
                       </td>
                       <td className="p-4 text-right">
