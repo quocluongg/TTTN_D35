@@ -17,13 +17,12 @@ import {
   ReceiptText,
   ShieldAlert,
   ArrowRight,
-  Zap,
   CheckCircle2,
-  Clock,
   ExternalLink,
-  Layers,
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  MessageSquare,
+  FileText
 } from "lucide-react";
 
 const unwrap = (x: any) => x?.data ?? x;
@@ -31,7 +30,7 @@ const unwrap = (x: any) => x?.data ?? x;
 export default function AdminDashboardPage() {
   const [groupBy, setGroupBy] = useState<"day" | "week" | "month">("day");
 
-  // Queries
+  // Real Queries
   const revenueQuery = useQuery({
     queryKey: ["dashboard-revenue", groupBy],
     queryFn: () => adminApi.reports.revenue({ groupBy }),
@@ -57,22 +56,16 @@ export default function AdminDashboardPage() {
     queryFn: () => adminApi.chat.dashboard(),
   });
 
-  const auditLogsQuery = useQuery({
-    queryKey: ["dashboard-audit-logs"],
-    queryFn: () => adminApi.auditLogs({ page: 0, size: 5 }),
-  });
-
   const dataRows = (x: any) => (Array.isArray(x) ? x : x?.content ?? []);
 
-  // Data unwrapping
+  // Real Data unwrapping
   const revenueList = dataRows(unwrap(revenueQuery.data));
   const statusRows = dataRows(unwrap(statusQuery.data));
   const lowStockRows = dataRows(unwrap(lowStockQuery.data));
   const topProductRows = dataRows(unwrap(topProductsQuery.data));
   const chatStats = unwrap(chatDashboardQuery.data) || {};
-  const auditLogs = dataRows(unwrap(auditLogsQuery.data));
 
-  // Calculated Metrics
+  // Real Calculated Metrics
   const rawRevenue = revenueList.reduce(
     (sum: number, item: any) => sum + Number(item.totalAmount ?? item.revenue ?? item.total ?? 0),
     0
@@ -81,11 +74,18 @@ export default function AdminDashboardPage() {
   const maxRevenue = Math.max(1, ...revenueList.map((item: any) => Number(item.totalAmount ?? item.revenue ?? 0)));
 
   const totalOrders = statusRows.reduce((n: number, x: any) => n + Number(x.count ?? 0), 0);
+  const completedOrders = Number(statusRows.find((s: any) => s.status === "COMPLETED")?.count ?? 0);
+  const pendingOrders = Number(statusRows.find((s: any) => s.status === "PENDING")?.count ?? 0);
   const lowStockCount = lowStockRows.length;
-  const activeConversations = chatStats.activeConversations ?? 3;
-  const handoffConversations = chatStats.handoffConversations ?? 3;
-  const conversionRate = chatStats.conversionRate ?? 35.0;
-  const chatRevenue = chatStats.totalRevenueFromChat ?? 149860000;
+
+  // Real Chat Stats
+  const totalConversations = Number(chatStats.totalConversations ?? 0);
+  const activeConversations = Number(chatStats.activeConversations ?? 0);
+  const handoffConversations = Number(chatStats.handoffConversations ?? 0);
+  const totalMessages = Number(chatStats.totalMessages ?? 0);
+  const needsReviewCount = Number(chatStats.needsReviewCount ?? 0);
+  const sensitiveCount = Number(chatStats.sensitiveQuestionCount ?? 0);
+  const orderConversionRate = Number(chatStats.orderConversionRate ?? 0);
 
   const formatVND = (val: number) => Number(val || 0).toLocaleString("vi-VN") + " ₫";
 
@@ -95,7 +95,6 @@ export default function AdminDashboardPage() {
     lowStockQuery.refetch();
     topProductsQuery.refetch();
     chatDashboardQuery.refetch();
-    auditLogsQuery.refetch();
   };
 
   const isRefreshing =
@@ -105,43 +104,43 @@ export default function AdminDashboardPage() {
     topProductsQuery.isFetching ||
     chatDashboardQuery.isFetching;
 
-  // KPI cards definition
+  // 100% Real Data KPI Cards
   const kpiCards = [
     {
-      title: "Doanh Thu Hệ Thống",
+      title: "Tổng Doanh Thu Hoàn Tất",
       value: formattedRevenue,
-      sub: "+14.5% so với tháng trước",
+      sub: "Tính trên các đơn COMPLETED & PAID",
       icon: DollarSign,
       color: "bg-emerald-50 text-emerald-600 border-emerald-100",
-      badge: "+14.5%",
+      badge: "Thực tế",
       badgeColor: "bg-emerald-100 text-emerald-800",
     },
     {
-      title: "Tổng Đơn Hàng",
+      title: "Tổng Số Đơn Hàng",
       value: `${totalOrders} đơn`,
-      sub: `${statusRows.find((s: any) => s.status === "COMPLETED")?.count || 8} đã hoàn tất`,
+      sub: `${completedOrders} đã hoàn tất • ${pendingOrders} chờ xử lý`,
       icon: ShoppingBag,
       color: "bg-blue-50 text-blue-600 border-blue-100",
       badge: "Vận hành",
       badgeColor: "bg-blue-100 text-blue-800",
     },
     {
-      title: "Tỉ Lệ Chuyển Đổi Chatbot",
-      value: `${conversionRate.toFixed(1)}%`,
-      sub: `Doanh thu AI: ${formatVND(chatRevenue)}`,
+      title: "Phiên Chatbot AI RAG",
+      value: `${totalConversations} phiên`,
+      sub: `${activeConversations} đang mở • ${handoffConversations} chờ tiếp quản`,
       icon: Bot,
       color: "bg-purple-50 text-purple-600 border-purple-100",
-      badge: "AI RAG",
-      badgeColor: "bg-purple-100 text-purple-800",
+      badge: handoffConversations > 0 ? `${handoffConversations} Handoff` : "RAG AI",
+      badgeColor: handoffConversations > 0 ? "bg-amber-100 text-amber-800" : "bg-purple-100 text-purple-800",
     },
     {
-      title: "Cảnh Báo Vận Hành",
+      title: "Cảnh Báo Tồn Kho",
       value: `${lowStockCount} SP hết kho`,
-      sub: `${handoffConversations} phiên chat chờ tiếp quản`,
+      sub: `${sensitiveCount} câu hỏi nhạy cảm đã thiết lập`,
       icon: AlertTriangle,
-      color: lowStockCount > 0 || handoffConversations > 0 ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-zinc-50 text-zinc-600 border-zinc-100",
-      badge: handoffConversations > 0 ? "Chờ xử lý" : "Ổn định",
-      badgeColor: handoffConversations > 0 ? "bg-amber-100 text-amber-800" : "bg-zinc-100 text-zinc-700",
+      color: lowStockCount > 0 ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-zinc-50 text-zinc-600 border-zinc-100",
+      badge: lowStockCount > 0 ? "Cần nhập kho" : "Ổn định",
+      badgeColor: lowStockCount > 0 ? "bg-amber-100 text-amber-800" : "bg-zinc-100 text-zinc-700",
     },
   ];
 
@@ -161,13 +160,13 @@ export default function AdminDashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-zinc-200">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Tổng Quan Vận Hành & AI Intelligence</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Tổng Quan Vận Hành & Thống Kê Dữ Liệu Thực</h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Supabase Realtime
             </span>
           </div>
           <p className="mt-1 text-sm text-zinc-500">
-            Giám sát chỉ số kinh doanh thời gian thực, quản lý đơn hàng & hệ thống RAG Chatbot tự động
+            Dữ liệu thực tế từ cơ sở dữ liệu hệ thống: đơn hàng, doanh thu, kho hàng & hội thoại Chatbot RAG
           </p>
         </div>
 
@@ -177,18 +176,18 @@ export default function AdminDashboardPage() {
             className="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold bg-white border border-zinc-200 rounded-lg hover:bg-zinc-50 text-zinc-700 shadow-xs transition-all active:scale-95"
           >
             <RefreshCw size={14} className={`text-zinc-500 ${isRefreshing ? "animate-spin" : ""}`} />
-            Làm mới số liệu
+            Làm mới dữ liệu
           </button>
           <Link
             href="/admin/reports"
             className="flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 shadow-xs transition-all"
           >
-            <BarChart2 size={14} /> Xuất Báo cáo
+            <BarChart2 size={14} /> Báo Cáo Chi Tiết
           </Link>
         </div>
       </div>
 
-      {/* 2. KPI Metrics Grid */}
+      {/* 2. Top Priority KPI Cards (REAL DATA) */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {kpiCards.map((card) => {
           const Icon = card.icon;
@@ -219,39 +218,16 @@ export default function AdminDashboardPage() {
         })}
       </div>
 
-      {/* 3. Quick Action Navigation Shortcuts */}
-      <div className="bg-zinc-50 rounded-2xl p-4 border border-zinc-200/80">
-        <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3 px-1">Lối Tắt Thao Tác Nhanh</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {quickActions.map((act) => {
-            const Icon = act.icon;
-            return (
-              <Link
-                key={act.label}
-                href={act.href}
-                className={`flex items-center gap-2.5 p-3 rounded-xl bg-white border border-zinc-200/80 text-zinc-800 text-xs font-medium transition-all ${act.color} shadow-2xs hover:shadow-xs group`}
-              >
-                <div className="p-1.5 rounded-lg bg-zinc-100 group-hover:bg-white text-zinc-700 transition-colors">
-                  <Icon size={16} />
-                </div>
-                <span className="truncate flex-1">{act.label}</span>
-                <ChevronRight size={13} className="text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 4. Visual Main Section: Interactive Revenue Chart & AI Chatbot Monitor */}
+      {/* 3. Main Priority Section: Real Revenue Line Chart & Order Status Breakdown */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left 2 Cols: Interactive Revenue Chart */}
+        {/* Left 2 Cols: Real Revenue Line Chart */}
         <div className="lg:col-span-2 bg-white rounded-2xl border border-zinc-200 p-6 shadow-xs space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 pb-4">
             <div>
               <h2 className="text-base font-bold text-zinc-900 flex items-center gap-2">
-                <TrendingUp size={18} className="text-emerald-600" /> Biểu Đồ Doanh Thu
+                <TrendingUp size={18} className="text-emerald-600" /> Biểu Đồ Doanh Thu Thực Tế (Line Chart)
               </h2>
-              <p className="text-xs text-zinc-500 mt-0.5">Thống kê tổng doanh thu phát sinh từ đơn hàng thực tế</p>
+              <p className="text-xs text-zinc-500 mt-0.5">Tổng doanh thu thực tế được nhóm từ cơ sở dữ liệu</p>
             </div>
 
             {/* Time Group Buttons */}
@@ -270,7 +246,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Line Chart Area */}
+          {/* Real SVG Area Line Chart */}
           <div className="pt-2 pb-1 border-b border-zinc-100">
             {revenueQuery.isLoading ? (
               <div className="w-full h-64 flex items-center justify-center text-xs text-zinc-400 font-mono">
@@ -288,135 +264,70 @@ export default function AdminDashboardPage() {
           {/* Chart Footnote */}
           <div className="flex flex-wrap items-center justify-between text-xs text-zinc-500 pt-1">
             <span>
-              Tổng doanh thu lọc được: <strong className="text-zinc-900 font-mono">{formattedRevenue}</strong>
+              Tổng doanh thu ghi nhận: <strong className="text-zinc-900 font-mono">{formattedRevenue}</strong>
             </span>
             <span className="flex items-center gap-2">
               <span className="flex items-center gap-1">
-                <span className="w-3 h-1 rounded-full bg-emerald-500" /> Biểu đồ Đường (Line Chart)
+                <span className="w-3 h-1 rounded-full bg-emerald-500" /> Dữ liệu đơn COMPLETED & PAID
               </span>
-              <span className="text-zinc-300">|</span>
-              <span className="text-zinc-400">Đã hoàn tất & Thanh toán</span>
             </span>
           </div>
         </div>
 
-        {/* Right 1 Col: AI RAG Intelligence Monitor */}
-        <div className="bg-white rounded-2xl border border-zinc-200 p-6 shadow-xs space-y-5 flex flex-col justify-between">
+        {/* Right 1 Col: Real Order Status Breakdown */}
+        <div className="bg-white rounded-2xl border border-zinc-200 p-6 shadow-xs space-y-4 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <h2 className="text-base font-bold text-zinc-900 flex items-center gap-2">
-                <Bot size={18} className="text-purple-600" /> Giám Sát Chatbot AI
+                <ShoppingBag size={18} className="text-blue-600" /> Trạng Thái Đơn Hàng Thực Tế
               </h2>
-              <span className="px-2 py-0.5 text-[10px] font-semibold bg-purple-50 text-purple-700 rounded-md border border-purple-200">
-                RAG v2.0
-              </span>
+              <span className="text-xs text-zinc-400 font-mono font-bold">{totalOrders} tổng đơn</span>
             </div>
 
-            <div className="space-y-4 pt-4">
-              {/* Active & Handoff Indicator */}
-              <div className="p-3.5 bg-purple-50/50 rounded-xl border border-purple-100 space-y-2">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-zinc-600 font-medium">Phiên chat đang mở</span>
-                  <span className="font-bold text-purple-700">{activeConversations} phiên</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-zinc-600 font-medium">Yêu cầu nhân viên hỗ trợ</span>
-                  <span className={`font-bold ${handoffConversations > 0 ? "text-amber-600" : "text-zinc-600"}`}>
-                    {handoffConversations} phiên
-                  </span>
-                </div>
+            {statusQuery.isLoading ? (
+              <div className="p-6 text-center text-xs text-zinc-400">Đang tải...</div>
+            ) : statusRows.length === 0 ? (
+              <div className="p-6 text-center text-xs text-zinc-400">Chưa có dữ liệu đơn hàng</div>
+            ) : (
+              <div className="space-y-3 pt-3">
+                {statusRows.map((st: any) => {
+                  const cnt = Number(st.count ?? 0);
+                  const pct = totalOrders > 0 ? ((cnt / totalOrders) * 100).toFixed(0) : "0";
+                  return (
+                    <div key={st.status} className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-100 space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <StatusBadge status={st.status} />
+                        <span className="font-bold text-zinc-900 font-mono">{cnt} đơn ({pct}%)</span>
+                      </div>
+                      <div className="w-full bg-zinc-200 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-zinc-800 h-full rounded-full" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-
-              {/* Conversion bar comparison */}
-              <div className="space-y-3">
-                <div>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="font-medium text-zinc-700">Tỉ lệ chốt đơn Chatbot AI</span>
-                    <span className="font-bold text-emerald-600">{conversionRate.toFixed(1)}%</span>
-                  </div>
-                  <div className="w-full bg-zinc-100 h-2.5 rounded-full overflow-hidden">
-                    <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${conversionRate}%` }} />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="font-medium text-zinc-700">Tìm kiếm thông thường</span>
-                    <span className="font-bold text-zinc-500">14.5%</span>
-                  </div>
-                  <div className="w-full bg-zinc-100 h-2.5 rounded-full overflow-hidden">
-                    <div className="bg-zinc-400 h-full rounded-full" style={{ width: "14.5%" }} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Stat callout */}
-              <div className="pt-2 border-t border-zinc-100 space-y-2 text-xs">
-                <div className="flex justify-between text-zinc-600">
-                  <span>Trích dẫn nguồn RAG (Hit Rate):</span>
-                  <strong className="text-zinc-900 font-mono">95.8%</strong>
-                </div>
-                <div className="flex justify-between text-zinc-600">
-                  <span>Thời gian phản hồi AI:</span>
-                  <strong className="text-zinc-900 font-mono">420 ms</strong>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
 
           <Link
-            href="/admin/ai-management/logs"
+            href="/admin/orders"
             className="w-full mt-4 flex items-center justify-center gap-2 p-2.5 rounded-xl border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 text-xs font-semibold text-zinc-800 transition-colors"
           >
-            <ShieldAlert size={14} className="text-amber-500" /> Đến Trang Quản Lý Tiếp Quản Chat <ArrowRight size={14} />
+            <ReceiptText size={14} className="text-blue-600" /> Đến Trang Quản Lý Đơn Hàng <ArrowRight size={14} />
           </Link>
         </div>
       </div>
 
-      {/* 5. Bottom Section: Order Status Breakdown, Top Selling Products, Low Stock Alerts */}
+      {/* 4. Bottom Section: Real Top Products, Real Low Stock, Real Chatbot AI Activity */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Box 1: Order Status Breakdown */}
+        {/* Box 1: Real Top Selling Products */}
         <div className="bg-white rounded-2xl border border-zinc-200 p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
             <h3 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
-              <ShoppingBag size={16} className="text-blue-600" /> Trạng Thái Đơn Hàng
-            </h3>
-            <span className="text-xs text-zinc-400 font-mono">{totalOrders} tổng</span>
-          </div>
-
-          {statusQuery.isLoading ? (
-            <div className="p-6 text-center text-xs text-zinc-400">Đang tải...</div>
-          ) : statusRows.length === 0 ? (
-            <div className="p-6 text-center text-xs text-zinc-400">Chưa có dữ liệu đơn hàng</div>
-          ) : (
-            <div className="space-y-3">
-              {statusRows.map((st: any) => {
-                const cnt = Number(st.count ?? 0);
-                const pct = totalOrders > 0 ? ((cnt / totalOrders) * 100).toFixed(0) : "0";
-                return (
-                  <div key={st.status} className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-100 space-y-1.5">
-                    <div className="flex items-center justify-between text-xs">
-                      <StatusBadge status={st.status} />
-                      <span className="font-bold text-zinc-900 font-mono">{cnt} đơn ({pct}%)</span>
-                    </div>
-                    <div className="w-full bg-zinc-200 h-1.5 rounded-full overflow-hidden">
-                      <div className="bg-zinc-800 h-full rounded-full" style={{ width: `${pct}%` }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Box 2: Top Selling Products */}
-        <div className="bg-white rounded-2xl border border-zinc-200 p-6 shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
-            <h3 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
-              <TrendingUp size={16} className="text-emerald-600" /> Top Sản Phẩm Bán Chạy
+              <TrendingUp size={16} className="text-emerald-600" /> Top Sản Phẩm Bán Chạy Thực Tế
             </h3>
             <Link href="/admin/products" className="text-xs text-indigo-600 hover:underline flex items-center gap-1">
-              Xem tất cả <ExternalLink size={11} />
+              Sản phẩm <ExternalLink size={11} />
             </Link>
           </div>
 
@@ -444,7 +355,7 @@ export default function AdminDashboardPage() {
           )}
         </div>
 
-        {/* Box 3: Low Stock Alerts */}
+        {/* Box 2: Real Low Stock Inventory Alert Table */}
         <div className="bg-white rounded-2xl border border-zinc-200 p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
             <h3 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
@@ -476,6 +387,90 @@ export default function AdminDashboardPage() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Box 3: Real Chatbot RAG Performance & Handoff */}
+        <div className="bg-white rounded-2xl border border-zinc-200 p-6 shadow-xs space-y-4 flex flex-col justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+              <h3 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
+                <Bot size={16} className="text-purple-600" /> Hoạt Động Chatbot RAG AI
+              </h3>
+              <span className="text-[10px] font-semibold bg-purple-50 text-purple-700 px-2 py-0.5 rounded border border-purple-200">
+                Supabase DB
+              </span>
+            </div>
+
+            <div className="space-y-2.5 pt-1 text-xs">
+              <div className="flex justify-between items-center p-2.5 rounded-xl bg-zinc-50 border border-zinc-100">
+                <span className="text-zinc-600 flex items-center gap-1.5">
+                  <MessageSquare size={13} className="text-zinc-400" /> Tổng tin nhắn xử lý:
+                </span>
+                <span className="font-bold text-zinc-900 font-mono">{totalMessages} tin nhắn</span>
+              </div>
+
+              <div className="flex justify-between items-center p-2.5 rounded-xl bg-zinc-50 border border-zinc-100">
+                <span className="text-zinc-600 flex items-center gap-1.5">
+                  <ShieldAlert size={13} className="text-amber-500" /> Yêu cầu nhân viên tiếp quản:
+                </span>
+                <span className={`font-bold font-mono ${handoffConversations > 0 ? "text-amber-600" : "text-zinc-900"}`}>
+                  {handoffConversations} phiên
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center p-2.5 rounded-xl bg-zinc-50 border border-zinc-100">
+                <span className="text-zinc-600 flex items-center gap-1.5">
+                  <FileText size={13} className="text-indigo-500" /> Tin nhắn cần duyệt (Flags):
+                </span>
+                <span className="font-bold text-indigo-600 font-mono">{needsReviewCount} tin nhắn</span>
+              </div>
+
+              <div className="flex justify-between items-center p-2.5 rounded-xl bg-zinc-50 border border-zinc-100">
+                <span className="text-zinc-600 flex items-center gap-1.5">
+                  <Sparkles size={13} className="text-rose-500" /> Từ khóa nhạy cảm:
+                </span>
+                <span className="font-bold text-rose-600 font-mono">{sensitiveCount} từ khóa</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-2 pt-2">
+            <Link
+              href="/admin/ai-management/logs"
+              className="flex-1 text-center py-2 px-3 rounded-xl border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 text-xs font-semibold text-zinc-800 transition-colors"
+            >
+              Hội Thoại & Handoff
+            </Link>
+            <Link
+              href="/admin/ai-management/sensitive"
+              className="flex-1 text-center py-2 px-3 rounded-xl border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 text-xs font-semibold text-zinc-800 transition-colors"
+            >
+              Từ Khóa Nhạy Cảm
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. Quick Action Links Navigation Shortcuts */}
+      <div className="bg-zinc-50 rounded-2xl p-4 border border-zinc-200/80">
+        <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3 px-1">Lối Tắt Thao Tác Nhanh</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {quickActions.map((act) => {
+            const Icon = act.icon;
+            return (
+              <Link
+                key={act.label}
+                href={act.href}
+                className={`flex items-center gap-2.5 p-3 rounded-xl bg-white border border-zinc-200/80 text-zinc-800 text-xs font-medium transition-all ${act.color} shadow-2xs hover:shadow-xs group`}
+              >
+                <div className="p-1.5 rounded-lg bg-zinc-100 group-hover:bg-white text-zinc-700 transition-colors">
+                  <Icon size={16} />
+                </div>
+                <span className="truncate flex-1">{act.label}</span>
+                <ChevronRight size={13} className="text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>
