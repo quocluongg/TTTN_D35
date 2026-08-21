@@ -16,50 +16,27 @@ export default function LoginForm() {
   const googleTokenClient = useRef<any>(null);
 
   useEffect(() => {
-    // 1. Process Google Redirect Callback if URL hash contains id_token
-    if (typeof window !== "undefined" && window.location.hash) {
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const idToken = hashParams.get("id_token") || hashParams.get("credential");
-
-      if (idToken) {
-        window.history.replaceState(null, "", window.location.pathname);
-        googleLogin(idToken);
-        return;
-      }
-    }
-
-    // 2. Initialize GIS (Google Identity Services) with redirect mode
     const clientId = getGoogleClientId();
     if (!clientId) return;
 
     let cancelled = false;
     loadGoogleScript()
       .then((google) => {
-        if (cancelled || !google?.accounts?.id) return;
+        if (cancelled || !google?.accounts?.oauth2) return;
 
-        google.accounts.id.initialize({
+        googleTokenClient.current = google.accounts.oauth2.initTokenClient({
           client_id: clientId,
-          ux_mode: "redirect",
-          login_uri: typeof window !== "undefined" ? window.location.origin + "/login" : undefined,
-          callback: (response: any) => {
-            if (response?.credential) {
-              googleLogin(response.credential);
+          scope: "openid email profile",
+          callback: (tokenResponse: any) => {
+            if (tokenResponse?.id_token) {
+              googleLogin(tokenResponse.id_token);
+            } else if (tokenResponse?.access_token) {
+              googleLogin(tokenResponse.access_token);
+            } else if (tokenResponse?.error) {
+              console.error("Google popup error:", tokenResponse.error);
             }
           },
         });
-
-        const btnContainer = document.getElementById("google-official-btn");
-        if (btnContainer) {
-          google.accounts.id.renderButton(btnContainer, {
-            type: "standard",
-            theme: "outline",
-            size: "large",
-            text: "signin_with",
-            shape: "rectangular",
-            logo_alignment: "left",
-            width: "380",
-          });
-        }
       })
       .catch(() => {});
 
@@ -74,29 +51,19 @@ export default function LoginForm() {
       setErrorMsg("Google Client ID chưa được cấu hình.");
       return;
     }
-
-    // If official Google GIS button exists, click it
-    const innerBtn = document.querySelector("#google-official-btn div[role=button]") as HTMLElement;
-    if (innerBtn) {
-      innerBtn.click();
-      return;
-    }
-
-    if (typeof window !== "undefined" && (window as any).google?.accounts?.id) {
-      (window as any).google.accounts.id.prompt();
-    } else {
-      const redirectUri = window.location.origin + "/login";
-      const nonce = Date.now().toString();
-      const googleAuthUrl =
-        `https://accounts.google.com/o/oauth2/v2/auth?` +
-        `client_id=${encodeURIComponent(clientId)}` +
-        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-        `&response_type=id_token` +
-        `&scope=${encodeURIComponent("openid email profile")}` +
-        `&prompt=select_account` +
-        `&nonce=${encodeURIComponent(nonce)}`;
-
-      window.location.href = googleAuthUrl;
+    if (googleTokenClient.current) {
+      googleTokenClient.current.requestAccessToken();
+    } else if (typeof window !== "undefined" && (window as any).google?.accounts?.oauth2) {
+      const client = (window as any).google.accounts.oauth2.initTokenClient({
+        client_id: clientId,
+        scope: "openid email profile",
+        callback: (res: any) => {
+          if (res?.id_token || res?.access_token) {
+            googleLogin(res.id_token || res.access_token);
+          }
+        },
+      });
+      client.requestAccessToken();
     }
   };
 
