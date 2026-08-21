@@ -60,15 +60,18 @@ export default function AdminUsersPage() {
   });
 
   const lockMutation = useMutation({
-    mutationFn: (user: UserRow) =>
-      adminUserService.lock(user.id, { lock: user.isActive !== false }),
+    mutationFn: (user: UserRow) => {
+      const nextActiveState = user.isActive === false;
+      return adminUserService.lock(user.id, { isActive: nextActiveState });
+    },
     onSuccess: (_, user) => {
-      notifySuccess(`${user.isActive !== false ? "Khóa" : "Kích hoạt"} tài khoản thành công!`);
+      const actionText = user.isActive !== false ? "Khóa" : "Kích hoạt";
+      notifySuccess(`${actionText} tài khoản thành công!`);
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       setLockConfirmItem(null);
     },
     onError: (err: any) => {
-      notifyError(err?.message || "Thao tác khóa thất bại.");
+      notifyError(err?.response?.data?.message || err?.message || "Thao tác khóa thất bại.");
     },
   });
 
